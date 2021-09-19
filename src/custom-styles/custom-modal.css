@@ -1,0 +1,22 @@
+.ReactModal__Content {
+  opacity: 50%;
+  transform: translate(-50%, max(-45vh, -50%));
+  transition: opacity 0.3s ease-out;
+}
+
+.ReactModal__Content--after-open {
+  opacity: 100%;
+  transition: opacity 0.3s ease-out;
+}
+
+.ReactModal__Content--before-close {
+  opacity: 50%;
+}
+
+.ReactModal__Overlay {
+  z-index: 1000;
+}
+
+.ReactModal__Content {
+  z-index: 1001;
+}

@@ -1,0 +1,14 @@
+.linearLabelWithValidation{
+        align-items: baseline;
+        margin-top: 1rem;
+}
+.linearLabelWithValidationSimple{
+        align-items: baseline;
+        margin-top: 1rem;
+}
+.cancelBottom {
+    color: #acaeaf;
+}
+.customNameContainer{
+        min-width: 80%;
+}
