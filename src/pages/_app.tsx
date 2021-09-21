@@ -3,7 +3,7 @@ import { jsx, Global, css } from "@emotion/react";
 import "normalize.css";
 import type { AppProps } from "next/app";
 
-import { useEffect } from "react";
+import { useEffect, Fragment } from "react";
 import LogRocket from "logrocket";
 
 import { Header, Footer } from "~/components";
@@ -30,6 +30,10 @@ function MyApp({ Component, pageProps }: AppProps) {
     }
   }, []);
 
+  const Guard = (Component as any).Guard || Fragment;
+  const guardOptions = (Component as any).guardOptions || {};
+  const Layout = (Component as any).Layout || Fragment;
+
   return (
     <LocaleProvider>
       <AuthProvider>
@@ -38,7 +42,11 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ErrorProvider>
             <div css={styles.container}>
               <Header />
-              <Component {...pageProps} />
+              <Guard {...guardOptions}>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </Guard>
               <Footer />
             </div>
           </ErrorProvider>
@@ -51,7 +59,7 @@ export default MyApp;
 
 const styles = {
   container: css`
-    min-height: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
   `,

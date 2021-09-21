@@ -17,7 +17,7 @@ export const AuthGuard: FunctionComponent<{
 
   useEffect(() => {  
     if (isInitialized && !isAuthenticated && shouldRedirect) {
-      router.push('/')
+      router.push('/quote')
     }
   }, [isInitialized, isAuthenticated, shouldRedirect])
 

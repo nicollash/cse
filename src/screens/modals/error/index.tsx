@@ -38,10 +38,9 @@ export const ErrorModal: FunctionComponent<Props> = ({ error, onGoHome, onClose 
       width="450px"
       onCloseModal={() => {
         //onClose()
-        //router.push('/')
         if (error.some(e => e.errorData.Name === 'ApplicationNotFound' || e.errorData.Name === 'ApplicationDeleted' || e.errorData.Name === 'IncorrectOwner')
           || error.some(e => e.errorType == CustomErrorType.PARSE_QUOTE_FAIL)) {
-          router.push('/')
+          router.push('/quote')
         } else {
           router.push(`/quote/${quoteDetail.planDetails?.applicationNumber ? quoteDetail.planDetails?.applicationNumber : quoteDetail.planInfo[selectedPlan].applicationNumber}/customize`)
         }
