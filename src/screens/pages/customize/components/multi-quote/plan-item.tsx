@@ -59,7 +59,7 @@ export const PlanItem: FunctionComponent<Props> = ({
         <div css={styles.content}>
           <div css={styles.type}>
             <Text size="1em" bold>
-              <img src='~/assets/icons/car2.png' css={utils.mr(2)} />
+              <img src='/assets/icons/car2.png' css={utils.mr(2)} />
               AUTO
             </Text>
           </div>

@@ -1,4 +1,3 @@
-import { jsx } from "@emotion/react";
 import { FunctionComponent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Loading } from "~/components";
@@ -15,7 +14,7 @@ export const QuoteLayout: FunctionComponent<any> = ({ children }) => {
   } = useQuote();
   const [isInitialized, setInitialize] = useState(false);
   const router = useRouter();
-  const { quoteNumber } = router.query;
+  const quoteNumber = router.query.quoteNumber as string;
   const { setError } = useError();
 
   useEffect(() => {

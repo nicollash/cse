@@ -1,24 +1,27 @@
-import { jsx } from "@emotion/react";
-import { FunctionComponent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { FunctionComponent, useEffect, useState } from "react";
 import queryString from "query-string";
 
 import { Loading } from "~/components";
 import { useAuth } from "~/hooks";
 import { logger } from "~/utils";
 
-export const CheckTokenScreen: FunctionComponent = () => {
+const CheckTokenPage: FunctionComponent = () => {
   const router = useRouter();
-  const { query } = router;
-  const { action } = query;
   const { isAuthenticated, login } = useAuth();
   const [isLoginCalled, setLoginCalled] = useState(false);
 
+  const action = router.query.action;
+  const query = router.query;
+
   logger("action", action);
-  logger("query", query);
+  logger("query", router.query);
 
   useEffect(() => {
-    login(query.userName as string, query.password as string).finally(() => {
+    login(
+      router.query.userName as string,
+      router.query.password as string
+    ).finally(() => {
       setLoginCalled(true);
     });
   }, []);
@@ -31,24 +34,29 @@ export const CheckTokenScreen: FunctionComponent = () => {
     if (isAuthenticated) {
       switch (action) {
         case "login":
-          router.push("/");
+          router.push("/quote");
           break;
         case "quote":
-          router.push("/quote", {
-            firstName: query.FirstName,
-            lastName: query.LastName,
-            address: query.Address,
-            unitNumber: query.UnitNo,
-          });
+          router.push(
+            "/quote?" +
+              queryString.stringify({
+                firstName: query.FirstName,
+                lastName: query.LastName,
+                address: query.Address,
+                unitNumber: query.UnitNo,
+              })
+          );
           break;
         case "quote-detail":
           router.push(`/quote/${query.QuoteNumber}/customize`);
           break;
       }
     } else {
-      router.push("/");
+      router.push("/quote");
     }
   }, [isLoginCalled]);
 
   return <Loading />;
 };
+
+export default CheckTokenPage;

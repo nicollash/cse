@@ -15,8 +15,6 @@ const BreadCrumbWrapper = styled.div`
   display: flex;
 `;
 
-
-
 export const BreadCrumb: FunctionComponent<props> = ({
   breadCrumb,
   className,
@@ -27,8 +25,8 @@ export const BreadCrumb: FunctionComponent<props> = ({
       {breadCrumb.map((item, key) =>
         key < breadCrumb.length - 1 ? (
           <div css={[utils.mr(1), utils.display("flex")]} key={key}>
-            <Link href={item.link ? item.link : "/"} css={[utils.mr(1)]}>
-              <Text color={theme.color.link} bold>
+            <Link href={item.link ? item.link : "/quote"}>
+              <Text color={theme.color.link} bold css={[utils.mr(1)]}>
                 {item.label}
               </Text>
             </Link>

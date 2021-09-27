@@ -247,7 +247,7 @@ function QuotePage() {
     //!addressValided ?
     <Screen title={messages.MainTitle} loading={isLoading}>
       <div css={[styles.background]}>
-        <img src="~/assets/images/home-background.png" css={[styles.image]} />
+        <img src="/assets/images/home-background.png" css={[styles.image]} />
       </div>
       <Container css={styles.container}>
         <Heading css={[utils.mb(6)]}>{messages.Main.Heading}</Heading>

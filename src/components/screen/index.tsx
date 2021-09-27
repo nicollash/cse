@@ -13,6 +13,7 @@ import CookieConsent from "react-cookie-consent";
 
 import { theme } from "~/styles";
 import { useLocale } from "~/hooks";
+import { SerializedStyles } from "@emotion/utils";
 
 interface ScreenProps {
   title?: string;

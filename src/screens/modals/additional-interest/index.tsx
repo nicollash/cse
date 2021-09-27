@@ -1,6 +1,3 @@
-
-
-import { jsx } from '@emotion/react'
 import { Fragment, FunctionComponent, useEffect, useState } from 'react'
 import { Button, FormGroup, FormikAddressInput, FormikCheckbox, FormikInput, FormikSelect, Hr, Modal } from '~/components'
 import { useLocale } from '~/hooks'
@@ -17,7 +14,6 @@ import { faPlusCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 
 import { Text } from '~/components'
 
-import './styles.css'
 import { aiConfig } from '~/utils/configuration/additionalInterest'
 import { FormikTextArea } from '~/components/text-area'
 

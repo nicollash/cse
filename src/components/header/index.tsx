@@ -146,7 +146,7 @@ export const Header: FunctionComponent = () => {
         <img
           css={styles.logo}
           src="/assets/images/CSE_tm_signature_rgb.png"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/quote")}
         />
         <div css={[utils.display("flex"), utils.alignItems("center")]}>
           <div css={[utils.display("flex"), utils.mr(7), styles.searchBox]}>
@@ -175,7 +175,6 @@ export const Header: FunctionComponent = () => {
 
           <div css={[styles.menu]}>
             <Clickover
-              position="bottom"
               align="end"
               padding={40}
               Content={({ closePopup }) => (
@@ -184,7 +183,7 @@ export const Header: FunctionComponent = () => {
                     css={styles.listItem}
                     textAlign="right"
                     onClick={() => {
-                      router.push("/");
+                      router.push("/quote");
                       closePopup();
                     }}
                   >

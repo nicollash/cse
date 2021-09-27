@@ -21,6 +21,11 @@ import "slick-carousel/slick/slick-theme.css";
 import "../custom-styles/custom-modal.css";
 import "../custom-styles/custom-date-picker.css";
 import "../custom-styles/custom-slider.css";
+import "../custom-styles/custom.css";
+
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import "~/styles/components/slider.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {

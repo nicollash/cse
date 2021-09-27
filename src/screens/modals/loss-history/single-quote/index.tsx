@@ -16,7 +16,6 @@ import { faPlusCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 
 import { Text } from '~/components'
 
-import './../styles.css'
 import { FormikTextArea } from '~/components/text-area'
 import { lhConfig } from '~/utils/configuration/lossHistory'
 import { AddLossHistoryItem } from '~/screens/pages/customize/components/add-lossHistory-item'

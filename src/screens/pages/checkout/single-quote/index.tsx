@@ -359,7 +359,7 @@ export const CheckoutScreen: FunctionComponent<RouteProps> = () => {
             >
               <Text size="1.75em" bold css={utils.alignItems('center')}>
                 <img
-                  src='~/assets/icons/car1.png'
+                  src='/assets/icons/car1.png'
                   css={utils.mr(1)}
                   width="24px"
                 />

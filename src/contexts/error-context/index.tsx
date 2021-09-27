@@ -91,7 +91,7 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
             },
           })*/
           setShowErrorModal(false);
-          router.push("/");
+          router.push("/quote");
         }}
         onClose={() => {
           /*

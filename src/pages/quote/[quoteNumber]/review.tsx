@@ -1,5 +1,3 @@
-
-import { jsx } from '@emotion/react'
 import {
   Fragment,
   FunctionComponent,
@@ -7,54 +5,74 @@ import {
   useEffect,
   useCallback,
   useMemo,
-} from 'react'
-import { RouteProps, useHistory, useParams } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCar } from '@fortawesome/free-solid-svg-icons'
+} from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCar } from "@fortawesome/free-solid-svg-icons";
 
-import { Text, Container, Row, Col, Screen, Button, Input, FormGroup, FormikInput } from '~/components'
-import { RequiredInformationModal, PriorIncidentsModal } from '~/screens/modals'
-import { utils, theme } from '~/styles'
-import { useLocale, useQuote, useError, useAuth } from '~/hooks'
-import { AdditionalInterestInfo, LossHistoryInfo, QuoteDetail } from '~/types'
+import {
+  Text,
+  Container,
+  Row,
+  Col,
+  Screen,
+  Button,
+  FormikInput,
+} from "~/components";
+import {
+  RequiredInformationModal,
+  PriorIncidentsModal,
+} from "~/screens/modals";
+import { utils, theme } from "~/styles";
+import { useLocale, useQuote, useError, useAuth } from "~/hooks";
+import { AdditionalInterestInfo, LossHistoryInfo, QuoteDetail } from "~/types";
 
-import { CarCovered, ReviewItem } from './../components'
-import { styles } from './../styles'
-import { AdditionalInterestModal } from '~/screens/modals/additional-interest'
-import { LossHistoryModal } from '~/screens/modals/loss-history/single-quote'
-import { ErrorBox } from '~/components/error-box'
-import { UWQuestions } from '../components/uw-questions'
-import { questions } from '~/utils/configuration/questions'
-import { FormikProvider, useFormik } from 'formik'
+import {
+  CarCovered,
+  ReviewItem,
+  UWQuestions,
+} from "~/screens/pages/customize/components";
+import { styles } from "~/screens/pages/customize/styles";
+import { AdditionalInterestModal } from "~/screens/modals/additional-interest";
+import { LossHistoryModal } from "~/screens/modals/loss-history/single-quote";
+import { ErrorBox } from "~/components/error-box";
+import { questions } from "~/utils/configuration/questions";
+import { FormikProvider, useFormik } from "formik";
 
-import * as Yup from 'yup'
+import * as Yup from "yup";
+import { useRouter } from "next/router";
+import { AuthGuard } from "~/screens/guards";
+import { QuoteLayout } from "~/screens/layouts";
 
-export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
-  const router = useRouter()
-  const { messages } = useLocale()
-  const { quoteNumber } = useParams<any>()
-  const { quoteDetail, updateQuote, externalApplicationCloseOut, shareQuote } = useQuote()
-  const { user } = useAuth()
-  const { setError } = useError()
+const ReviewCoveragesPage: FunctionComponent = () => {
+  const router = useRouter();
+  const { messages } = useLocale();
+  const quoteNumber = router.query.qutoeNumber as string;
+  const { quoteDetail, updateQuote, externalApplicationCloseOut, shareQuote } =
+    useQuote();
+  const { user } = useAuth();
+  const { setError } = useError();
 
-  const [selectedTab, selectTab] = useState(1)
-  const [requiredInformationModalVisible, setRequiredInformationModalVisible] = useState({ required: false, from: null })
-  const [priorIncidentsVisible, setPriorIncidentsVisible] = useState(false)
-  const [isLoading, setLoading] = useState(false)
+  const [selectedTab, selectTab] = useState(1);
+  const [requiredInformationModalVisible, setRequiredInformationModalVisible] =
+    useState({ required: false, from: null });
+  const [priorIncidentsVisible, setPriorIncidentsVisible] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
-  const [userInfoRequired, setUserInfoVisible] = useState(false)
+  const [userInfoRequired, setUserInfoVisible] = useState(false);
 
   // DEV Notes: For automatic process when the continue to checkout is clicked, but there are some required fields. Need to find a better solution here!!!
-  const [hasProceedToCheckout, setProceedToCheckout] = useState(0)
+  const [hasProceedToCheckout, setProceedToCheckout] = useState(0);
 
-  const [additionalInterestRequired, setAdditionalInterestVisible] = useState(false)
-  const [lossHistoryRequired, setLossHistoryVisible] = useState(false)
+  const [additionalInterestRequired, setAdditionalInterestVisible] =
+    useState(false);
+  const [lossHistoryRequired, setLossHistoryVisible] = useState(false);
 
-  const schema = () => Yup.object<any>().shape({
-    email: Yup.string()
-      .email(messages.Common.Errors.InvalidEmailAddress)
-      .required(messages.Common.Errors.RequireEmailAddress)
-  })
+  const schema = () =>
+    Yup.object<any>().shape({
+      email: Yup.string()
+        .email(messages.Common.Errors.InvalidEmailAddress)
+        .required(messages.Common.Errors.RequireEmailAddress),
+    });
 
   const formik = useFormik<any>({
     validationSchema: schema,
@@ -62,112 +80,121 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
     validateOnChange: true,
     validateOnBlur: false,
     initialValues: {
-      email: quoteDetail.communicationInfo.email
+      email: quoteDetail.communicationInfo.email,
     },
     onSubmit: (value) => {
-      setLoading(true)
+      setLoading(true);
       shareQuote(quoteDetail.systemId, value.email)
-        .then((result) => {
-        }).catch((e) => {
-        }).finally(() => setLoading(false))
+        .then((result) => {})
+        .catch((e) => {})
+        .finally(() => setLoading(false));
     },
-  })
+  });
 
   const requiredItemsLabel = useMemo(() => {
     return [
       ...quoteDetail.vehicles
         .filter(
           (v) =>
-            v.status === 'Active' &&
+            v.status === "Active" &&
             (v.vinNumber === undefined ||
               v.odometerReading === undefined ||
-              v.readingDate === undefined),
+              v.readingDate === undefined)
         )
         .map(
           (info) =>
             `${[
-              info.vinNumber ? undefined : 'Vin Number',
-              info.odometerReading && info.readingDate ? undefined : 'Odometer',
+              info.vinNumber ? undefined : "Vin Number",
+              info.odometerReading && info.readingDate ? undefined : "Odometer",
             ]
               .filter((v) => !!v)
-              .join(',')} - ${info.model}`,
+              .join(",")} - ${info.model}`
         ),
       ...quoteDetail.drivers
-        .filter((v) => v.status === 'Active' && v.licenseNumber === '')
-        .map((info) => `${info.firstName} - ${messages.DriverModal.LicenseNumber}`),
-    ]
-  }, [quoteDetail])
+        .filter((v) => v.status === "Active" && v.licenseNumber === "")
+        .map(
+          (info) => `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
+        ),
+    ];
+  }, [quoteDetail]);
 
   const processUpdateQuote = useCallback((updatedQuote: QuoteDetail) => {
-    setLoading(true)
+    setLoading(true);
     updateQuote(updatedQuote)
-      .then(() => {
-
-      })
+      .then(() => {})
       .catch((e) => {
-        setError(e)
-      }).finally(() => setLoading(false))
-  }, [])
+        setError(e);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const onContinueToCheckout = useCallback((from?: string) => {
-    if (requiredItemsLabel.length > 0) {
-      setProceedToCheckout(1)
-      setRequiredInformationModalVisible({ required: true, from: 'mainFlow' })
-    } 
-    else {
-      setLoading(true)
-      externalApplicationCloseOut(quoteDetail)
+  const onContinueToCheckout = useCallback(
+    (from?: string) => {
+      if (requiredItemsLabel.length > 0) {
+        setProceedToCheckout(1);
+        setRequiredInformationModalVisible({
+          required: true,
+          from: "mainFlow",
+        });
+      } else {
+        setLoading(true);
+        externalApplicationCloseOut(quoteDetail)
+          .then(() => {
+            setLoading(false);
+            router.push("checkout");
+          })
+          .catch((e) => {
+            setError(e);
+          });
+      }
+    },
+    [quoteDetail]
+  );
+
+  const processExternalApplicationCloseOut = useCallback(
+    (updatedQuote: QuoteDetail) => {
+      setLoading(true);
+      externalApplicationCloseOut(updatedQuote)
         .then(() => {
-          setLoading(false)
-          router.push('checkout')
+          setLoading(false);
         })
         .catch((e) => {
-          setError(e)
-        })
-
-    }
-  }, [quoteDetail])
-
-  const processExternalApplicationCloseOut = useCallback((updatedQuote: QuoteDetail) => {
-    setLoading(true)
-    externalApplicationCloseOut(updatedQuote)
-      .then(() => {
-        setLoading(false)
-      })
-      .catch((e) => {
-        setError(e)
-      })
-  }, [])
+          setError(e);
+        });
+    },
+    []
+  );
 
   useEffect(() => {
-    (window as any).ga && (window as any).ga('send', 'Review Page View')
-  }, [])
+    (window as any).ga && (window as any).ga("send", "Review Page View");
+  }, []);
 
   return (
     <Screen
       title={`${quoteNumber} | ${messages.MainTitle}`}
       greyBackground
       breadCrumb={[
-        { link: '/', label: 'Home' },
-        { link: 'customize', label: 'Customize' },
-        { label: 'Review Coverages' },
+        { link: "/quote", label: "Home" },
+        { link: "customize", label: "Customize" },
+        { label: "Review Coverages" },
       ]}
       loading={isLoading}
-      css={[utils.flex(1), utils.flexDirection('column')]}
+      css={[utils.flex(1), utils.flexDirection("column")]}
       quoteNumber={quoteNumber}
       systemId={quoteDetail.systemId}
     >
-
       {/* Mobile Tabs */}
-      <Container css={[utils.fullWidth, utils.visibleOnMobile, utils.ma(0), utils.pa(0)]}>
-        <Row css={utils.flexWrap('nowrap')}>
+      <Container
+        css={[utils.fullWidth, utils.visibleOnMobile, utils.ma(0), utils.pa(0)]}
+      >
+        <Row css={utils.flexWrap("nowrap")}>
           <Col
             css={[styles.tabSelector, selectedTab === 1 && styles.selectedTab]}
             onClick={() => selectTab(1)}
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src="/assets/icons/car1.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Policy}</Text>
@@ -178,7 +205,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car2.png'
+              src="/assets/icons/car2.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Cars}</Text>
@@ -189,7 +216,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/steering.png'
+              src="/assets/icons/steering.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Drivers}</Text>
@@ -200,7 +227,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src="/assets/icons/car1.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.RequiredItems}</Text>
@@ -209,40 +236,52 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
       </Container>
 
       <Container
-        css={[utils.fullWidth, utils.visibleOnMobile, utils.centerAlign, utils.flexDirection('column'), utils.px(0)]}
+        css={[
+          utils.fullWidth,
+          utils.visibleOnMobile,
+          utils.centerAlign,
+          utils.flexDirection("column"),
+          utils.px(0),
+        ]}
       >
         <Text>{quoteNumber}</Text>
-        {
-          (quoteDetail.validationError && quoteDetail.validationError.length > 0) &&
-
+        {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
           <div
             data-testid="error-box-mobile"
-            css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3), utils.pa(0)]}
+            css={[
+              utils.fullWidth,
+              utils.visibleOnMobile,
+              utils.my(3),
+              utils.pa(0),
+            ]}
           >
-            <ErrorBox data={quoteDetail.validationError} systemId={quoteDetail.systemId} />
+            <ErrorBox
+              data={quoteDetail.validationError}
+              systemId={quoteDetail.systemId}
+            />
           </div>
-        }
+        )}
       </Container>
 
-
-      <Container wide css={[utils.mt('10px'), utils.hideOnMobile]}>
+      <Container wide css={[utils.mt("10px"), utils.hideOnMobile]}>
         <Text size="2.5em" bold>
           {messages.ReviewCoverages.Title}
         </Text>
       </Container>
 
-      {
-        (quoteDetail.validationError && quoteDetail.validationError.length > 0) &&
-
+      {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
         <div
           data-testid="error-box-mobile"
           css={[utils.fullWidth, utils.hideOnMobile, utils.my(3)]}
         >
-          <ErrorBox data={quoteDetail.validationError} systemId={quoteDetail.systemId} />
+          <ErrorBox
+            data={quoteDetail.validationError}
+            systemId={quoteDetail.systemId}
+          />
         </div>
-      }
+      )}
 
-      <Container wide css={[utils.my('20px'), utils.visibleOnMobile]}>
+      <Container wide css={[utils.my("20px"), utils.visibleOnMobile]}>
         <Text
           size="2.5em"
           bold
@@ -260,7 +299,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
             {/* auto policy */}
             <div css={[styles.whiteBackground, styles.autoPolicy]}>
               <Text size="2.5em" bold css={utils.mb(7)}>
-                <img src='~/assets/icons/car1.png' css={utils.mr(1)} />
+                <img src="/assets/icons/car1.png" css={utils.mr(1)} />
                 {messages.ReviewCoverages.AutoPolicy}
               </Text>
 
@@ -273,7 +312,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                 <Row>
                   <Col>
                     {quoteDetail.drivers
-                      .filter((driver) => driver.status === 'Active')
+                      .filter((driver) => driver.status === "Active")
                       .map((driver, key) => (
                         <div css={styles.infoItem} key={key}>
                           <Text bold>
@@ -289,15 +328,21 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                   </Col>
 
                   <Col>
-                    <div css={[styles.infoItem, utils.height('4.5em')]}>
-                      <Text bold>{messages.ReviewCoverages.TotalTermPrice}</Text>
+                    <div css={[styles.infoItem, utils.height("4.5em")]}>
+                      <Text bold>
+                        {messages.ReviewCoverages.TotalTermPrice}
+                      </Text>
                       <Text size="2em" bold>
-                        {}
-                        ${Math.round(+quoteDetail.planDetails.fullPrice).toString()}
+                        {}$
+                        {Math.round(
+                          +quoteDetail.planDetails.fullPrice
+                        ).toString()}
                       </Text>
                     </div>
                     <div css={styles.infoItem}>
-                      <Text bold>{messages.ReviewCoverages.PolicyTermPrice}</Text>
+                      <Text bold>
+                        {messages.ReviewCoverages.PolicyTermPrice}
+                      </Text>
                       <Text size="1.25em" bold>
                         {quoteDetail.planDetails.renewalTerm}
                       </Text>
@@ -318,23 +363,28 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                       <Text bold>{messages.ReviewCoverages.BodilyInjury}</Text>
                       <Text size="1.25em" bold>
                         {quoteDetail.planDetails.bodilyInjuryLimit
-                          .split('/')
+                          .split("/")
                           .map((str) => `$${str}`)
-                          .join('/')}
-                      </Text>
-                    </div>
-                    <div css={styles.infoItem}>
-                      <Text bold>{messages.ReviewCoverages.UninsuredMotorist}</Text>
-                      <Text size="1.25em" bold>
-                        {quoteDetail.planDetails.uninsuredMotoristLimit
-                          .split('/')
-                          .map((str) => `$${str}`)
-                          .join('/')}
+                          .join("/")}
                       </Text>
                     </div>
                     <div css={styles.infoItem}>
                       <Text bold>
-                        {messages.ReviewCoverages.UninsuredMotoristPropertyDamage}
+                        {messages.ReviewCoverages.UninsuredMotorist}
+                      </Text>
+                      <Text size="1.25em" bold>
+                        {quoteDetail.planDetails.uninsuredMotoristLimit
+                          .split("/")
+                          .map((str) => `$${str}`)
+                          .join("/")}
+                      </Text>
+                    </div>
+                    <div css={styles.infoItem}>
+                      <Text bold>
+                        {
+                          messages.ReviewCoverages
+                            .UninsuredMotoristPropertyDamage
+                        }
                       </Text>
                       <Text size="1.25em" bold>
                         {quoteDetail.planDetails.UM_PD_WCD_Applies}
@@ -344,13 +394,17 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
 
                   <Col xs={5}>
                     <div css={styles.infoItem}>
-                      <Text bold>{messages.ReviewCoverages.MedicalPayments}</Text>
+                      <Text bold>
+                        {messages.ReviewCoverages.MedicalPayments}
+                      </Text>
                       <Text size="1.25em" bold>
                         ${quoteDetail.planDetails.medicalPaymentsLimit}
                       </Text>
                     </div>
                     <div css={styles.infoItem}>
-                      <Text bold>{messages.ReviewCoverages.PropertyDamage}</Text>
+                      <Text bold>
+                        {messages.ReviewCoverages.PropertyDamage}
+                      </Text>
                       <Text size="1.25em" bold>
                         ${quoteDetail.planDetails.propertyDamage}
                       </Text>
@@ -367,7 +421,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
               </Text>
 
               {quoteDetail.planDetails.vehicleInfo
-                .filter((vehicle) => vehicle.status === 'Active')
+                .filter((vehicle) => vehicle.status === "Active")
                 .map((vehicle, key) => (
                   <CarCovered css={utils.mb(5)} vehicle={vehicle} key={key} />
                 ))}
@@ -377,14 +431,16 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
             <div css={utils.mt("4rem")}>
               <div css={utils.mb(0)}>
                 <UWQuestions
-                  title={'Underwriting'}
+                  title={"Underwriting"}
                   configQuestions={questions.autoP1}
                   uwQuestions={quoteDetail.uwQuestions}
                   onAnswerChange={(questionName, answer) => {
-                    const i = quoteDetail.uwQuestions.findIndex((e) => e.Name === questionName)
+                    const i = quoteDetail.uwQuestions.findIndex(
+                      (e) => e.Name === questionName
+                    );
                     if (quoteDetail.uwQuestions[i].Value != answer) {
-                      quoteDetail.uwQuestions[i].Value = answer
-                      processUpdateQuote(quoteDetail)
+                      quoteDetail.uwQuestions[i].Value = answer;
+                      processUpdateQuote(quoteDetail);
                     }
                   }}
                 />
@@ -397,33 +453,35 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                   configQuestions={questions.autoP2}
                   uwQuestions={quoteDetail.uwQuestions}
                   onAnswerChange={(questionName, answer) => {
-                    const i = quoteDetail.uwQuestions.findIndex((e) => e.Name === questionName)
+                    const i = quoteDetail.uwQuestions.findIndex(
+                      (e) => e.Name === questionName
+                    );
                     if (quoteDetail.uwQuestions[i].Value != answer) {
-                      quoteDetail.uwQuestions[i].Value = answer
-                      processUpdateQuote(quoteDetail)
+                      quoteDetail.uwQuestions[i].Value = answer;
+                      processUpdateQuote(quoteDetail);
                     }
                   }}
                 />
               </div>
             </div>
-
           </Col>
 
           <Col md={12} lg={3}>
             <div css={[styles.whiteBackground, utils.pa(2), utils.fullHeight]}>
-              {
-                requiredItemsLabel.length > 0
-                &&
+              {requiredItemsLabel.length > 0 && (
                 <ReviewItem
                   css={utils.mt(5)}
                   header={messages.Customize.RequiredInformation}
                   items={requiredItemsLabel}
                   onEdit={() => {
-                    setProceedToCheckout(0)
-                    setRequiredInformationModalVisible({ required: true, from: null })
+                    setProceedToCheckout(0);
+                    setRequiredInformationModalVisible({
+                      required: true,
+                      from: null,
+                    });
                   }}
                 />
-              }
+              )}
 
               <ReviewItem
                 css={utils.mb(5)}
@@ -431,9 +489,9 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
               >
                 <div
                   css={[
-                    utils.display('flex'),
-                    utils.flexDirection('column'),
-                    utils.alignItems('center'),
+                    utils.display("flex"),
+                    utils.flexDirection("column"),
+                    utils.alignItems("center"),
                     utils.py(3),
                   ]}
                 >
@@ -444,54 +502,67 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                   <FormikProvider value={formik}>
                     <form
                       onSubmit={(e) => {
-                        e.preventDefault()
-                        formik.handleSubmit()
+                        e.preventDefault();
+                        formik.handleSubmit();
                       }}
-                      css={[utils.fullWidth, utils.flexDirection('column'), utils.alignItems('center'), utils.display('flex')]}
+                      css={[
+                        utils.fullWidth,
+                        utils.flexDirection("column"),
+                        utils.alignItems("center"),
+                        utils.display("flex"),
+                      ]}
                     >
                       <FormikInput
-                        name='email'
-                        type='email'
+                        name="email"
+                        type="email"
                         css={[utils.fullWidth, utils.mb(3)]}
                         placeholder={messages.Common.EmailAddress}
                       />
-                      <Button css={utils.maxWidth('170px')} type="submit">
-                        {messages.ReviewCoverages.ShareQuote}</Button>
+                      <Button css={utils.maxWidth("170px")} type="submit">
+                        {messages.ReviewCoverages.ShareQuote}
+                      </Button>
                     </form>
                   </FormikProvider>
-
                 </div>
               </ReviewItem>
-
 
               <ReviewItem
                 css={utils.mt(5)}
                 header={messages.ReviewCoverages.AgentInformation}
               >
                 <Text color={theme.color.primary} bold css={utils.my(3)}>
-                  {user && user.DTOProvider.Contact && user.DTOProvider.Contact[0].PartyInfo[0].NameInfo[0].CommercialName}
+                  {user &&
+                    user.DTOProvider.Contact &&
+                    user.DTOProvider.Contact[0].PartyInfo[0].NameInfo[0]
+                      .CommercialName}
                 </Text>
 
                 <div css={styles.infoItem}>
                   <Text bold>{messages.Common.Agent}</Text>
                   <Text>
-                    {user && user.DTOProvider.Contact && user.DTOProvider.Contact[0].PartyInfo[0].PersonInfo[0].PositionTitle}
+                    {user &&
+                      user.DTOProvider.Contact &&
+                      user.DTOProvider.Contact[0].PartyInfo[0].PersonInfo[0]
+                        .PositionTitle}
                   </Text>
                 </div>
                 <div css={styles.infoItem}>
                   <Text bold>{messages.Common.Phone}</Text>
                   <Text>
-                    {user && user.DTOProvider.Contact &&
+                    {user &&
+                      user.DTOProvider.Contact &&
                       user.DTOProvider.Contact[0].PartyInfo[0].PhoneInfo.find(
-                        (phoneInfo) => phoneInfo.PhoneName === 'Business',
-                      )?.PhoneNumber
-                    }
+                        (phoneInfo) => phoneInfo.PhoneName === "Business"
+                      )?.PhoneNumber}
                   </Text>
                 </div>
                 <div css={styles.infoItem}>
                   <Text bold>{messages.Common.Email}</Text>
                   <Text>
-                    {user && user.DTOProvider.Contact && user.DTOProvider.Contact[0].PartyInfo[0].EmailInfo[0].EmailAddr}
+                    {user &&
+                      user.DTOProvider.Contact &&
+                      user.DTOProvider.Contact[0].PartyInfo[0].EmailInfo[0]
+                        .EmailAddr}
                   </Text>
                 </div>
               </ReviewItem>
@@ -500,15 +571,15 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                 css={utils.mt(3)}
                 header={messages.AIModal.Title}
                 onEdit={() => {
-                  setProceedToCheckout(0)
-                  setAdditionalInterestVisible(true)
+                  setProceedToCheckout(0);
+                  setAdditionalInterestVisible(true);
                 }}
               />
               <ReviewItem
                 css={utils.mt(3)}
-                header={'Loss History'}
+                header={"Loss History"}
                 onEdit={() => {
-                  setLossHistoryVisible(true)
+                  setLossHistoryVisible(true);
                 }}
               />
             </div>
@@ -524,8 +595,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
               <div css={styles.infoItem}>
                 <Text bold>{messages.ReviewCoverages.TotalTermPrice}</Text>
                 <Text size="2em" bold>
-                  {}
-                  ${Math.round(+quoteDetail.planDetails.fullPrice).toString()}
+                  {}${Math.round(+quoteDetail.planDetails.fullPrice).toString()}
                 </Text>
               </div>
               <div css={styles.infoItem}>
@@ -538,18 +608,18 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                 <Text bold>{messages.ReviewCoverages.BodilyInjury}</Text>
                 <Text size="1.25em" bold>
                   {quoteDetail.planDetails.bodilyInjuryLimit
-                    .split('/')
+                    .split("/")
                     .map((str) => `$${str}`)
-                    .join('/')}
+                    .join("/")}
                 </Text>
               </div>
               <div css={styles.infoItem}>
                 <Text bold>{messages.ReviewCoverages.UninsuredMotorist}</Text>
                 <Text size="1.25em" bold>
                   {quoteDetail.planDetails.uninsuredMotoristLimit
-                    .split('/')
+                    .split("/")
                     .map((str) => `$${str}`)
-                    .join('/')}
+                    .join("/")}
                 </Text>
               </div>
               <div css={styles.infoItem}>
@@ -579,9 +649,9 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
             >
               <div
                 css={[
-                  utils.display('flex'),
-                  utils.flexDirection('column'),
-                  utils.alignItems('center'),
+                  utils.display("flex"),
+                  utils.flexDirection("column"),
+                  utils.alignItems("center"),
                 ]}
               >
                 <Text css={[utils.fullWidth, utils.my(4)]}>
@@ -590,19 +660,25 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
                 <FormikProvider value={formik}>
                   <form
                     onSubmit={(e) => {
-                      e.preventDefault()
-                      formik.handleSubmit()
+                      e.preventDefault();
+                      formik.handleSubmit();
                     }}
-                    css={[utils.fullWidth, utils.flexDirection('column'), utils.alignItems('center'), utils.display('flex')]}
+                    css={[
+                      utils.fullWidth,
+                      utils.flexDirection("column"),
+                      utils.alignItems("center"),
+                      utils.display("flex"),
+                    ]}
                   >
                     <FormikInput
-                      name='email'
-                      type='email'
+                      name="email"
+                      type="email"
                       css={[utils.fullWidth, utils.mb(3)]}
                       placeholder={messages.Common.EmailAddress}
                     />
-                    <Button css={utils.maxWidth('170px')} type="submit">
-                      {messages.ReviewCoverages.ShareQuote}</Button>
+                    <Button css={utils.maxWidth("170px")} type="submit">
+                      {messages.ReviewCoverages.ShareQuote}
+                    </Button>
                   </form>
                 </FormikProvider>
               </div>
@@ -623,7 +699,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
         {selectedTab === 3 && (
           <div css={[styles.whiteBackground, utils.pa(3)]}>
             {quoteDetail.drivers
-              .filter((driver) => driver.status === 'Active')
+              .filter((driver) => driver.status === "Active")
               .map((driver, key) => (
                 <div css={styles.infoItem} key={key}>
                   <Text bold>
@@ -639,60 +715,70 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
 
         {selectedTab === 4 && (
           <div css={[styles.whiteBackground, utils.pa(3)]}>
-            {(
-              [quoteDetail.vehicles
+            {[
+              quoteDetail.vehicles
                 .filter(
                   (v) =>
-                    v.status === 'Active' &&
+                    v.status === "Active" &&
                     (v.vinNumber === undefined ||
                       v.odometerReading === undefined ||
-                      v.readingDate === undefined),
+                      v.readingDate === undefined)
                 )
                 .map(
                   (info) =>
                     `${[
-                      info.vinNumber ? undefined : 'Vin Number',
-                      info.odometerReading && info.readingDate ? undefined : 'Odometer',
+                      info.vinNumber ? undefined : "Vin Number",
+                      info.odometerReading && info.readingDate
+                        ? undefined
+                        : "Odometer",
                     ]
                       .filter((v) => !!v)
-                      .join(',')} - ${info.model}`,
-                )]).length > 0 &&
+                      .join(",")} - ${info.model}`
+                ),
+            ].length > 0 && (
               <ReviewItem
                 css={utils.mt(3)}
                 header={messages.Customize.RequiredInformation}
                 items={quoteDetail.vehicles
                   .filter(
                     (v) =>
-                      v.status === 'Active' &&
+                      v.status === "Active" &&
                       (v.vinNumber === undefined ||
                         v.odometerReading === undefined ||
-                        v.readingDate === undefined),
+                        v.readingDate === undefined)
                   )
                   .map(
                     (info) =>
                       `${[
-                        info.vinNumber ? undefined : 'Vin Number',
-                        info.odometerReading && info.readingDate ? undefined : 'Odometer',
+                        info.vinNumber ? undefined : "Vin Number",
+                        info.odometerReading && info.readingDate
+                          ? undefined
+                          : "Odometer",
                       ]
                         .filter((v) => !!v)
-                        .join(',')} - ${info.model}`,
+                        .join(",")} - ${info.model}`
                   )}
-                onEdit={() => setRequiredInformationModalVisible({ required: true, from: null })}
+                onEdit={() =>
+                  setRequiredInformationModalVisible({
+                    required: true,
+                    from: null,
+                  })
+                }
               />
-            }
+            )}
             <ReviewItem
               css={utils.mt(3)}
               header={messages.AIModal.Title}
               onEdit={() => {
-                setProceedToCheckout(0)
-                setAdditionalInterestVisible(true)
+                setProceedToCheckout(0);
+                setAdditionalInterestVisible(true);
               }}
             />
             <ReviewItem
               css={utils.mt(3)}
-              header={'Loss History'}
+              header={"Loss History"}
               onEdit={() => {
-                setLossHistoryVisible(true)
+                setLossHistoryVisible(true);
               }}
             />
           </div>
@@ -705,11 +791,10 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           {}
           <Text bold size="1.25em">
             <FontAwesomeIcon icon={faCar} css={utils.mr(2)} />
-            {}
-            ${Math.round(+quoteDetail.planDetails.fullPrice).toString()}
+            {}${Math.round(+quoteDetail.planDetails.fullPrice).toString()}
           </Text>
         </div>
-        <Button onClick={() => onContinueToCheckout('mainFlow')}>
+        <Button onClick={() => onContinueToCheckout("mainFlow")}>
           {messages.Common.ContinueToCheckout}
         </Button>
       </div>
@@ -718,18 +803,20 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
       <RequiredInformationModal
         isOpen={requiredInformationModalVisible.required}
         defaultValue={quoteDetail}
-        onCloseModal={() => setRequiredInformationModalVisible({ required: false, from: null })}
+        onCloseModal={() =>
+          setRequiredInformationModalVisible({ required: false, from: null })
+        }
         onUpdate={(v) => {
-          setLoading(true)
-          setProceedToCheckout(2)
+          setLoading(true);
+          setProceedToCheckout(2);
 
           updateQuote(v)
             .then(() => {
-              setLoading(false)
+              setLoading(false);
             })
             .catch((e) => {
-              setError(e)
-            })
+              setError(e);
+            });
         }}
       />
 
@@ -737,8 +824,8 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
         isOpen={priorIncidentsVisible}
         onCloseModal={() => setPriorIncidentsVisible(false)}
         onConfirm={() => {
-          setPriorIncidentsVisible(false)
-          router.push('checkout')
+          setPriorIncidentsVisible(false);
+          router.push("checkout");
         }}
       />
 
@@ -752,8 +839,8 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
         onUpdate={(additionalInterestInfo: Array<AdditionalInterestInfo>) => {
           processUpdateQuote({
             ...quoteDetail,
-            additionalInterest: additionalInterestInfo
-          })
+            additionalInterest: additionalInterestInfo,
+          });
         }}
       />
 
@@ -764,16 +851,21 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
         onUpdate={(lhInfo: Array<LossHistoryInfo>) => {
           processUpdateQuote({
             ...quoteDetail,
-            lossHistory: lhInfo
-          })
+            lossHistory: lhInfo,
+          });
         }}
         onAppCloseOut={(lhInfo: Array<LossHistoryInfo>) => {
           processExternalApplicationCloseOut({
             ...quoteDetail,
-            lossHistory: lhInfo
-          })
+            lossHistory: lhInfo,
+          });
         }}
       />
     </Screen>
-  )
-}
+  );
+};
+
+(ReviewCoveragesPage as any).Guard = AuthGuard;
+(ReviewCoveragesPage as any).Layout = QuoteLayout;
+
+export default ReviewCoveragesPage;

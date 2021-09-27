@@ -177,7 +177,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src='/assets/icons/car1.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Policy}</Text>
@@ -188,7 +188,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car2.png'
+              src='/assets/icons/car2.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Cars}</Text>
@@ -199,7 +199,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/steering.png'
+              src='/assets/icons/steering.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Drivers}</Text>
@@ -210,7 +210,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src='/assets/icons/car1.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.RequiredItems}</Text>
@@ -248,7 +248,7 @@ export const ReviewCoveragesScreen: FunctionComponent<RouteProps> = () => {
             {/* auto policy */}
             <div css={[styles.whiteBackground, styles.autoPolicy]}>
               <Text size="2.5em" bold css={utils.mb(7)}>
-                <img src='~/assets/icons/car1.png' css={utils.mr(1)} />
+                <img src='/assets/icons/car1.png' css={utils.mr(1)} />
                 {messages.ReviewCoverages.AutoPolicy}
               </Text>
 

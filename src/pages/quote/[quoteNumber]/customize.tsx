@@ -1,16 +1,15 @@
+import {
+  FunctionComponent,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 
-import { jsx } from '@emotion/react'
-import { FunctionComponent, useState, useEffect, useCallback, useMemo } from 'react'
-import { RouteProps, useHistory, useParams } from 'react-router-dom'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCar, faPlus } from "@fortawesome/free-solid-svg-icons";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCar, faPlus } from '@fortawesome/free-solid-svg-icons'
-
-import 'slick-carousel/slick/slick.css'
-import 'slick-carousel/slick/slick-theme.css'
-import '~/styles/components/slider.css'
-
-import { Screen, Container, Text, Row, Col, Button } from '~/components'
+import { Screen, Container, Text, Row, Col, Button } from "~/components";
 import {
   AddVehicleModal,
   EditVehicleModal,
@@ -19,26 +18,43 @@ import {
   DiscountsModal,
   RequiredInformationModal,
   AutoPolicyModal,
-  DeleteDriverModal
-} from '~/screens/modals'
-import { utils } from '~/styles'
-import { AdditionalInterestInfo, CommunicationInfo, CustomError, DefaultDriverInfo, DriverPointsInfo, LossHistoryInfo, QuoteDetail, ValidationError } from '~/types'
+  DeleteDriverModal,
+} from "~/screens/modals";
+import { utils } from "~/styles";
+import {
+  AdditionalInterestInfo,
+  CommunicationInfo,
+  CustomError,
+  DefaultDriverInfo,
+  DriverPointsInfo,
+  LossHistoryInfo,
+  QuoteDetail,
+  ValidationError,
+} from "~/types";
 
-import { getNewDriverParam, logger } from '~/utils'
+import { getNewDriverParam, logger } from "~/utils";
 
-import { ItemBlock, ListItem, ReviewItem, PlanItem } from './../components'
-import { styles } from './../styles'
-import { useError, useLocale, useMobile, useQuote } from '~/hooks'
-import { AdditionalInterestModal } from '~/screens/modals/additional-interest'
-import { LossHistoryModal } from '~/screens/modals/loss-history/single-quote'
-import { ErrorBox } from '~/components/error-box'
-import { UserInfoModal } from '~/screens/modals/user-info'
+import {
+  ItemBlock,
+  ListItem,
+  ReviewItem,
+  PlanItem,
+} from "~/screens/pages/customize/components";
+import { styles } from "~/screens/pages/customize/styles";
+import { useError, useLocale, useMobile, useQuote } from "~/hooks";
+import { AdditionalInterestModal } from "~/screens/modals/additional-interest";
+import { LossHistoryModal } from "~/screens/modals/loss-history/single-quote";
+import { ErrorBox } from "~/components/error-box";
+import { UserInfoModal } from "~/screens/modals/user-info";
+import { useRouter } from "next/router";
+import { AuthGuard } from "~/screens/guards";
+import { QuoteLayout } from "~/screens/layouts";
 
-export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
-  const router = useRouter()
-  const { messages } = useLocale()
-  const { setError } = useError()
-  const { quoteNumber } = useParams<any>()
+const CustomizePage: FunctionComponent = () => {
+  const router = useRouter();
+  const { messages } = useLocale();
+  const { setError } = useError();
+  const quoteNumber = router.query.quoteNumber as string;
   const {
     quoteDetail,
     updateQuote,
@@ -47,142 +63,153 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
     addVehicle,
     updateDriverPoints,
     externalApplicationCloseOut,
-    convertToApplication
-  } = useQuote()
+    convertToApplication,
+  } = useQuote();
 
-  const { mobileView } = useMobile()
+  const { mobileView } = useMobile();
 
   // modal visibilities
-  const [addCarVisible, setAddCarVisible] = useState(false)
-  const [editCarIndex, setEditCarIndex] = useState(null)
-  const [deleteCarIndex, setDeleteCarIndex] = useState(null)
-  const [editDriverIndex, setEditDriverIndex] = useState(null)
-  const [deleteDriverIndex, setDeleteDriverIndex] = useState(null)
-  const [discountsModalVisible, setDiscountsModalVisible] = useState(false)
-  const [requiredInformationModalVisible, setRequiredInformationModalVisible] = useState({ required: false, from: null })
-  const [autoPolicyModalVisible, setAutoPolicyModalVisible] = useState(false)
-  const [selectedTab, selectTab] = useState(1)
-  const [showDetail, setShowDetail] = useState(false)
-  const [reviewableItems, setReviewableItems] = useState([])
-  const [isLoading, setLoading] = useState(false)
+  const [addCarVisible, setAddCarVisible] = useState(false);
+  const [editCarIndex, setEditCarIndex] = useState(null);
+  const [deleteCarIndex, setDeleteCarIndex] = useState(null);
+  const [editDriverIndex, setEditDriverIndex] = useState(null);
+  const [deleteDriverIndex, setDeleteDriverIndex] = useState(null);
+  const [discountsModalVisible, setDiscountsModalVisible] = useState(false);
+  const [requiredInformationModalVisible, setRequiredInformationModalVisible] =
+    useState({ required: false, from: null });
+  const [autoPolicyModalVisible, setAutoPolicyModalVisible] = useState(false);
+  const [selectedTab, selectTab] = useState(1);
+  const [showDetail, setShowDetail] = useState(false);
+  const [reviewableItems, setReviewableItems] = useState([]);
+  const [isLoading, setLoading] = useState(false);
 
-  const [additionalInterestRequired, setAdditionalInterestVisible] = useState(false)
-  const [lossHistoryRequired, setLossHistoryVisible] = useState(false)
+  const [additionalInterestRequired, setAdditionalInterestVisible] =
+    useState(false);
+  const [lossHistoryRequired, setLossHistoryVisible] = useState(false);
 
-  const [userInfoRequired, setUserInfoVisible] = useState(false)
-
+  const [userInfoRequired, setUserInfoVisible] = useState(false);
 
   const calcRequiredItemsLabel = (qD: QuoteDetail) => {
     return [
       ...qD.vehicles
         .filter(
           (v) =>
-            v.status === 'Active' &&
+            v.status === "Active" &&
             (v.vinNumber === undefined ||
               v.odometerReading === undefined ||
-              v.readingDate === undefined),
+              v.readingDate === undefined)
         )
         .map(
           (info) =>
             `${[
-              info.vinNumber ? undefined : 'Vin Number',
-              info.odometerReading && info.readingDate
-                ? undefined
-                : 'Odometer',
+              info.vinNumber ? undefined : "Vin Number",
+              info.odometerReading && info.readingDate ? undefined : "Odometer",
             ]
               .filter((v) => !!v)
-              .join(',')} - ${info.model}`,
+              .join(",")} - ${info.model}`
         ),
       ...qD.drivers
-        .filter((v) => v.status === 'Active' && v.licenseNumber === '')
+        .filter((v) => v.status === "Active" && v.licenseNumber === "")
         .map(
-          (info) =>
-            `${info.firstName} - ${messages.DriverModal.LicenseNumber}`,
-        )
-    ]
-  }
+          (info) => `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
+        ),
+    ];
+  };
   const requiredItemsLabel = useMemo(() => {
-    return calcRequiredItemsLabel(quoteDetail)
-  }, [quoteDetail])
+    return calcRequiredItemsLabel(quoteDetail);
+  }, [quoteDetail]);
 
   const getAssignedDriverName = useCallback(
     (vehicle) => {
       const primaryDriverRef = quoteDetail.vehicles.find(
-        (v) => v.vinNumber === vehicle.vinNumber || v.vehNumber === vehicle.vehNumber,
-      )
+        (v) =>
+          v.vinNumber === vehicle.vinNumber || v.vehNumber === vehicle.vehNumber
+      );
       const driver = quoteDetail.drivers.find(
-        (driver) => driver.id === primaryDriverRef?.primaryDriver,
-      )
-      return driver ? `${driver.firstName} ${driver.lastName}` : ''
+        (driver) => driver.id === primaryDriverRef?.primaryDriver
+      );
+      return driver ? `${driver.firstName} ${driver.lastName}` : "";
     },
-    [quoteDetail],
-  )
+    [quoteDetail]
+  );
 
   const processCheckout = useCallback(() => {
     if (quoteDetail.planDetails.isQuote) {
       if (requiredItemsLabel.length > 0) {
-        setRequiredInformationModalVisible({ from: 'checkout', required: true })
+        setRequiredInformationModalVisible({
+          from: "checkout",
+          required: true,
+        });
       } else {
-        setUserInfoVisible(true)
+        setUserInfoVisible(true);
       }
     } else {
-      router.push('review')
+      router.push("review");
     }
-  }, [quoteDetail])
+  }, [quoteDetail]);
 
-  const processUpdateDriverPoints = useCallback((action: string, driverNumber: string, newDriverPoints: DriverPointsInfo) => {
-    setLoading(true)
-    updateDriverPoints(action, driverNumber, newDriverPoints)
-      .then(() => {
-        setLoading(false)
-      })
-      .catch((e) => {
-        setError(e)
-      })
-  }, [])
+  const processUpdateDriverPoints = useCallback(
+    (
+      action: string,
+      driverNumber: string,
+      newDriverPoints: DriverPointsInfo
+    ) => {
+      setLoading(true);
+      updateDriverPoints(action, driverNumber, newDriverPoints)
+        .then(() => {
+          setLoading(false);
+        })
+        .catch((e) => {
+          setError(e);
+        });
+    },
+    []
+  );
 
-  const processExternalApplicationCloseOut = useCallback((updatedQuote: QuoteDetail) => {
-    setLoading(true)
-    externalApplicationCloseOut(updatedQuote)
-      .then(() => {
-        setLoading(false)
-      })
-      .catch((e) => {
-        setError(e)
-      })
-  }, [])
+  const processExternalApplicationCloseOut = useCallback(
+    (updatedQuote: QuoteDetail) => {
+      setLoading(true);
+      externalApplicationCloseOut(updatedQuote)
+        .then(() => {
+          setLoading(false);
+        })
+        .catch((e) => {
+          setError(e);
+        });
+    },
+    []
+  );
 
   // effects
   useEffect(() => {
-    (window as any).ga && (window as any).ga('send', 'Customize Page View')
+    (window as any).ga && (window as any).ga("send", "Customize Page View");
 
     setReviewableItems([
       ...quoteDetail.vehicles
-        .filter((vehicle) => vehicle.status === 'Active')
+        .filter((vehicle) => vehicle.status === "Active")
         .map((vehicle) => vehicle.id),
       ...quoteDetail.drivers
-        .filter((driver) => driver.status === 'Active')
+        .filter((driver) => driver.status === "Active")
         .map((driver) => driver.id),
-    ])
-  }, [])
+    ]);
+  }, []);
 
   return (
     <Screen
       title={`${quoteNumber} | ${messages.MainTitle}`}
       greyBackground
-      breadCrumb={[{ link: '/', label: 'Home' }, { label: 'Customize' }]}
-      css={[utils.flex(1), utils.flexDirection('column')]}
+      breadCrumb={[{ link: "/quote", label: "Home" }, { label: "Customize" }]}
+      css={[utils.flex(1), utils.flexDirection("column")]}
       loading={isLoading}
       quoteNumber={quoteNumber}
       systemId={quoteDetail.systemId}
     >
-
       {/* Tabs - Car/Auto for now */}
       <Container
         wide
         css={[
-          utils.display('flex'),
-          utils.alignItems('flex-start'),
+          utils.display("flex"),
+          utils.alignItems("flex-start"),
           //utils.mt('60px'),
           utils.hideOnMobile,
         ]}
@@ -190,7 +217,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         {/* Header */}
         <div css={[styles.tab, styles.activeTab]}>
           <Text size="2.5em" bold>
-            <img src='~/assets/icons/car1.png' css={utils.mr(1)} />
+            <img src="/assets/icons/car1.png" css={utils.mr(1)} />
             {messages.Common.Car}
           </Text>
         </div>
@@ -198,7 +225,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
 
       {/* Mobile Tabs */}
       <Container css={[utils.fullWidth, utils.visibleOnMobile, utils.pa(0)]}>
-        <Row css={utils.flexWrap('nowrap')}>
+        <Row css={utils.flexWrap("nowrap")}>
           <Col
             data-testid="mobile-tab-policy"
             css={[styles.tabSelector, selectedTab === 1 && styles.selectedTab]}
@@ -206,7 +233,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src="/assets/icons/car1.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Policy}</Text>
@@ -218,7 +245,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car2.png'
+              src="/assets/icons/car2.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Cars}</Text>
@@ -230,7 +257,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/steering.png'
+              src="/assets/icons/steering.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Drivers}</Text>
@@ -242,7 +269,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src="/assets/icons/car1.png"
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.ReviewItems}</Text>
@@ -252,77 +279,95 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
 
       <Container
         data-testid="text-quotenumber"
-        css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3), utils.centerAlign]}
+        css={[
+          utils.fullWidth,
+          utils.visibleOnMobile,
+          utils.my(3),
+          utils.centerAlign,
+        ]}
       >
         <Text>{quoteNumber}</Text>
       </Container>
 
-      {
-        (quoteDetail.validationError && quoteDetail.validationError.length > 0) &&
-
+      {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
         <div
           data-testid="error-box-mobile"
           css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3)]}
         >
-          <ErrorBox data={quoteDetail.validationError}
+          <ErrorBox
+            data={quoteDetail.validationError}
             systemId={quoteDetail.systemId}
             actions={[
               {
                 //Rated mileage on Veh
-                text: 'View', contains: 'Rated mileage on Veh#', action: (e: ValidationError) => {
-                  const sT = e.Msg.substring(e.Msg.lastIndexOf("#") + 1, e.Msg.indexOf(" has")).trim();
-                  logger(`editing vehicle: ${sT}`)
-                  setEditCarIndex(parseInt(sT) - 1)
-                }
-              }
-            ]
-            }
+                text: "View",
+                contains: "Rated mileage on Veh#",
+                action: (e: ValidationError) => {
+                  const sT = e.Msg.substring(
+                    e.Msg.lastIndexOf("#") + 1,
+                    e.Msg.indexOf(" has")
+                  ).trim();
+                  logger(`editing vehicle: ${sT}`);
+                  setEditCarIndex(parseInt(sT) - 1);
+                },
+              },
+            ]}
           />
         </div>
-      }
+      )}
 
       {/* Items */}
       <div
         css={[
           styles.whiteBackground,
-          utils.py('16px'),
+          utils.py("16px"),
           selectedTab === 1 && utils.hideOnMobile,
         ]}
       >
-        {
-          (quoteDetail.validationError && quoteDetail.validationError.length > 0) &&
-
-          <div css={[utils.fullWidth, utils.mx('auto')]}>
+        {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
+          <div css={[utils.fullWidth, utils.mx("auto")]}>
             <div css={[utils.mb(3), utils.hideOnMobile]}>
-              <ErrorBox css={utils.maxWidth('65%')} cp={true} data={quoteDetail.validationError}
+              <ErrorBox
+                css={utils.maxWidth("65%")}
+                cp={true}
+                data={quoteDetail.validationError}
                 systemId={quoteDetail.systemId}
                 actions={[
                   {
                     //Rated mileage on Veh
-                    text: 'View', contains: 'Rated mileage on Veh#', action: (e: ValidationError) => {
-                      const sT = e.Msg.substring(e.Msg.lastIndexOf("#") + 1, e.Msg.indexOf(" has")).trim();
-                      logger(`editing vehicle: ${sT}`)
-                      setEditCarIndex(parseInt(sT) - 1)
-                    }
-                  }
-                ]
-                }
+                    text: "View",
+                    contains: "Rated mileage on Veh#",
+                    action: (e: ValidationError) => {
+                      const sT = e.Msg.substring(
+                        e.Msg.lastIndexOf("#") + 1,
+                        e.Msg.indexOf(" has")
+                      ).trim();
+                      logger(`editing vehicle: ${sT}`);
+                      setEditCarIndex(parseInt(sT) - 1);
+                    },
+                  },
+                ]}
               />
             </div>
           </div>
-        }
+        )}
 
-        <Container wide css={utils.display('flex')}>
+        <Container wide css={utils.display("flex")}>
           <Row css={[utils.fullWidth, styles.row]}>
-            <Col css={[selectedTab !== 2 && utils.hideOnMobile]} xl={3} lg={3} md={12}>
+            <Col
+              css={[selectedTab !== 2 && utils.hideOnMobile]}
+              xl={3}
+              lg={3}
+              md={12}
+            >
               <ItemBlock
                 data-testid="block-vehicles"
-                icon='~/assets/icons/car2.png'
+                icon="/assets/icons/car2.png"
                 headerText={messages.Common.Cars}
               >
                 {quoteDetail.vehicles.map(
                   (vehicle, key) =>
-                    vehicle.status === 'Active' && (
+                    vehicle.status === "Active" && (
                       <ListItem
                         data-testid={`vehicle-${key}`}
                         key={key}
@@ -330,7 +375,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
                         onEdit={() => setEditCarIndex(key)}
                         onDelete={() => setDeleteCarIndex(key)}
                       />
-                    ),
+                    )
                 )}
 
                 <Button
@@ -347,15 +392,20 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
               </ItemBlock>
             </Col>
 
-            <Col css={[selectedTab !== 3 && utils.hideOnMobile]} xl={3} lg={3} md={12}>
+            <Col
+              css={[selectedTab !== 3 && utils.hideOnMobile]}
+              xl={3}
+              lg={3}
+              md={12}
+            >
               <ItemBlock
                 data-testid="block-drivers"
-                icon='~/assets/icons/steering.png'
+                icon="/assets/icons/steering.png"
                 headerText={messages.Common.Drivers}
               >
                 {quoteDetail.drivers.map(
                   (driver, key) =>
-                    driver.status === 'Active' && (
+                    driver.status === "Active" && (
                       <ListItem
                         data-testid={`driver-${key}`}
                         text={`${driver.firstName} ${driver.lastName}`}
@@ -363,13 +413,13 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
                         onEdit={() => setEditDriverIndex(key)}
                         onDelete={() => setDeleteDriverIndex(key)}
                       />
-                    ),
+                    )
                 )}
                 <Button
                   data-testid="button-add-driver"
                   width="120px"
                   css={utils.mt(5)}
-                  onClick={() => setEditDriverIndex('new')}
+                  onClick={() => setEditDriverIndex("new")}
                 >
                   <Text color="white">
                     <FontAwesomeIcon icon={faPlus} css={utils.mr(2)} />
@@ -379,103 +429,116 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
               </ItemBlock>
             </Col>
 
-            <Col css={[selectedTab !== 3 && utils.hideOnMobile]} xl={3} lg={3} md={12}>
+            <Col
+              css={[selectedTab !== 3 && utils.hideOnMobile]}
+              xl={3}
+              lg={3}
+              md={12}
+            >
               <PlanItem
-                data-testid={'Standard'}
+                data-testid={"Standard"}
                 planInfo={quoteDetail.planDetails}
                 onCustomize={() => setAutoPolicyModalVisible(true)}
-                onSelect={() => { }}
+                onSelect={() => {}}
                 selected={true}
                 showDetail={showDetail}
                 toggleDetails={() => setShowDetail((state) => !state)}
                 onUpdatePlanInfo={(updatedPlanInfo) => {
                   updateQuoteDetail({
                     planDetails: updatedPlanInfo,
-                  })
+                  });
                 }}
                 onContinueToCheckout={() => {
-                  processCheckout()
+                  processCheckout();
                 }}
                 changeEffectiveDate={(e) => {
-                  setLoading(true)
+                  setLoading(true);
                   updateQuote({
                     ...quoteDetail,
                     planDetails: {
                       ...quoteDetail.planDetails,
                       effectiveDate: e,
-                    }
+                    },
                   })
-                    .then(() => {
-                    })
+                    .then(() => {})
                     .catch((e) => {
-                      setError(e)
-                    }).finally(() => setLoading(false))
+                      setError(e);
+                    })
+                    .finally(() => setLoading(false));
                 }}
               />
             </Col>
 
-            <Col css={[selectedTab !== 4 && utils.hideOnMobile]} xl={3} lg={3} md={12}>
+            <Col
+              css={[selectedTab !== 4 && utils.hideOnMobile]}
+              xl={3}
+              lg={3}
+              md={12}
+            >
               <ItemBlock
                 data-testid="block-review-items"
-                icon='~/assets/icons/car1.png'
+                icon="/assets/icons/car1.png"
                 headerText={messages.Common.ReviewItems}
               >
                 {quoteDetail.vehicles.map(
                   (vehicle, key) =>
                     reviewableItems.includes(vehicle.id) &&
-                    vehicle.status === 'Active' && (
+                    vehicle.status === "Active" && (
                       <ListItem
                         data-testid={`review-item-${vehicle.id}`}
                         key={key}
                         text={vehicle.model}
                         onEdit={() => setEditCarIndex(key)}
                       />
-                    ),
+                    )
                 )}
                 {quoteDetail.drivers.map(
                   (driver, key) =>
                     reviewableItems.includes(driver.id) &&
-                    driver.status === 'Active' && (
+                    driver.status === "Active" && (
                       <ListItem
                         data-testid={`review-item-${driver.id}`}
                         text={`${driver.firstName} ${driver.lastName}`}
                         key={key}
                         onEdit={() => setEditDriverIndex(key)}
                       />
-                    ),
+                    )
                 )}
                 <ReviewItem
                   data-testid="review-item-discount"
                   css={utils.mt(3)}
                   header={messages.Customize.AppliedDiscounts}
                   items={quoteDetail.discounts
-                    .filter((discount) => discount.applied === 'Yes')
+                    .filter((discount) => discount.applied === "Yes")
                     .map((discount) => discount.description)}
                   onEdit={() => setDiscountsModalVisible(true)}
                 />
-                {
-                  requiredItemsLabel.length > 0
-                  &&
+                {requiredItemsLabel.length > 0 && (
                   <ReviewItem
                     data-testid="review-item-required"
                     css={utils.mt(3)}
                     header={messages.Customize.RequiredInformation}
                     items={requiredItemsLabel}
-                    onEdit={() => setRequiredInformationModalVisible({ required: true, from: 'review-item' })}
+                    onEdit={() =>
+                      setRequiredInformationModalVisible({
+                        required: true,
+                        from: "review-item",
+                      })
+                    }
                   />
-                }
+                )}
                 <ReviewItem
                   css={utils.mt(3)}
                   header={messages.AIModal.Title}
                   onEdit={() => {
-                    setAdditionalInterestVisible(true)
+                    setAdditionalInterestVisible(true);
                   }}
                 />
                 <ReviewItem
                   css={utils.mt(3)}
-                  header={'Loss History'}
+                  header={"Loss History"}
                   onEdit={() => {
-                    setLossHistoryVisible(true)
+                    setLossHistoryVisible(true);
                   }}
                 />
               </ItemBlock>
@@ -485,42 +548,57 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
       </div>
 
       {/* Plan */}
-      {!quoteDetail.infoReq && mobileView ?
-        <Container wide css={[utils.flex(1), selectedTab !== 1 && utils.hideOnMobile]}>
+      {!quoteDetail.infoReq && mobileView ? (
+        <Container
+          wide
+          css={[utils.flex(1), selectedTab !== 1 && utils.hideOnMobile]}
+        >
           <Row css={[utils.fullWidth, utils.ma(0)]}>
             <Col xl={12} lg={12}>
-              <Row css={[utils.display('flex'), utils.justifyContent('center'), utils.alignItems('center'), styles.row]}>
-                <Col css={[styles.col, !mobileView && utils.maxWidth('60%')]} key={'Standard'} xl={8} lg={12}>
+              <Row
+                css={[
+                  utils.display("flex"),
+                  utils.justifyContent("center"),
+                  utils.alignItems("center"),
+                  styles.row,
+                ]}
+              >
+                <Col
+                  css={[styles.col, !mobileView && utils.maxWidth("60%")]}
+                  key={"Standard"}
+                  xl={8}
+                  lg={12}
+                >
                   <PlanItem
-                    data-testid={'Standard'}
+                    data-testid={"Standard"}
                     planInfo={quoteDetail.planDetails}
                     onCustomize={() => setAutoPolicyModalVisible(true)}
-                    onSelect={() => { }}
+                    onSelect={() => {}}
                     selected={true}
                     showDetail={showDetail}
                     toggleDetails={() => setShowDetail((state) => !state)}
                     onUpdatePlanInfo={(updatedPlanInfo) => {
                       updateQuoteDetail({
                         planDetails: updatedPlanInfo,
-                      })
+                      });
                     }}
                     onContinueToCheckout={() => {
-                      processCheckout()
+                      processCheckout();
                     }}
                     changeEffectiveDate={(e) => {
-                      setLoading(true)
+                      setLoading(true);
                       updateQuote({
                         ...quoteDetail,
                         planDetails: {
                           ...quoteDetail.planDetails,
                           effectiveDate: e,
-                        }
+                        },
                       })
-                        .then(() => {
-                        })
+                        .then(() => {})
                         .catch((e) => {
-                          setError(e)
-                        }).finally(() => setLoading(false))
+                          setError(e);
+                        })
+                        .finally(() => setLoading(false));
                     }}
                   />
                 </Col>
@@ -528,31 +606,33 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
             </Col>
           </Row>
         </Container>
-        : null}
+      ) : null}
 
       {/* Details */}
       {showDetail && (
-        <div css={[styles.whiteBackground, utils.py('16px'), utils.my('16px')]}>
+        <div css={[styles.whiteBackground, utils.py("16px"), utils.my("16px")]}>
           <Container wide>
             {quoteDetail.planDetails.vehicleInfo
-              .filter((vehicle) => vehicle.status === 'Active')
+              .filter((vehicle) => vehicle.status === "Active")
               .map((vehicle, key) => (
-                <Row key={key} css={[utils.fullWidth, utils.my('20px')]}>
+                <Row key={key} css={[utils.fullWidth, utils.my("20px")]}>
                   <Col>
                     <table css={[utils.fullWidth, styles.table]}>
                       <caption>
                         <div
                           css={[
-                            utils.display('flex'),
-                            utils.justifyContent('space-between'),
-                            utils.alignItems('center'),
+                            utils.display("flex"),
+                            utils.justifyContent("space-between"),
+                            utils.alignItems("center"),
                           ]}
                         >
                           <Text bold size="1.5em">
                             {vehicle.model} - {vehicle.vinNumber}
                           </Text>
                           <Text bold size="1.5em">
-                            {`${messages.Customize.AssignedDriver}: ${getAssignedDriverName(vehicle)}`}
+                            {`${
+                              messages.Customize.AssignedDriver
+                            }: ${getAssignedDriverName(vehicle)}`}
                           </Text>
                         </div>
                       </caption>
@@ -566,10 +646,18 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
                           <tr key={key1}>
                             <td>{coverage.description}</td>
                             <td>
-                              <Text css={utils.fullWidth} bold textAlign="right"></Text>
+                              <Text
+                                css={utils.fullWidth}
+                                bold
+                                textAlign="right"
+                              ></Text>
                             </td>
                             <td>
-                              <Text css={utils.fullWidth} bold textAlign="right">
+                              <Text
+                                css={utils.fullWidth}
+                                bold
+                                textAlign="right"
+                              >
                                 $ {coverage.amount}
                               </Text>
                             </td>
@@ -580,15 +668,15 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
                   </Col>
                 </Row>
               ))}
-            <Row css={[utils.fullWidth, utils.my('20px')]}>
+            <Row css={[utils.fullWidth, utils.my("20px")]}>
               <Col>
                 <table css={[utils.fullWidth, styles.table]}>
                   <caption>
                     <div
                       css={[
-                        utils.display('flex'),
-                        utils.justifyContent('space-between'),
-                        utils.alignItems('center'),
+                        utils.display("flex"),
+                        utils.justifyContent("space-between"),
+                        utils.alignItems("center"),
                       ]}
                     >
                       <Text bold size="1.5em">
@@ -607,7 +695,11 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
                       <tr key={key}>
                         <td>{fee.description}</td>
                         <td>
-                          <Text css={utils.fullWidth} bold textAlign="right"></Text>
+                          <Text
+                            css={utils.fullWidth}
+                            bold
+                            textAlign="right"
+                          ></Text>
                         </td>
                         <td>
                           <Text css={utils.fullWidth} bold textAlign="right">
@@ -625,38 +717,39 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
       )}
 
       {/* Footer */}
-      {!quoteDetail.infoReq ? <div css={[utils.centerAlign, utils.mt(5), utils.pa(3), styles.footer]}>
-        <div css={[utils.centerAlign, utils.pa(3)]}>
-          <Text bold size="1.25em">
-            <FontAwesomeIcon icon={faCar} css={utils.mr(2)} />$
-            {quoteDetail.planDetails.paymentPlan === 'monthly'
-              ? quoteDetail.planDetails.monthlyPrice
-              : Math.round(+quoteDetail.planDetails.fullPrice).toString()}
-          </Text>
+      {!quoteDetail.infoReq ? (
+        <div css={[utils.centerAlign, utils.mt(5), utils.pa(3), styles.footer]}>
+          <div css={[utils.centerAlign, utils.pa(3)]}>
+            <Text bold size="1.25em">
+              <FontAwesomeIcon icon={faCar} css={utils.mr(2)} />$
+              {quoteDetail.planDetails.paymentPlan === "monthly"
+                ? quoteDetail.planDetails.monthlyPrice
+                : Math.round(+quoteDetail.planDetails.fullPrice).toString()}
+            </Text>
+          </div>
+          <Button
+            onClick={() => {
+              processCheckout();
+            }}
+          >
+            {messages.Common.ContinueToReview}
+          </Button>
         </div>
-        <Button
-          onClick={() => {
-            processCheckout()
-          }}
-        >
-          {messages.Common.ContinueToReview}
-        </Button>
-      </div> : null
-      }
+      ) : null}
 
       {/* Modals */}
       <AddVehicleModal
         isOpen={addCarVisible}
         onCloseModal={() => setAddCarVisible(false)}
         onAddVehicle={(risk) => {
-          setLoading(true)
+          setLoading(true);
           addVehicle(risk)
             .then(() => {
-              setLoading(false)
+              setLoading(false);
             })
             .catch((e) => {
-              setError(e)
-            })
+              setError(e);
+            });
         }}
       />
       <EditVehicleModal
@@ -667,25 +760,25 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
           if (editCarIndex !== null) {
             setReviewableItems(
               reviewableItems.filter(
-                (id) => id !== quoteDetail.vehicles[editCarIndex].id,
-              ),
-            )
-            setEditCarIndex(null)
+                (id) => id !== quoteDetail.vehicles[editCarIndex].id
+              )
+            );
+            setEditCarIndex(null);
           }
         }}
         onUpdate={(updatedValue) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
             vehicles: quoteDetail.vehicles.map((v, i) =>
-              i === editCarIndex ? updatedValue : v,
+              i === editCarIndex ? updatedValue : v
             ),
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
       />
       <DeleteVehicleModal
@@ -693,81 +786,84 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         vehicle={quoteDetail.vehicles[deleteCarIndex]}
         onCloseModal={() => setDeleteCarIndex(null)}
         onDeleteVehicle={() => {
-          setEditCarIndex(null)
-          setLoading(true)
+          setEditCarIndex(null);
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
             vehicles: quoteDetail.vehicles.map((v, i) =>
-              i === deleteCarIndex ? { ...v, status: 'Deleted' } : v,
+              i === deleteCarIndex ? { ...v, status: "Deleted" } : v
             ),
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
       />
       <EditDriverModal
         driverIndex={editDriverIndex}
         isOpen={editDriverIndex !== null}
         defaultValue={
-          editDriverIndex === 'new'
+          editDriverIndex === "new"
             ? DefaultDriverInfo
             : quoteDetail.drivers[editDriverIndex]
         }
         onDeleteDriver={() => setDeleteDriverIndex(editDriverIndex)}
         onCloseModal={() => {
-          if (editDriverIndex !== null && editDriverIndex !== 'new') {
+          if (editDriverIndex !== null && editDriverIndex !== "new") {
             setReviewableItems(
               reviewableItems.filter(
-                (id) => id !== quoteDetail.drivers[editDriverIndex].id,
-              ),
-            )
+                (id) => id !== quoteDetail.drivers[editDriverIndex].id
+              )
+            );
           }
-          setEditDriverIndex(null)
+          setEditDriverIndex(null);
         }}
         onCancel={() => {
-          if (editDriverIndex !== null && editDriverIndex !== 'new') {
+          if (editDriverIndex !== null && editDriverIndex !== "new") {
             setReviewableItems(
               reviewableItems.filter(
-                (id) => id !== quoteDetail.drivers[editDriverIndex].id,
-              ),
-            )
+                (id) => id !== quoteDetail.drivers[editDriverIndex].id
+              )
+            );
           }
-          setEditDriverIndex(null)
+          setEditDriverIndex(null);
         }}
         onUpdate={(updatedValue) => {
-          if (editDriverIndex === 'new') {
-            setLoading(true)
+          if (editDriverIndex === "new") {
+            setLoading(true);
             addDriver(getNewDriverParam(updatedValue))
               .then(() => setLoading(false))
               .catch((e) => {
-                const { errorType, errorData } = e as CustomError
-                setError(
-                  [new CustomError(errorType, { ...(errorData || {}), quoteNumber })]
-                )
-              })
-            setEditDriverIndex(null)
+                const { errorType, errorData } = e as CustomError;
+                setError([
+                  new CustomError(errorType, {
+                    ...(errorData || {}),
+                    quoteNumber,
+                  }),
+                ]);
+              });
+            setEditDriverIndex(null);
           } else {
-            setLoading(true)
+            setLoading(true);
             updateQuote({
               ...quoteDetail,
               drivers: quoteDetail.drivers.map((v, i) =>
-                i === editDriverIndex ? updatedValue : v,
+                i === editDriverIndex ? updatedValue : v
               ),
             })
-              .then(() => {
-              })
+              .then(() => {})
               .catch((e) => {
-                setError(e)
-              }).finally(() => setLoading(false))
-            setEditDriverIndex(null)
+                setError(e);
+              })
+              .finally(() => setLoading(false));
+            setEditDriverIndex(null);
           }
         }}
         onUpdateDriverPoints={(action, driverNumber, updatedDriverPoint) => {
-          logger(updatedDriverPoint)
-          processUpdateDriverPoints(action, driverNumber, updatedDriverPoint)
+          logger(updatedDriverPoint);
+          processUpdateDriverPoints(action, driverNumber, updatedDriverPoint);
         }}
       />
       <DeleteDriverModal
@@ -775,19 +871,19 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         driver={quoteDetail.drivers[deleteDriverIndex]}
         onCloseModal={() => setDeleteDriverIndex(null)}
         onDeleteDriver={() => {
-          setEditDriverIndex(null)
-          setLoading(true)
+          setEditDriverIndex(null);
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
             drivers: quoteDetail.drivers.map((v, i) =>
-              i === deleteDriverIndex ? { ...v, status: 'Deleted' } : v,
+              i === deleteDriverIndex ? { ...v, status: "Deleted" } : v
             ),
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
       />
 
@@ -797,54 +893,60 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         basicPolicyInfo={quoteDetail.basicPolicyInfo}
         onCloseModal={() => setDiscountsModalVisible(false)}
         onUpdate={(updatedLine, updatedBasicPolicy) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
             lineInfo: updatedLine,
-            basicPolicyInfo: updatedBasicPolicy
+            basicPolicyInfo: updatedBasicPolicy,
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
       />
       <RequiredInformationModal
         isOpen={requiredInformationModalVisible.required}
         defaultValue={quoteDetail}
-        onCloseModal={() => setRequiredInformationModalVisible({ required: false, from: null })}
+        onCloseModal={() =>
+          setRequiredInformationModalVisible({ required: false, from: null })
+        }
         onUpdate={(v) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote(v)
             .then(() => {
-              if (requiredInformationModalVisible.from === 'checkout') {
+              if (requiredInformationModalVisible.from === "checkout") {
                 if (calcRequiredItemsLabel(v).length > 0) {
-                  setRequiredInformationModalVisible({ required: true, from: 'checkout' })
+                  setRequiredInformationModalVisible({
+                    required: true,
+                    from: "checkout",
+                  });
                 } else {
-                  setUserInfoVisible(true)
+                  setUserInfoVisible(true);
                 }
               }
             })
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
       />
       <AutoPolicyModal
         isOpen={autoPolicyModalVisible}
         defaultValue={quoteDetail.planDetails}
         onUpdatePlanInfo={(updatedPlanInfo) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
-            planDetails: updatedPlanInfo
+            planDetails: updatedPlanInfo,
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
         onCloseModal={() => setAutoPolicyModalVisible(false)}
       />
@@ -855,16 +957,16 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         isOpen={additionalInterestRequired}
         onCloseModal={() => setAdditionalInterestVisible(false)}
         onUpdate={(additionalInterestInfo: Array<AdditionalInterestInfo>) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
-            additionalInterest: additionalInterestInfo
+            additionalInterest: additionalInterestInfo,
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
       />
 
@@ -873,22 +975,22 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         onCloseModal={() => setLossHistoryVisible(false)}
         lossHistory={quoteDetail.lossHistory}
         onUpdate={(lhInfo: Array<LossHistoryInfo>) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote({
             ...quoteDetail,
-            lossHistory: lhInfo
+            lossHistory: lhInfo,
           })
-            .then(() => {
-            })
+            .then(() => {})
             .catch((e) => {
-              setError(e)
-            }).finally(() => setLoading(false))
+              setError(e);
+            })
+            .finally(() => setLoading(false));
         }}
         onAppCloseOut={(lhInfo: Array<LossHistoryInfo>) => {
           processExternalApplicationCloseOut({
             ...quoteDetail,
-            lossHistory: lhInfo
-          })
+            lossHistory: lhInfo,
+          });
         }}
       />
 
@@ -897,28 +999,32 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = () => {
         communicationInfo={quoteDetail.communicationInfo}
         onCloseModal={() => setUserInfoVisible(false)}
         onUpdate={(communicationInfo: CommunicationInfo) => {
-          setLoading(true)
+          setLoading(true);
           updateQuote({ ...quoteDetail, communicationInfo: communicationInfo })
             .then(() => {
               if (quoteDetail.planDetails.isQuote) {
                 convertToApplication()
                   .then(async ({ applicationNumber }) => {
-                    setLoading(false)
-                    router.replace(`/quote/${applicationNumber}/review`)
+                    setLoading(false);
+                    router.replace(`/quote/${applicationNumber}/review`);
                   })
                   .catch((e) => {
-                    setError(e)
-                  })
+                    setError(e);
+                  });
               } else {
-                router.push('review')
+                router.push("review");
               }
             })
             .catch((e) => {
-              setError(e)
-            })
+              setError(e);
+            });
         }}
       />
     </Screen>
-  )
-}
+  );
+};
 
+(CustomizePage as any).Guard = AuthGuard;
+(CustomizePage as any).Layout = QuoteLayout;
+
+export default CustomizePage;

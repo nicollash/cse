@@ -11,14 +11,14 @@ interface ClickoverProps {
   hideOnOutsideClick?: boolean;
   align?: PopoverProps["align"];
   padding?: number;
-  position?: PopoverProps["position"];
+  positions?: PopoverProps["positions"];
   onVisibleChange?: (changed: boolean) => any;
   hasArrow?: boolean;
 }
 
 export const Clickover: FunctionComponent<ClickoverProps> = ({
   Content,
-  position = "bottom",
+  positions = ["bottom"],
   align = "end",
   padding = 0,
   hideOnOutsideClick = true,
@@ -55,9 +55,8 @@ export const Clickover: FunctionComponent<ClickoverProps> = ({
         hideOnOutsideClick && setVisible(false);
         onVisibleChange && onVisibleChange(false);
       }}
-      windowBorderPadding={40}
       padding={padding}
-      position={position}
+      positions={positions}
       align={align}
       containerStyle={{ zIndex: "100001", overflow: "visible" }}
     >

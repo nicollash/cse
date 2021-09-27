@@ -50,7 +50,7 @@ export const DeleteDriverModal: FunctionComponent<Props> = ({
         ]}
       >
         <img
-          src='~/assets/icons/delete-driver.png'
+          src='/assets/icons/delete-driver.png'
           width="120px"
           css={utils.mb(4)}
         />

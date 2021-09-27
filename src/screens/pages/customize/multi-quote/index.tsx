@@ -239,7 +239,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
         {/* Header */}
         <div css={[styles.tab, styles.activeTab]}>
           <Text size="2.5em" bold>
-            <img src='~/assets/icons/car1.png' css={utils.mr(1)} />
+            <img src='/assets/icons/car1.png' css={utils.mr(1)} />
             {messages.Common.Car}
           </Text>
         </div>
@@ -255,7 +255,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src='/assets/icons/car1.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Policy}</Text>
@@ -267,7 +267,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
           >
             <img
               height="12px"
-              src='~/assets/icons/car2.png'
+              src='/assets/icons/car2.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Cars}</Text>
@@ -279,7 +279,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
           >
             <img
               height="12px"
-              src='~/assets/icons/steering.png'
+              src='/assets/icons/steering.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.Drivers}</Text>
@@ -291,7 +291,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
           >
             <img
               height="12px"
-              src='~/assets/icons/car1.png'
+              src='/assets/icons/car1.png'
               css={utils.mr(1)}
             />
             <Text bold>{messages.Common.ReviewItems}</Text>
@@ -319,7 +319,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
             <Col css={[selectedTab !== 2 && utils.hideOnMobile]} xl={3} lg={4} md={12}>
               <ItemBlock
                 data-testid="block-vehicles"
-                icon='~/assets/icons/car2.png'
+                icon='/assets/icons/car2.png'
                 headerText={messages.Common.Cars}
               >
                 {quoteDetail.vehicles.map(
@@ -352,7 +352,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
             <Col css={[selectedTab !== 3 && utils.hideOnMobile]} xl={3} lg={4} md={12}>
               <ItemBlock
                 data-testid="block-drivers"
-                icon='~/assets/icons/steering.png'
+                icon='/assets/icons/steering.png'
                 headerText={messages.Common.Drivers}
               >
                 {quoteDetail.drivers.map(
@@ -387,7 +387,7 @@ export const CustomizeScreen: FunctionComponent<RouteProps> = ({ location }) => 
               <ItemBlock
                 data-testid="block-review-items"
                 css={styles.reviewItems}
-                icon='~/assets/icons/car1.png'
+                icon='/assets/icons/car1.png'
                 headerText={messages.Common.ReviewItems}
               >
                 {quoteDetail.vehicles.map(

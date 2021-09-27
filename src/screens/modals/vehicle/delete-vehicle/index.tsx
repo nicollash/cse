@@ -50,7 +50,7 @@ export const DeleteVehicleModal: FunctionComponent<Props> = ({
         ]}
       >
         <img
-          src='~/assets/icons/delete-car.png'
+          src='/assets/icons/delete-car.png'
           width="120px"
           css={utils.mb(4)}
         />
