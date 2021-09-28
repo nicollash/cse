@@ -5,11 +5,7 @@ import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 
 import { useError, useLocale, useQuote } from "~/hooks";
-import { AuthGuard } from "~/screens/guards";
-import {
-  EAddressObjectStatus,
-  UserAddressInput,
-} from "~/types";
+import { EAddressObjectStatus, UserAddressInput } from "~/types";
 import { placeAPI } from "~/utils";
 import { isAKnownError } from "~/contexts";
 import { QuoteErrorModal } from "~/screens/modals";
@@ -23,8 +19,10 @@ import {
 } from "~/components";
 import { styles } from "~/screens/pages/customize/single-quote/styles";
 import { utils } from "~/styles";
+import { getSession } from "~/lib/get-session";
+import { AuthGuard } from "~/screens/guards";
 
-function QuotePage() {
+function QuotePage({ isLoggedIn }) {
   const router = useRouter();
   const { locale, messages } = useLocale();
   const { generateQuote } = useQuote();
@@ -245,84 +243,91 @@ function QuotePage() {
 
   return (
     //!addressValided ?
-    <Screen title={messages.MainTitle} loading={isLoading}>
-      <div css={[styles.background]}>
-        <img src="/assets/images/home-background.png" css={[styles.image]} />
-      </div>
-      <Container css={styles.container}>
-        <Heading css={[utils.mb(6)]}>{messages.Main.Heading}</Heading>
+    <AuthGuard isLoggedIn={isLoggedIn}>
+      <Screen title={messages.MainTitle} loading={isLoading}>
+        <div css={[styles.background]}>
+          <img src="/assets/images/home-background.png" css={[styles.image]} />
+        </div>
+        <Container css={styles.container}>
+          <Heading css={[utils.mb(6)]}>{messages.Main.Heading}</Heading>
 
-        <FormikProvider value={formik}>
-          <form
-            data-testid="address-form"
-            css={styles.form}
-            onSubmit={(e) => {
-              e.preventDefault();
-              formik.handleSubmit();
-            }}
-          >
-            <FormikInput
-              data-testid="input-firstname"
-              name="firstName"
-              css={[utils.mb(3), styles.nameInput]}
-              placeholder={messages.Common.FirstName}
-            />
-            <FormikInput
-              data-testid="input-lastname"
-              name="lastName"
-              css={[utils.mb(3), styles.nameInput]}
-              placeholder={messages.Common.LastName}
-            />
-            <FormikAddressInput
-              data-testid="input-address"
-              name="address"
-              placeholder={messages.Main.AddressPlaceholder}
-              onChange={(address, addressSelected) => {
-                formik.handleChange({
-                  target: {
-                    name: "address",
-                    value: address,
-                  },
-                });
-
-                formik.setFieldTouched("address");
-
-                if (addressSelected) {
-                  formik.handleSubmit();
-                }
+          <FormikProvider value={formik}>
+            <form
+              data-testid="address-form"
+              css={styles.form}
+              onSubmit={(e) => {
+                e.preventDefault();
+                formik.handleSubmit();
               }}
-              onClearAddress={() => {
-                formik.handleChange({
-                  target: {
-                    name: "address",
-                    value: {
-                      address: "",
-                      unitNumber: "",
-                      status: EAddressObjectStatus.success,
-                      unitNumberRequired: false,
-                    },
-                  },
-                });
-              }}
-              css={[utils.flex(1), utils.mb(3)]}
-            />
-            <Button
-              data-testid="button-submit"
-              type="submit"
-              css={styles.quoteBtn}
             >
-              {messages.Main.GetQuote}
-            </Button>
-          </form>
-        </FormikProvider>
-      </Container>
-    </Screen>
+              <FormikInput
+                data-testid="input-firstname"
+                name="firstName"
+                css={[utils.mb(3), styles.nameInput]}
+                placeholder={messages.Common.FirstName}
+              />
+              <FormikInput
+                data-testid="input-lastname"
+                name="lastName"
+                css={[utils.mb(3), styles.nameInput]}
+                placeholder={messages.Common.LastName}
+              />
+              <FormikAddressInput
+                data-testid="input-address"
+                name="address"
+                placeholder={messages.Main.AddressPlaceholder}
+                onChange={(address, addressSelected) => {
+                  formik.handleChange({
+                    target: {
+                      name: "address",
+                      value: address,
+                    },
+                  });
+
+                  formik.setFieldTouched("address");
+
+                  if (addressSelected) {
+                    formik.handleSubmit();
+                  }
+                }}
+                onClearAddress={() => {
+                  formik.handleChange({
+                    target: {
+                      name: "address",
+                      value: {
+                        address: "",
+                        unitNumber: "",
+                        status: EAddressObjectStatus.success,
+                        unitNumberRequired: false,
+                      },
+                    },
+                  });
+                }}
+                css={[utils.flex(1), utils.mb(3)]}
+              />
+              <Button
+                data-testid="button-submit"
+                type="submit"
+                css={styles.quoteBtn}
+              >
+                {messages.Main.GetQuote}
+              </Button>
+            </form>
+          </FormikProvider>
+        </Container>
+      </Screen>
+    </AuthGuard>
   );
 }
 
-(QuotePage as any).Guard = AuthGuard;
-(QuotePage as any).guardOptions = {
-  shouldRedirect: false,
-};
+export async function getServerSideProps({ req, res }) {
+  const session = await getSession(req, res);
+
+  return {
+    props: {
+      isLoggedIn: !!session.user,
+    },
+  };
+}
 
 export default QuotePage;

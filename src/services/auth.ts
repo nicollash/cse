@@ -2,8 +2,8 @@ import { httpClient } from '~/utils'
 import { config } from '~/config'
 import { AuthResponse, TokenStatusResponse } from '~/types'
 
-export const login = (userId: string, password: string) =>
-  httpClient<AuthResponse>(`${config.apiBaseURL}/ProviderLoginRq/json`, 'POST', {
+export const login = (userId: string, password: string): Promise<any> =>
+  httpClient(`/api/auth/login`, 'POST', {
     UserId: userId,
     Password: password,
   })
