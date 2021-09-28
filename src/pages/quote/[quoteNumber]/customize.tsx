@@ -144,7 +144,7 @@ const CustomizePage: FunctionComponent = () => {
         setUserInfoVisible(true);
       }
     } else {
-      router.push("review");
+      router.push(`/quote/${quoteNumber}/review`);
     }
   }, [quoteDetail]);
 
@@ -355,7 +355,7 @@ const CustomizePage: FunctionComponent = () => {
         <Container wide css={utils.display("flex")}>
           <Row css={[utils.fullWidth, styles.row]}>
             <Col
-              css={[selectedTab !== 2 && utils.hideOnMobile]}
+              css={[selectedTab !== 2 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
               xl={3}
               lg={3}
               md={12}
@@ -393,7 +393,7 @@ const CustomizePage: FunctionComponent = () => {
             </Col>
 
             <Col
-              css={[selectedTab !== 3 && utils.hideOnMobile]}
+              css={[selectedTab !== 3 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
               xl={3}
               lg={3}
               md={12}
@@ -430,7 +430,7 @@ const CustomizePage: FunctionComponent = () => {
             </Col>
 
             <Col
-              css={[selectedTab !== 3 && utils.hideOnMobile]}
+              css={[selectedTab !== 3 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
               xl={3}
               lg={3}
               md={12}
@@ -470,7 +470,7 @@ const CustomizePage: FunctionComponent = () => {
             </Col>
 
             <Col
-              css={[selectedTab !== 4 && utils.hideOnMobile]}
+              css={[selectedTab !== 4 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
               xl={3}
               lg={3}
               md={12}

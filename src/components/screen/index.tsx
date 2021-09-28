@@ -1,6 +1,5 @@
 import { FunctionComponent, Fragment } from "react";
 import Head from "next/head";
-import Image from "next/image";
 
 import { TBreadCrumb } from "~/types";
 import { utils } from "~/styles";
@@ -14,7 +13,6 @@ import CookieConsent from "react-cookie-consent";
 
 import { theme } from "~/styles";
 import { useLocale } from "~/hooks";
-import { SerializedStyles } from "@emotion/utils";
 
 interface ScreenProps {
   title?: string;
@@ -52,8 +50,8 @@ export const Screen: FunctionComponent<ScreenProps> = ({
 
       {greyBackground && (
         <div css={styles.greyBackground}>
-          <Image src="/assets/images/e-mark.png" css={styles.eMark1} />
-          <Image src="/assets/images/e-mark.png" css={styles.eMark2} />
+          <img src="/assets/images/e-mark.png" css={styles.eMark1} />
+          <img src="/assets/images/e-mark.png" css={styles.eMark2} />
         </div>
       )}
 

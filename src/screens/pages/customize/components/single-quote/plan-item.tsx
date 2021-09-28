@@ -34,6 +34,7 @@ export const PlanItem: FunctionComponent<Props> = ({
   showDetail,
   onUpdatePlanInfo,
   changeEffectiveDate,
+  onContinueToCheckout,
   ...props
 }) => {
   const { messages } = useLocale()

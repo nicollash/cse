@@ -46,7 +46,7 @@ import { QuoteLayout } from "~/screens/layouts";
 const ReviewCoveragesPage: FunctionComponent = () => {
   const router = useRouter();
   const { messages } = useLocale();
-  const quoteNumber = router.query.qutoeNumber as string;
+  const quoteNumber = router.query.quoteNumber as string;
   const { quoteDetail, updateQuote, externalApplicationCloseOut, shareQuote } =
     useQuote();
   const { user } = useAuth();
@@ -141,7 +141,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
         externalApplicationCloseOut(quoteDetail)
           .then(() => {
             setLoading(false);
-            router.push("checkout");
+            router.push(`/quote/${quoteNumber}/checkout`);
           })
           .catch((e) => {
             setError(e);
@@ -192,22 +192,14 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             css={[styles.tabSelector, selectedTab === 1 && styles.selectedTab]}
             onClick={() => selectTab(1)}
           >
-            <img
-              height="12px"
-              src="/assets/icons/car1.png"
-              css={utils.mr(1)}
-            />
+            <img height="12px" src="/assets/icons/car1.png" css={utils.mr(1)} />
             <Text bold>{messages.Common.Policy}</Text>
           </Col>
           <Col
             css={[styles.tabSelector, selectedTab === 2 && styles.selectedTab]}
             onClick={() => selectTab(2)}
           >
-            <img
-              height="12px"
-              src="/assets/icons/car2.png"
-              css={utils.mr(1)}
-            />
+            <img height="12px" src="/assets/icons/car2.png" css={utils.mr(1)} />
             <Text bold>{messages.Common.Cars}</Text>
           </Col>
           <Col
@@ -225,11 +217,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             css={[styles.tabSelector, selectedTab === 4 && styles.selectedTab]}
             onClick={() => selectTab(4)}
           >
-            <img
-              height="12px"
-              src="/assets/icons/car1.png"
-              css={utils.mr(1)}
-            />
+            <img height="12px" src="/assets/icons/car1.png" css={utils.mr(1)} />
             <Text bold>{messages.Common.RequiredItems}</Text>
           </Col>
         </Row>
@@ -295,7 +283,11 @@ const ReviewCoveragesPage: FunctionComponent = () => {
 
       <Container wide css={utils.hideOnMobile}>
         <Row css={utils.fullWidth}>
-          <Col md={12} lg={9}>
+          <Col
+            md={12}
+            lg={9}
+            css={[utils.display("flex"), utils.flexDirection("column")]}
+          >
             {/* auto policy */}
             <div css={[styles.whiteBackground, styles.autoPolicy]}>
               <Text size="2.5em" bold css={utils.mb(7)}>
@@ -310,7 +302,9 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                 </Text>
 
                 <Row>
-                  <Col>
+                  <Col
+                    css={[utils.display("flex"), utils.flexDirection("column")]}
+                  >
                     {quoteDetail.drivers
                       .filter((driver) => driver.status === "Active")
                       .map((driver, key) => (
@@ -327,7 +321,9 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                     <div css={styles.infoItem}></div>
                   </Col>
 
-                  <Col>
+                  <Col
+                    css={[utils.display("flex"), utils.flexDirection("column")]}
+                  >
                     <div css={[styles.infoItem, utils.height("4.5em")]}>
                       <Text bold>
                         {messages.ReviewCoverages.TotalTermPrice}
@@ -358,7 +354,10 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                 </Text>
 
                 <Row>
-                  <Col xs={7}>
+                  <Col
+                    xs={7}
+                    css={[utils.display("flex"), utils.flexDirection("column")]}
+                  >
                     <div css={styles.infoItem}>
                       <Text bold>{messages.ReviewCoverages.BodilyInjury}</Text>
                       <Text size="1.25em" bold>
@@ -392,7 +391,10 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                     </div>
                   </Col>
 
-                  <Col xs={5}>
+                  <Col
+                    xs={5}
+                    css={[utils.display("flex"), utils.flexDirection("column")]}
+                  >
                     <div css={styles.infoItem}>
                       <Text bold>
                         {messages.ReviewCoverages.MedicalPayments}
@@ -466,7 +468,11 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             </div>
           </Col>
 
-          <Col md={12} lg={3}>
+          <Col
+            md={12}
+            lg={3}
+            css={[utils.display("flex"), utils.flexDirection("column")]}
+          >
             <div css={[styles.whiteBackground, utils.pa(2), utils.fullHeight]}>
               {requiredItemsLabel.length > 0 && (
                 <ReviewItem
@@ -825,7 +831,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
         onCloseModal={() => setPriorIncidentsVisible(false)}
         onConfirm={() => {
           setPriorIncidentsVisible(false);
-          router.push("checkout");
+          router.push(`/quote/${quoteNumber}/checkout`);
         }}
       />
 

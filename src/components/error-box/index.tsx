@@ -30,7 +30,11 @@ export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
       css={[utils.flex(1), ...(Array.isArray(css) ? css : [css])]}
     >
       <Row css={[utils.fullWidth, utils.ma(0)]}>
-        <Col xl={10} lg={12}>
+        <Col
+          xl={10}
+          lg={12}
+          css={[utils.display("flex"), utils.flexDirection("column")]}
+        >
           <Row
             css={[
               utils.display("flex"),
@@ -39,7 +43,12 @@ export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
             ]}
           >
             <Col
-              css={[styles.col, styles.errorBox]}
+              css={[
+                styles.col,
+                styles.errorBox,
+                utils.display("flex"),
+                utils.flexDirection("column"),
+              ]}
               xl={props.cp ? 9 : 12}
               lg={12}
             >
