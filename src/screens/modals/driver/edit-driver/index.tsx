@@ -62,7 +62,7 @@ export const EditDriverModal: FunctionComponent<Props> = ({
 
   const schema = useMemo(
     () =>
-      Yup.object<DriverInfo>().shape({
+      Yup.object().shape({
         firstName: Yup.string()
           .label(messages.DriverModal.FirstName)
           .required(messages.DriverModal.Errors.RequiredFirstName),

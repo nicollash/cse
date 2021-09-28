@@ -61,7 +61,7 @@ export const Select: FunctionComponent<Props> = ({
       searchable={searchable}
       loading={loading}
       hasError={hasError}
-      css={customStyles}
+      styles={customStyles}
       noOptionsMessage={() => noOptionsMessage}
     />
     {!!helperText && (

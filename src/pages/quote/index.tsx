@@ -21,7 +21,7 @@ import {
   Heading,
   Screen,
 } from "~/components";
-import { styles } from "./styles";
+import { styles } from "~/screens/pages/customize/single-quote/styles";
 import { utils } from "~/styles";
 
 function QuotePage() {

@@ -27,7 +27,7 @@ export const UserInfoModal: FunctionComponent<Props> = ({
 }) => {
     const { locale, messages } = useLocale()
 
-    const schema = () => Yup.object<CommunicationInfo>().shape({
+    const schema = () => Yup.object().shape({
         email: Yup.string()
             .email(messages.Common.Errors.InvalidEmailAddress)
             .required(messages.Common.Errors.RequireEmailAddress),

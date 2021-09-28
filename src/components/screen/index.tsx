@@ -1,5 +1,6 @@
 import { FunctionComponent, Fragment } from "react";
 import Head from "next/head";
+import Image from "next/image";
 
 import { TBreadCrumb } from "~/types";
 import { utils } from "~/styles";
@@ -24,6 +25,7 @@ interface ScreenProps {
   greyBackground?: boolean;
   quoteNumber?: string;
   systemId?: string;
+  className?: string;
 }
 
 export const Screen: FunctionComponent<ScreenProps> = ({
@@ -36,6 +38,7 @@ export const Screen: FunctionComponent<ScreenProps> = ({
   greyBackground,
   quoteNumber,
   systemId,
+  className,
 }) => {
   const conversationId = localStorage.getItem("cse_ConversationId");
   const { messages } = useLocale();
@@ -49,12 +52,16 @@ export const Screen: FunctionComponent<ScreenProps> = ({
 
       {greyBackground && (
         <div css={styles.greyBackground}>
-          <img src="/assets/images/e-mark.png" css={styles.eMark1} />
-          <img src="/assets/images/e-mark.png" css={styles.eMark2} />
+          <Image src="/assets/images/e-mark.png" css={styles.eMark1} />
+          <Image src="/assets/images/e-mark.png" css={styles.eMark2} />
         </div>
       )}
 
-      <Container wide css={[utils.my(3), utils.hideOnMobile]}>
+      <Container
+        wide
+        className={className}
+        css={[utils.my(3), utils.hideOnMobile]}
+      >
         <div
           css={[
             utils.display("flex"),

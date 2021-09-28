@@ -41,7 +41,7 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
 
   const schemaByVin = useMemo(
     () =>
-      Yup.object<AddVehicleByVIN>().shape({
+      Yup.object().shape({
         vinNumber: Yup.string()
           .label(messages.CarModal.CarVinNumber)
           .required(messages.CarModal.Errors.RequiredVinNumber)
@@ -90,7 +90,7 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
 
   const schemaByData = useMemo(
     () =>
-      Yup.object<AddVehicleByData>().shape({
+      Yup.object().shape({
         year: Yup.string()
           .label(messages.CarModal.ModelYear)
           .required(messages.CarModal.Errors.RequireModelYear),

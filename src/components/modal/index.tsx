@@ -1,30 +1,31 @@
-import { FunctionComponent } from 'react'
+import { FunctionComponent } from "react";
 
-import ReactModal from 'react-modal'
+import ReactModal from "react-modal";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
-import { utils } from '~/styles'
-import { useLocale } from '~/hooks'
+import { utils } from "~/styles";
+import { useLocale } from "~/hooks";
 
-import { Footer as PageFooter, Heading, Text } from '..'
-import { styles, customStyles } from './styles'
+import { Footer as PageFooter, Heading, Text } from "..";
+import { styles, customStyles } from "./styles";
 
 interface ModalProps {
-  isOpen: boolean
-  width?: string
-  zIndex?: number
-  onCloseModal?: () => any
-  title?: string
-  shouldCloseOnOverlayClick?: boolean
-  Footer?: FunctionComponent
-  headerMb?: string
-  additionalInfo?: boolean
-  additionalInfoMessage?: string
+  isOpen: boolean;
+  width?: string;
+  zIndex?: number;
+  onCloseModal?: () => any;
+  title?: string;
+  shouldCloseOnOverlayClick?: boolean;
+  Footer?: FunctionComponent;
+  headerMb?: string;
+  additionalInfo?: boolean;
+  additionalInfoMessage?: string;
+  className?: string;
 }
 
-ReactModal.setAppElement('body')
+ReactModal.setAppElement("body");
 
 export const Modal: FunctionComponent<ModalProps> = ({
   isOpen,
@@ -38,9 +39,10 @@ export const Modal: FunctionComponent<ModalProps> = ({
   headerMb,
   additionalInfo,
   additionalInfoMessage,
+  className,
   ...props
 }) => {
-  const { messages } = useLocale()
+  const { messages } = useLocale();
 
   return (
     <ReactModal
@@ -48,13 +50,17 @@ export const Modal: FunctionComponent<ModalProps> = ({
       closeTimeoutMS={250}
       onRequestClose={onCloseModal}
       shouldCloseOnOverlayClick={shouldCloseOnOverlayClick}
-      style={customStyles({ width, zIndex})}
+      className={className}
+      style={customStyles({ width, zIndex })}
     >
       <div css={styles.container} {...props}>
-        {additionalInfo &&
+        {additionalInfo && (
           <div css={[utils.fullWidth, utils.mb(1)]}>
-            <Text color={'red'} size={'1em'}>{additionalInfoMessage}</Text>
-          </div>}
+            <Text color={"red"} size={"1em"}>
+              {additionalInfoMessage}
+            </Text>
+          </div>
+        )}
         <div css={[styles.header, headerMb && styles.marginBottom(headerMb)]}>
           <Heading>{title}</Heading>
           {shouldCloseOnOverlayClick && (
@@ -73,5 +79,5 @@ export const Modal: FunctionComponent<ModalProps> = ({
       </div>
       <PageFooter hasBackground={false} />
     </ReactModal>
-  )
-}
+  );
+};

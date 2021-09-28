@@ -676,15 +676,15 @@ interface UserInput {
 }
 
 const getSchema = (messages) =>
-  Yup.object<UserInput>().shape({
-    billingInformation: Yup.object<UserAddressInput>().shape({
+  Yup.object().shape({
+    billingInformation: Yup.object().shape({
       firstName: Yup.string()
         .label("First Name")
         .required(messages.Common.Errors.RequiredFirstName),
       lastName: Yup.string()
         .label("Last Name")
         .required(messages.Common.Errors.RequiredLastName),
-      address: Yup.object<TAddressObject>()
+      address: Yup.object()
         .shape({
           status: Yup.number()
             .test(
@@ -714,10 +714,7 @@ const getSchema = (messages) =>
         })
         .label("Address"),
     }),
-    communicationInformation: Yup.object<{
-      email: string;
-      phone: string;
-    }>({
+    communicationInformation: Yup.object({
       email: Yup.string()
         .email(messages.Common.Errors.InvalidEmailAddress)
         .required(messages.Common.Errors.RequireEmailAddress),

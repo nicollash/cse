@@ -1,8 +1,7 @@
-
-import { jsx } from '@emotion/react'
-import { FunctionComponent, useMemo, useState, useRef, useEffect } from 'react'
-import { useFormik, FormikProvider } from 'formik'
-import * as Yup from 'yup'
+import { jsx } from "@emotion/react";
+import { FunctionComponent, useMemo, useState, useRef, useEffect } from "react";
+import { useFormik, FormikProvider } from "formik";
+import * as Yup from "yup";
 
 import {
   Modal,
@@ -12,22 +11,26 @@ import {
   Loading,
   Heading,
   Text,
-} from '~/components'
-import { utils } from '~/styles'
-import { TAddressObject, UserAddressInput, EAddressObjectStatus } from '~/types'
+} from "~/components";
+import { utils } from "~/styles";
+import {
+  TAddressObject,
+  UserAddressInput,
+  EAddressObjectStatus,
+} from "~/types";
 
-import { styles } from './styles'
-import { placeAPI } from '~/utils'
-import { useError, useLocale, useQuote } from '~/hooks'
-import { useRouter } from 'next/router'
-import { isAKnownError } from '~/contexts/error-context'
+import { styles } from "./styles";
+import { placeAPI } from "~/utils";
+import { useError, useLocale, useMountedRef, useQuote } from "~/hooks";
+import { useRouter } from "next/router";
+import { isAKnownError } from "~/contexts/error-context";
 
 interface QuoteErrorModalProps {
-  isOpen: boolean
-  address: TAddressObject,
-  firstName: string,
-  lastName: string,
-  onCloseModal: () => any
+  isOpen: boolean;
+  address: TAddressObject;
+  firstName: string;
+  lastName: string;
+  onCloseModal: () => any;
 }
 export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
   isOpen,
@@ -37,15 +40,15 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
   onCloseModal,
   ...props
 }) => {
-  const { locale, messages } = useLocale()
-  const { generateQuote } = useQuote()
-  const router = useRouter()
+  const { locale, messages } = useLocale();
+  const { generateQuote } = useQuote();
+  const router = useRouter();
 
-  const [loading, setLoading] = useState<boolean>(false)
-  const isMountedRef = useRef(null)
-  const { setError } = useError()
+  const [loading, setLoading] = useState<boolean>(false);
+  const isMountedRef = useMountedRef();
+  const { setError } = useError();
 
-  const schema = useMemo(() => getSchema(messages), [locale])
+  const schema = useMemo(() => getSchema(messages), [locale]);
 
   const formik = useFormik<UserAddressInput>({
     validationSchema: schema,
@@ -53,17 +56,19 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
     validateOnChange: true,
     validateOnBlur: false,
     initialValues: {
-      firstName: firstName ? firstName : '',
-      lastName: lastName ? lastName : '',
-      address: address ? address: {
-        address: '',
-        unitNumber: '',
-        requiredUnitNumber: false,
-        status: EAddressObjectStatus.invalidAddress
-      }
+      firstName: firstName ? firstName : "",
+      lastName: lastName ? lastName : "",
+      address: address
+        ? address
+        : {
+            address: "",
+            unitNumber: "",
+            requiredUnitNumber: false,
+            status: EAddressObjectStatus.invalidAddress,
+          },
     },
     onSubmit: (value) => {
-      setLoading(true)
+      setLoading(true);
 
       placeAPI
         .checkAddress(value.address.address, value.address.unitNumber)
@@ -74,34 +79,30 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
             address: value.address,
           })
             .then((res) => {
-              setLoading(false)
-              router.push(`/quote/${res.DTOApplication[0].ApplicationNumber}/customize`)
+              setLoading(false);
+              router.push(
+                `/quote/${res.DTOApplication[0].ApplicationNumber}/customize`
+              );
             })
             .catch(() => {
-              setLoading(false)
-            })
+              setLoading(false);
+            });
         })
         .catch((err) => {
           if (isAKnownError(err)) {
             //setError(err)
           } else {
-            formik.setFieldValue('address', {
+            formik.setFieldValue("address", {
               ...value.address,
               status: err,
               requiredUnitNumber:
                 err === EAddressObjectStatus.unitNumberRequired ||
                 value.address.requiredUnitNumber,
-            })
+            });
           }
-        })
+        });
     },
-  })
-
-  useEffect(() => {
-    isMountedRef.current = true
-
-    return () => (isMountedRef.current = false)
-  }, [])
+  });
 
   return (
     <Modal
@@ -118,8 +119,8 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
         <form
           css={styles.form}
           onSubmit={(e) => {
-            e.preventDefault()
-            formik.handleSubmit()
+            e.preventDefault();
+            formik.handleSubmit();
           }}
           {...props}
         >
@@ -142,30 +143,30 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
               onChange={(address, addressSelected) => {
                 formik.handleChange({
                   target: {
-                    name: 'address',
+                    name: "address",
                     value: {
                       ...address,
                       status: EAddressObjectStatus.success,
                     },
                   },
-                })
+                });
 
                 if (addressSelected) {
-                  formik.handleSubmit()
+                  formik.handleSubmit();
                 }
               }}
               onClearAddress={() => {
                 formik.handleChange({
                   target: {
-                    name: 'address',
+                    name: "address",
                     value: {
-                      address: '',
-                      unitNumber: '',
+                      address: "",
+                      unitNumber: "",
                       status: EAddressObjectStatus.success,
                       unitNumberRequired: false,
                     },
                   },
-                })
+                });
               }}
               css={[utils.flex(1), utils.mb(3)]}
             />
@@ -177,40 +178,44 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
       </FormikProvider>
       {loading && <Loading />}
     </Modal>
-  )
-}
+  );
+};
 
 const getSchema = (messages) =>
-  Yup.object<UserAddressInput>().shape({
+  Yup.object().shape({
     firstName: Yup.string()
-      .label('First Name')
+      .label("First Name")
       .required(messages.Common.Errors.RequiredFirstName),
     lastName: Yup.string()
-      .label('Last Name')
+      .label("Last Name")
       .required(messages.Common.Errors.RequiredLastName),
-    address: Yup.object<TAddressObject>()
+    address: Yup.object()
       .shape({
         status: Yup.number()
           .test(
-            'addressValidation',
+            "addressValidation",
             messages.Common.Errors.RequiredAddress,
-            (v: EAddressObjectStatus) => v !== EAddressObjectStatus.addressRequired,
+            (v: EAddressObjectStatus) =>
+              v !== EAddressObjectStatus.addressRequired
           )
           .test(
-            'invalidAddress',
+            "invalidAddress",
             messages.Common.Errors.InvalidAddress,
-            (v: EAddressObjectStatus) => v !== EAddressObjectStatus.invalidAddress,
+            (v: EAddressObjectStatus) =>
+              v !== EAddressObjectStatus.invalidAddress
           )
           .test(
-            'unitNumberRequired',
+            "unitNumberRequired",
             messages.Common.Errors.RequiredUnitNumber,
-            (v: EAddressObjectStatus) => v !== EAddressObjectStatus.unitNumberRequired,
+            (v: EAddressObjectStatus) =>
+              v !== EAddressObjectStatus.unitNumberRequired
           )
           .test(
-            'invalidUnitNumber',
+            "invalidUnitNumber",
             messages.Common.Errors.InvalidUnitNumber,
-            (v: EAddressObjectStatus) => v !== EAddressObjectStatus.invalidUnitNumber,
+            (v: EAddressObjectStatus) =>
+              v !== EAddressObjectStatus.invalidUnitNumber
           ),
       })
-      .label('Address'),
-  })
+      .label("Address"),
+  });

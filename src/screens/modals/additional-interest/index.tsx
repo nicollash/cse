@@ -53,7 +53,7 @@ export const AdditionalInterestModal: FunctionComponent<Props> = ({
         }
     }, [editingItem])
 
-    const schema = () => Yup.object<AdditionalInterestInfo>().shape({
+    const schema = () => Yup.object().shape({
         partyInfo: Yup.object({
             addr: Yup.object({
                 //RegionCd: Yup.string().required(messages.AIModal.Errors.RequiredCountry),

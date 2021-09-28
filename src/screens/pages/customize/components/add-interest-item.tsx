@@ -55,7 +55,7 @@ export const AddInterestItem: FunctionComponent<Props> = ({
         return [...linkReference, ...missingVehicles];
     }
 
-    const schema = () => Yup.object<AdditionalInterestInfo>().shape({
+    const schema = () => Yup.object().shape({
         partyInfo: Yup.object({
             addr: Yup.object({
                 //RegionCd: Yup.string().required(messages.AIModal.Errors.RequiredCountry),

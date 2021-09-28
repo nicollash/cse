@@ -68,7 +68,7 @@ export const LossHistoryModal: FunctionComponent<Props> = ({
         }
     }, [isOpen])*/
 
-    const schema = () => Yup.object<LossHistoryInfo>().shape({
+    const schema = () => Yup.object().shape({
         LossDt: Yup.string().required(messages.LossHistoryModal.Errors.LossDt),
         LossCauseCd: Yup.string().required(messages.LossHistoryModal.Errors.LossCauseCd),
         DriverName: Yup.string().required(messages.LossHistoryModal.Errors.DriverName),
@@ -90,7 +90,7 @@ export const LossHistoryModal: FunctionComponent<Props> = ({
             AtFaultCd: ''
         },
         onSubmit: (value) => {
-            lossrouter.push(value);
+            lossHistory.push(value);
             setAddintItem(false)
             onUpdate(lossHistory)
         },

@@ -36,7 +36,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
 
   const schema = useMemo(
     () =>
-      Yup.object<UserLoginInput>().shape({
+      Yup.object().shape({
         userId: Yup.string()
           .label('User Name')
           .required(messages.Login.Errors.RequireduserId),

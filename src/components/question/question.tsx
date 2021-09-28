@@ -68,7 +68,6 @@ export const Question: FunctionComponent<Props> = ({
       </div>
       <div css={[utils.width('15%')]}>
         <ReactSelect
-          css={utils.fullWidth}
           value={
             multiple
               ? options.filter((option) => (value as Array<any>).includes(option.value || ''))
@@ -83,7 +82,7 @@ export const Question: FunctionComponent<Props> = ({
           searchable={searchable}
           loading={loading}
           hasError={hasError}
-          css={customStyles}
+          styles={customStyles}
           noOptionsMessage={() => noOptionsMessage}
         />
       </div>

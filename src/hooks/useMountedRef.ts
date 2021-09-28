@@ -1,14 +1,16 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect } from "react";
 
 export const useMountedRef = () => {
   // State and setters for debounced value
-  const isMountedRef = useRef(null)
+  const isMountedRef = useRef(null);
 
   useEffect(() => {
-    isMountedRef.current = true
+    isMountedRef.current = true;
 
-    return () => (isMountedRef.current = false)
-  }, [])
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
-  return isMountedRef.current
-}
+  return isMountedRef.current;
+};

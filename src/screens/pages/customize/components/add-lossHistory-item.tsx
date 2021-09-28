@@ -56,7 +56,7 @@ export const AddLossHistoryItem: FunctionComponent<Props> = ({
         }
     }, [edititStatus])
 
-    const schema = () => Yup.object<LossHistoryInfo>().shape({
+    const schema = () => Yup.object().shape({
         LossDt: Yup.string().required(messages.LossHistoryModal.Errors.LossDt),
         LossCauseCd: Yup.string().required(messages.LossHistoryModal.Errors.LossCauseCd),
         DriverName: Yup.string().required(messages.LossHistoryModal.Errors.DriverName),
