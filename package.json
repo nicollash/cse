@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 8080",
     "lint": "next lint",
     "format": "prettier --write './src/**/*.{ts,tsx,js,jsx}'",
     "check": "prettier --check './src/**/*.{ts,tsx,js,jsx}' && tsc --noEmit -p ."
