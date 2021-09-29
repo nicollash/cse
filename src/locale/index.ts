@@ -11,8 +11,6 @@ export const availableLanguages = {
   cn: "汉语",
 };
 
-export type AvailableLanguageType = "en" | "cn";
-
 export const flagImages = {
   en: "/assets/images/flags/us.png",
   cn: "/assets/images/flags/cn.png",

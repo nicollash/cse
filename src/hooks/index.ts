@@ -1,6 +1,5 @@
 export { useAddressDebounce } from './useAddressDebounce'
 export { useMountedRef } from './useMountedRef'
-export { useAuth } from './useAuth'
 export { useLocale } from './useLocale'
 export { useQuote } from './useQuote'
 export { useError } from './useError'

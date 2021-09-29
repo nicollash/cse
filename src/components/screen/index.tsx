@@ -24,6 +24,7 @@ interface ScreenProps {
   quoteNumber?: string;
   systemId?: string;
   className?: string;
+  conversationId?: string;
 }
 
 export const Screen: FunctionComponent<ScreenProps> = ({
@@ -37,8 +38,8 @@ export const Screen: FunctionComponent<ScreenProps> = ({
   quoteNumber,
   systemId,
   className,
+  conversationId,
 }) => {
-  const conversationId = localStorage.getItem("cse_ConversationId");
   const { messages } = useLocale();
 
   return (
@@ -55,11 +56,7 @@ export const Screen: FunctionComponent<ScreenProps> = ({
         </div>
       )}
 
-      <Container
-        wide
-        className={className}
-        css={[utils.my(3), utils.hideOnMobile]}
-      >
+      <Container wide css={[utils.my(3), utils.hideOnMobile]}>
         <div
           css={[
             utils.display("flex"),
@@ -88,7 +85,10 @@ export const Screen: FunctionComponent<ScreenProps> = ({
         </div>
       </Container>
 
-      <main css={[styles.main, color && styles.background(color)]}>
+      <main
+        className={className}
+        css={[styles.main, color && styles.background(color)]}
+      >
         {children}
       </main>
 

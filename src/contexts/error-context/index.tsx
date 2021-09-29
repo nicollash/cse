@@ -7,11 +7,9 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/router";
-import { Loading } from "~/components";
-import { useAuth } from "~/hooks";
 import { ErrorModal } from "~/screens/modals";
 import { CustomError, CustomErrorType } from "~/types";
-import { logger } from "~/utils";
+import { logout } from "~/services";
 
 // states and initial values
 
@@ -62,7 +60,6 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
 }) => {
   const [state, dispatch] = useReducer(reducer, initialErrorState);
   const router = useRouter();
-  const { logoutSimple } = useAuth();
   const [showErrorModal, setShowErrorModal] = useState(false);
 
   useEffect(() => {
@@ -71,7 +68,7 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
       state.error != null &&
       state.error.some((er) => er.errorType === CustomErrorType.SESSION_EXPIRED)
     ) {
-      logoutSimple();
+      logout();
     } else {
       if (state.error) {
         setShowErrorModal(true);

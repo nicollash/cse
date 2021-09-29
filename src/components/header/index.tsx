@@ -7,20 +7,16 @@ import queryString from "query-string";
 
 import { config } from "~/config";
 import { utils, theme } from "~/styles";
-import {
-  availableLanguages,
-  AvailableLanguageType,
-  flagImages,
-} from "~/locale";
-import { useAuth, useLocale } from "~/hooks";
+import { availableLanguages, flagImages } from "~/locale";
+import { useLocale } from "~/hooks";
 
 import { Container, Text, Input, Button, Hr, Clickover } from "~/components";
 import { styles } from "./styles";
+import { logout } from "~/services";
 
 export const Header: FunctionComponent = () => {
   const router = useRouter();
   const { locale, messages, setLocale } = useLocale();
-  const { logout } = useAuth();
 
   const [isQuotePage, setQuotePage] = useState(false);
   const [query, setQuery] = useState<string>("");
@@ -84,27 +80,25 @@ export const Header: FunctionComponent = () => {
           <Clickover
             Content={({ closePopup }) => (
               <ul css={styles.languageList}>
-                {Object.keys(availableLanguages).map(
-                  (ln: AvailableLanguageType, key) => (
-                    <li
-                      key={key}
-                      css={styles.languageListItem}
-                      onClick={() => {
-                        setLocale(ln);
-                        closePopup();
-                      }}
-                    >
-                      {ln === locale && (
-                        <FontAwesomeIcon
-                          icon={faCheck}
-                          color={theme.color.primary}
-                        />
-                      )}
-                      <Text css={utils.mx(2)}>{availableLanguages[ln]}</Text>
-                      <img src={flagImages[ln]} height="16" />
-                    </li>
-                  )
-                )}
+                {Object.keys(availableLanguages).map((ln: string, key) => (
+                  <li
+                    key={key}
+                    css={styles.languageListItem}
+                    onClick={() => {
+                      setLocale(ln);
+                      closePopup();
+                    }}
+                  >
+                    {ln === locale && (
+                      <FontAwesomeIcon
+                        icon={faCheck}
+                        color={theme.color.primary}
+                      />
+                    )}
+                    <Text css={utils.mx(2)}>{availableLanguages[ln]}</Text>
+                    <img src={flagImages[ln]} height="16" />
+                  </li>
+                ))}
               </ul>
             )}
           >

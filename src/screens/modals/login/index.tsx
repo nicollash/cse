@@ -1,25 +1,25 @@
+import { jsx } from "@emotion/react";
+import { FunctionComponent, useMemo, useState } from "react";
+import { useFormik, FormikProvider } from "formik";
+import * as Yup from "yup";
 
-import { jsx } from '@emotion/react'
-import { FunctionComponent, useMemo, useState } from 'react'
-import { useFormik, FormikProvider } from 'formik'
-import * as Yup from 'yup'
+import { Modal, FormikInput, Button, Hr, Loading } from "~/components";
+import { utils } from "~/styles";
+import { useLocale } from "~/hooks";
 
-import { Modal, FormikInput, Button, Hr, Loading } from '~/components'
-import { utils } from '~/styles'
-import { useAuth, useLocale } from '~/hooks'
-
-import { styles } from './styles'
+import { styles } from "./styles";
+import { login } from "~/services";
 
 interface LoginModalProps {
-  isOpen: boolean
-  fromLogout: boolean
-  fromLogoutMessage: string
-  defaultValue?: any
+  isOpen: boolean;
+  fromLogout?: boolean;
+  fromLogoutMessage?: string;
+  defaultValue?: any;
 }
 
 interface UserLoginInput {
-  userId: string
-  password: string
+  userId: string;
+  password: string;
 }
 
 export const LoginModal: FunctionComponent<LoginModalProps> = ({
@@ -29,37 +29,36 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
   fromLogoutMessage,
   ...props
 }) => {
-  const { locale, messages } = useLocale()
-  const { login } = useAuth()
+  const { locale, messages } = useLocale();
 
-  const [isLoading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(false);
 
   const schema = useMemo(
     () =>
       Yup.object().shape({
         userId: Yup.string()
-          .label('User Name')
+          .label("User Name")
           .required(messages.Login.Errors.RequireduserId),
         password: Yup.string()
-          .label('Password')
+          .label("Password")
           .required(messages.Login.Errors.RequiredPassword)
           .min(8, messages.Login.Errors.MinLengthPassword),
       }),
-    [locale],
-  )
+    [locale]
+  );
 
   const formik = useFormik<UserLoginInput>({
     validationSchema: schema,
     validateOnMount: false,
     initialValues: {
-      userId: (defaultValue && defaultValue.userName) || '',
-      password: (defaultValue && defaultValue.password) || '',
+      userId: (defaultValue && defaultValue.userName) || "",
+      password: (defaultValue && defaultValue.password) || "",
     },
     onSubmit: (value) => {
-      setLoading(true)
-      login(value.userId, value.password).finally(() => setLoading(false))
+      setLoading(true);
+      login(value.userId, value.password).finally(() => setLoading(false));
     },
-  })
+  });
 
   return (
     <Modal
@@ -75,8 +74,8 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
         <form
           css={styles.form}
           onSubmit={(e) => {
-            e.preventDefault()
-            formik.handleSubmit()
+            e.preventDefault();
+            formik.handleSubmit();
           }}
           data-testid="login-form"
           {...props}
@@ -87,7 +86,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
             css={[utils.mb(3), utils.fullWidth]}
             placeholder={messages.Login.UserName}
             onChange={(e) => {
-              formik.handleChange(e)
+              formik.handleChange(e);
             }}
           />
           <FormikInput
@@ -96,7 +95,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
             css={[utils.fullWidth, utils.mt(5)]}
             type="password"
             onChange={(e) => {
-              formik.handleChange(e)
+              formik.handleChange(e);
             }}
             placeholder={messages.Login.Password}
           />
@@ -109,5 +108,5 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
 
       {isLoading && <Loading />}
     </Modal>
-  )
-}
+  );
+};

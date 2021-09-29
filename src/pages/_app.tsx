@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import LogRocket from "logrocket";
 
 import { Header, Footer } from "~/components";
-import { AuthProvider, LocaleProvider, ErrorProvider } from "../contexts";
+import { LocaleProvider, ErrorProvider } from "../contexts";
 import { global } from "~/styles";
 
 import "slick-carousel/slick/slick.css";
@@ -32,16 +32,14 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <LocaleProvider>
-      <AuthProvider>
-        <Global styles={global} />
-        <ErrorProvider>
-          <div css={styles.container}>
-            <Header />
-            <Component {...pageProps} />
-            <Footer />
-          </div>
-        </ErrorProvider>
-      </AuthProvider>
+      <Global styles={global} />
+      <ErrorProvider>
+        <div css={styles.container}>
+          <Header />
+          <Component {...pageProps} />
+          <Footer />
+        </div>
+      </ErrorProvider>
     </LocaleProvider>
   );
 }

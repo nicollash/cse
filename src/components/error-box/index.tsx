@@ -17,12 +17,12 @@ interface ErrorProps {
   cp?: boolean;
   actions?: Array<{ text: string; contains: string; action: any }>;
   systemId: string;
+  conversationId: string
   css?: SerializedStyles | SerializedStyles[];
 }
 
 export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
   const [linesToShow, setShowLines] = useState({ lines: 3 });
-  const conversationId = localStorage.getItem("cse_ConversationId");
 
   return (
     <Container
@@ -105,7 +105,7 @@ export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
                         type="button"
                         onClick={() => {
                           window.open(
-                            `${config.spinnURL}?rq=UWApplicationUpdateCloseout&SystemId=${props.systemId}&CodeRefOptionsKey=application-product&SecurityId=${conversationId}`,
+                            `${config.spinnURL}?rq=UWApplicationUpdateCloseout&SystemId=${props.systemId}&CodeRefOptionsKey=application-product&SecurityId=${props.conversationId}`,
                             "_blank"
                           );
                         }}

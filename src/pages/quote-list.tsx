@@ -2,8 +2,8 @@ import { FunctionComponent, useState, useEffect } from "react";
 
 import { Screen, Container, Text } from "~/components";
 import { theme, utils } from "~/styles";
-import { getQuoteList } from "~/services";
-import { useAuth, useError, useLocale, useQuote } from "~/hooks";
+import { getQuoteList } from "~/lib/quote";
+import { useError, useLocale, useQuote } from "~/hooks";
 import { CustomError, QuickQuoteInfo } from "~/types";
 
 import {
@@ -14,19 +14,17 @@ import {
   QuoteRow,
 } from "~/screens/pages/quote-list";
 import { useRouter } from "next/router";
-import { AuthGuard } from "~/screens/guards";
+import { getSession } from "~/lib/get-session";
 
-const QuoteListPage: FunctionComponent = () => {
+const QuoteListPage: FunctionComponent<any> = ({ query, searchResult }) => {
   const router = useRouter();
   const { messages } = useLocale();
-  const { user } = useAuth();
   const { setError } = useError();
 
   const { getQuote } = useQuote();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(2);
-  const [loading, setLoading] = useState<boolean>(true);
   const pageSize = 8;
   const [error, setLocalError] = useState<string>("");
 
@@ -44,38 +42,29 @@ const QuoteListPage: FunctionComponent = () => {
   }, []);
 
   useEffect(() => {
-    const query = (router.query.query as string) || "";
-
-    setLoading(true);
-    getQuoteList(user.LoginId, query, user.DTOProvider.SystemId)
-      .then((res) => {
-        let error = "";
-        let filteredQuotes = [];
-        if (res.QuickQuoteInfo) {
-          filteredQuotes = res.QuickQuoteInfo.filter(
-            (info) =>
-              info.InsuredName.toLowerCase().includes(query.toLowerCase()) ||
-              info.QuoteNumber.toLowerCase().includes(query.toLowerCase()) ||
-              info.InsuredAddress.toLowerCase().includes(query.toLowerCase())
-          );
-          if (filteredQuotes.length === 0) {
-            filteredQuotes = res.QuickQuoteInfo.slice(0, 5);
-            error = "NoSearchResult";
-          }
-          setTotalPages(Math.ceil(filteredQuotes.length / pageSize));
-          setCurrentPage(1);
-          setLocalError(error);
-        } else {
-          setTotalPages(0);
-          setCurrentPage(1);
-          setLocalError(error);
-        }
-        setQuotes(filteredQuotes);
-      })
-      .catch((e) => {
-        setError(e);
-      })
-      .finally(() => setLoading(false));
+    let error = "";
+    let filteredQuotes = [];
+    if (searchResult.QuickQuoteInfo) {
+      filteredQuotes = searchResult.QuickQuoteInfo.filter(
+        (info) =>
+          info.InsuredName.toLowerCase().includes(query.toLowerCase()) ||
+          info.QuoteNumber.toLowerCase().includes(query.toLowerCase()) ||
+          info.InsuredAddress.toLowerCase().includes(query.toLowerCase())
+      );
+      if (filteredQuotes.length === 0) {
+        filteredQuotes = searchResult.QuickQuoteInfo.slice(0, 5);
+        error = "NoSearchResult";
+      }
+      setTotalPages(Math.ceil(filteredQuotes.length / pageSize));
+      setCurrentPage(1);
+      setLocalError(error);
+    } else {
+      error = "NoSearchResult";
+      setTotalPages(0);
+      setCurrentPage(1);
+      setLocalError(error);
+    }
+    setQuotes(filteredQuotes);
   }, [router.query]);
 
   return (
@@ -83,7 +72,6 @@ const QuoteListPage: FunctionComponent = () => {
       title={messages.MainTitle}
       breadCrumb={[{ link: "/quote", label: "Home" }, { label: "My Quotes" }]}
       css={[utils.flex(1), utils.flexDirection("column")]}
-      loading={loading}
     >
       <Container wide css={[utils.flex(1)]}>
         {error && (
@@ -119,21 +107,7 @@ const QuoteListPage: FunctionComponent = () => {
                   data-testid={`result-${index}`}
                   key={index}
                   onClick={() => {
-                    setLoading(true);
-                    getQuote(quote["QuoteNumber"])
-                      .then(() => {
-                        router.push(`/quote/${quote["QuoteNumber"]}/customize`);
-                      })
-                      .catch((e: Array<CustomError>) => {
-                        if (Array.isArray(e)) {
-                          e.forEach(
-                            (err) =>
-                              (err.errorData.quoteNumber = quote["QuoteNumber"])
-                          );
-                          setError(e);
-                        }
-                      })
-                      .finally(() => setLoading(false));
+                    router.push(`/quote/${quote["QuoteNumber"]}/customize`);
                   }}
                 >
                   <td data-testid="insured-name">{quote.InsuredName}</td>
@@ -168,7 +142,42 @@ const QuoteListPage: FunctionComponent = () => {
   );
 };
 
-(QuoteListPage as any).Guard = AuthGuard;
+export async function getServerSideProps({ req, res, query }) {
+  const session = await getSession(req, res);
+
+  if (session.user) {
+    const queryString = (query.query as string) || "";
+
+    try {
+      const searchResult = await getQuoteList(
+        session.user.LoginId,
+        queryString,
+        session.user.DTOProvider[0].SystemId,
+        session.user.LoginToken
+      );
+
+      return {
+        props: {
+          searchResult: searchResult || {},
+          query: queryString,
+        },
+      };
+    } catch (e) {
+      if (e.httpRes.status !== 401) {
+        return {
+          props: {
+            error: e.data,
+          },
+        };
+      }
+    }
+  }
+  return {
+    redirect: {
+      destination: "/quote",
+    },
+  };
+}
 
 export default QuoteListPage;
 

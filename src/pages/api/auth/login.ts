@@ -8,12 +8,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const session = await getSession(req, res);
-
-    const { UserId, Password } = req.body;
-
     try {
-      const userInfo = await fetch(
+      const session = await getSession(req, res);
+
+      const { UserId, Password } = req.body;
+
+      const userInfo: any = await fetch(
         `${config.apiBaseURL}/ProviderLoginRq/json`,
         {
           method: "POST",
@@ -29,10 +29,11 @@ export default async function handler(
         }
       ).then((res) => res.json());
 
-      session.user = userInfo;
+      session.user = { ...userInfo, LoginId: UserId };
 
       res.status(200).json({ success: true });
     } catch (error) {
+      console.log(error);
       res.status(401).json({ success: false });
     }
   } else {

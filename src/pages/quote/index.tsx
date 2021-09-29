@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 
 import { useFormik, FormikProvider } from "formik";
@@ -8,7 +8,7 @@ import { useError, useLocale, useQuote } from "~/hooks";
 import { EAddressObjectStatus, UserAddressInput } from "~/types";
 import { placeAPI } from "~/utils";
 import { isAKnownError } from "~/contexts";
-import { QuoteErrorModal } from "~/screens/modals";
+import { LoginModal, QuoteErrorModal } from "~/screens/modals";
 import {
   Button,
   Container,
@@ -20,7 +20,6 @@ import {
 import { styles } from "~/screens/pages/customize/single-quote/styles";
 import { utils } from "~/styles";
 import { getSession } from "~/lib/get-session";
-import { AuthGuard } from "~/screens/guards";
 
 function QuotePage({ isLoggedIn }) {
   const router = useRouter();
@@ -242,8 +241,7 @@ function QuotePage({ isLoggedIn }) {
   }
 
   return (
-    //!addressValided ?
-    <AuthGuard isLoggedIn={isLoggedIn}>
+    <Fragment>
       <Screen title={messages.MainTitle} loading={isLoading}>
         <div css={[styles.background]}>
           <img src="/assets/images/home-background.png" css={[styles.image]} />
@@ -316,7 +314,8 @@ function QuotePage({ isLoggedIn }) {
           </FormikProvider>
         </Container>
       </Screen>
-    </AuthGuard>
+      <LoginModal isOpen={!isLoggedIn} />
+    </Fragment>
   );
 }
 
