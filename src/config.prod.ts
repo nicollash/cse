@@ -1,7 +1,7 @@
 export const config = {
   googleAPIKey: 'AIzaSyDtxdIcnXhGqTu0yv1oM9cImBUG0pbF2PA',
   mockApiBaseURL: '/api',
-  apiBaseURL: 'https://uat3.cseinsuarnce.net/msg',
+  apiBaseURL: 'https://uat3.cseinsurance.net/msg',
   supportURL: 'https://agentsupport.cseinsurance.com/support/home',
   spinnURL: 'https://uat3.cseinsurance.net/innovation',
 
