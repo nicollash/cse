@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "~/backend/lib";
-import AuthService from "~/backend/services/auth";
+import { AuthService } from "~/backend/services";
 
 export default async function handler(
   req: NextApiRequest,

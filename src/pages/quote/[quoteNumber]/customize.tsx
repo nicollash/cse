@@ -42,7 +42,11 @@ import {
   ValidationError,
 } from "~/types";
 
-import { getNewDriverParam, logger, parseQuoteResponse } from "~/frontend/utils";
+import {
+  getNewDriverParam,
+  logger,
+  parseQuoteResponse,
+} from "~/frontend/utils";
 
 import {
   ItemBlock,
@@ -57,8 +61,8 @@ import { LossHistoryModal } from "~/frontend/screens/modals/loss-history/single-
 import { ErrorBox } from "~/frontend/components/error-box";
 import { UserInfoModal } from "~/frontend/screens/modals/user-info";
 import { useRouter } from "next/router";
-import { getSession } from "~/lib/get-session";
-import { getQuote } from "~/lib/quote";
+import { getSession } from "~/backend/lib";
+import { QuoteService } from "~/backend/services";
 
 const CustomizePage: FunctionComponent<any> = ({
   user,
@@ -1037,11 +1041,7 @@ export async function getServerSideProps({ req, res, query }) {
     let error = null;
     let quoteDetail = null;
 
-    const res = await getQuote(
-      quoteNumber,
-      session.user.LoginId,
-      session.user.LoginToken
-    )
+    const res = await QuoteService.getQuote(session.user, quoteNumber)
       .then((res) => {
         quoteDetail = parseQuoteResponse(res);
         return res;

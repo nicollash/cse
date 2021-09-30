@@ -1,5 +1,2 @@
-export * from './auth'
-export * from './driver'
-export * from './vehicle'
-export * from './payment'
-export * from './email'
+export { default as AuthService } from "./auth";
+export { default as QuoteService } from "./quote";

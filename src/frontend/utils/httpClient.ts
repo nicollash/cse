@@ -68,7 +68,7 @@ export function httpClient<T extends any>(
             (err: any) =>
               new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
           );
-        } else if (e.data?.DTOApplication[0]?.ValidationError) {
+        } else if (e.data?.DTOApplication && e.data.DTOApplication[0]?.ValidationError) {
           throw e.data.DTOApplication[0].ValidationError.map(
             (err: any) =>
               new CustomError(

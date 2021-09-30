@@ -1,12 +1,12 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 
 import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 
-import { useError, useLocale, useQuote } from "~/frontend/hooks";
+import { useError, useLocale, useMountedRef } from "~/frontend/hooks";
 import { EAddressObjectStatus, UserAddressInput } from "~/types";
-import { placeAPI } from "~/frontend/utils";
+import { formRedirect, placeAPI } from "~/frontend/utils";
 import { isAKnownError } from "~/frontend/contexts";
 import { LoginModal, QuoteErrorModal } from "~/frontend/screens/modals";
 import {
@@ -19,14 +19,13 @@ import {
 } from "~/frontend/components";
 import { styles } from "~/frontend/screens/pages/quote/styles";
 import { utils } from "~/frontend/styles";
-import { getSession } from "~/lib/get-session";
+import { getSession } from "~/backend/lib";
 
-function QuotePage({ user }) {
+function QuotePage({ user, ...props }) {
   const router = useRouter();
   const { locale, messages } = useLocale();
-  const { generateQuote } = useQuote();
 
-  const isMountedRef = useRef(null);
+  const isMountedRef = useMountedRef();
   const [isLoading, setLoading] = useState<boolean>(false);
   const [hasQuoteError, setQuoteError] = useState<boolean>(false);
 
@@ -109,24 +108,13 @@ function QuotePage({ user }) {
       placeAPI
         .checkAddress(value.address.address, value.address.unitNumber)
         .then(() => {
-          return generateQuote({
-            firstName: value.firstName,
-            lastName: value.lastName,
-            address: value.address,
-          })
-            .then((res) => {
-              router.push(
-                `/quote/${res.DTOApplication[0].ApplicationNumber}/customize`
-              );
-            })
-            .catch((e) => {
-              // AS IS:
-              //if (isAKnownError(e)) {
-              setError(e);
-              //} else {
-              //setQuoteError(true)
-              //}
-            });
+          formRedirect("/action/quote/generate", {
+            form: JSON.stringify({
+              firstName: value.firstName,
+              lastName: value.lastName,
+              address: value.address,
+            }),
+          });
         })
         .catch((err) => {
           if (isAKnownError(err)) {
@@ -140,89 +128,22 @@ function QuotePage({ user }) {
                 value.address.requiredUnitNumber,
             });
           }
-        })
-        .finally(() => isMountedRef.current && setLoading(false));
+        });
       //setAddressValided(true)
     },
   });
 
-  const schemaProductSelect = useMemo(
-    () =>
-      Yup.object<any>().shape({
-        SELECTED_PRODUCT: Yup.string().required("You have to select a product"),
-      }),
-    [messages]
-  );
-
-  const formikProductSelect = useFormik<any>({
-    validationSchema: schemaProductSelect,
-    validateOnMount: false,
-    validateOnChange: true,
-    validateOnBlur: false,
-    initialValues: {},
-    onSubmit: (value) => {
-      if (value.SELECTED_PRODUCT === "AUTO") {
-        setLoading(true);
-
-        placeAPI
-          .checkAddress(
-            formik.values.address.address,
-            formik.values.address.unitNumber
-          )
-          .then(() => {
-            return generateQuote({
-              firstName: formik.values.firstName,
-              lastName: formik.values.lastName,
-              address: formik.values.address,
-            })
-              .then((res) => {
-                router.push(
-                  `/quote/${res.DTOApplication[0].ApplicationNumber}/customize`
-                );
-              })
-              .catch((e) => {
-                if (isAKnownError(e)) {
-                  //setError(e)
-                } else {
-                  setQuoteError(true);
-                }
-              });
-          })
-          .catch((err) => {
-            if (isAKnownError(err)) {
-              //setError(e)
-            } else {
-              formik.setFieldValue("address", {
-                ...formik.values.address,
-                status: err,
-                requiredUnitNumber:
-                  err === EAddressObjectStatus.unitNumberRequired ||
-                  formik.values.address.requiredUnitNumber,
-              });
-            }
-          })
-          .finally(() => isMountedRef.current && setLoading(false));
-      } else {
-        alert("Still not available");
-      }
-    },
-  });
-
   useEffect(() => {
-    isMountedRef.current = true;
     (window as any).ga && (window as any).ga("send", "Quote Page View");
 
     if (Object.keys(initials).length > 0) {
       formik.submitForm();
     }
-    return () => {
-      isMountedRef.current = false;
-    };
   }, []);
 
   useEffect(() => {
     // change error messages when the locale is changed
-    isMountedRef.current &&
+    isMountedRef?.current &&
       Object.keys(formik.touched)
         .filter((field) => formik.touched[field] === true)
         .forEach((field) => formik.setFieldTouched(field));
@@ -321,6 +242,8 @@ function QuotePage({ user }) {
 
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
+
+  // const { loginError, generateQuoteError } = session;
 
   return {
     props: {

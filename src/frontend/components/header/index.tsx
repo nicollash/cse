@@ -10,8 +10,16 @@ import { utils, theme } from "~/frontend/styles";
 import { availableLanguages, flagImages } from "~/locale";
 import { useLocale } from "~/frontend/hooks";
 
-import { Container, Text, Input, Button, Hr, Clickover } from "~/frontend/components";
+import {
+  Container,
+  Text,
+  Input,
+  Button,
+  Hr,
+  Clickover,
+} from "~/frontend/components";
 import { styles } from "./styles";
+import { formRedirect } from "~/frontend/utils";
 
 export const Header: FunctionComponent = () => {
   const router = useRouter();
@@ -121,7 +129,9 @@ export const Header: FunctionComponent = () => {
               utils.ml(4),
               styles.headerItem,
             ]}
-            onClick={() => logout()}
+            onClick={() => {
+              formRedirect("/action/auth/logout");
+            }}
           >
             <span>{messages.Header.Logout}</span>
           </Text>
@@ -139,7 +149,9 @@ export const Header: FunctionComponent = () => {
         <img
           css={styles.logo}
           src="/assets/images/CSE_tm_signature_rgb.png"
-          onClick={() => (location.href = "/quote")}
+          onClick={() => {
+            formRedirect("/quote", {}, "GET");
+          }}
         />
         <div css={[utils.display("flex"), utils.alignItems("center")]}>
           <div css={[utils.display("flex"), utils.mr(7), styles.searchBox]}>
@@ -154,11 +166,9 @@ export const Header: FunctionComponent = () => {
               data-testid="btn-search"
               width="70px"
               css={styles.searchButton}
-              onClick={() =>
-                (location.href = query
-                  ? `/quote-list?query=${query}`
-                  : `/quote-list`)
-              }
+              onClick={() => {
+                formRedirect("/quote-list", query ? { query } : {}, "GET");
+              }}
             >
               <Text color="white" size="18px">
                 <FontAwesomeIcon icon={faSearch} />
@@ -176,8 +186,7 @@ export const Header: FunctionComponent = () => {
                     css={styles.listItem}
                     textAlign="right"
                     onClick={() => {
-                      location.href = "/quote";
-                      closePopup();
+                      formRedirect("/quote", {}, "GET");
                     }}
                   >
                     {messages.Menu.Home}
@@ -187,8 +196,7 @@ export const Header: FunctionComponent = () => {
                     css={styles.listItem}
                     textAlign="right"
                     onClick={() => {
-                      location.href = "/quote-list";
-                      closePopup();
+                      formRedirect("/quote-list", {}, "GET");
                     }}
                   >
                     {messages.Menu.Quotes}

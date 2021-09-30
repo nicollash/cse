@@ -1,3 +1,5 @@
+import { explodeAddress } from "~/helpers";
+import { HttpService } from "~/backend/lib";
 import {
   DTOApplication,
   GenerateQuoteRequest,
@@ -5,45 +7,97 @@ import {
   QuickQuoteInfoResponse,
   SavePaymentRequestInfo,
 } from "~/types";
-import { httpClient } from "./http";
 import { config } from "~/config";
 
-// export const generateQuote: (
-//   params: GenerateQuoteRequest
-// ) => Promise<QuoteResponse> = ({
-//   FirstName,
-//   LastName,
-//   Addr1,
-//   Addr2,
-//   City,
-//   StateProvCd,
-//   PostalCode,
-//   ProviderNumber,
-//   LoginId,
-//   LineCd = "PersonalAuto",
-//   CompanyCd = "0017",
-// }) => {
-//   const data = {
-//     FirstName,
-//     LastName,
-//     Addr1,
-//     Addr2,
-//     City,
-//     StateProvCd,
-//     PostalCode,
-//     ProviderNumber,
-//     LoginId,
-//     LineCd,
-//     CompanyCd,
-//   };
-//   return httpClient<QuoteResponse>(
-//     `${config.apiBaseURL}/GenerateQuoteRq/json`,
-//     "POST",
-//     Object.keys(data)
-//       .filter((key) => !!data[key])
-//       .reduce((obj, key) => ({ ...obj, [key]: data[key] }), {})
-//   );
-// };
+class QuoteService {
+  static async getQuoteList(user: any, query: string) {
+    return HttpService.request<QuickQuoteInfoResponse>(
+      `${config.apiBaseURL}/GetQuickQuoteListRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        quoteSearchKey: query,
+        ProviderRef: user.DTOProvider[0].SystemId,
+      },
+      user.LoginToken
+    );
+  }
+
+  static async parseAddress(user: any, address) {
+    const addressObj = await new Promise<any>((resolve) => {
+      explodeAddress(address.address, (err: any, addressObj) => {
+        resolve(addressObj);
+      });
+    });
+
+    const addressInfo = await HttpService.request(
+      `${config.apiBaseURL}/ValidateAddressRq/json`,
+      "POST",
+      {
+        Address1: addressObj.street_address1,
+        Address2: address.unitNumber,
+        City: addressObj.city,
+        State: addressObj.state,
+        PostalCode: addressObj.postal_code,
+      },
+      user.LoginToken
+    ).then((res: any) => res.JsonValidatedAddress[0].Address);
+
+    return { addressObj, addressInfo };
+  }
+
+  static async generateQuote(
+    user,
+    {
+      FirstName,
+      LastName,
+      Addr1,
+      Addr2,
+      City,
+      StateProvCd,
+      PostalCode,
+      LineCd = "PersonalAuto",
+      CompanyCd = "0017",
+    }
+  ) {
+    const data = {
+      FirstName,
+      LastName,
+      Addr1,
+      Addr2,
+      City,
+      StateProvCd,
+      PostalCode,
+      ProviderNumber: user.DTOProvider[0].ProviderNumber,
+      LoginId: user.LoginId,
+      LineCd,
+      CompanyCd,
+    };
+
+    return HttpService.request<QuoteResponse>(
+      `${config.apiBaseURL}/GenerateQuoteRq/json`,
+      "POST",
+      Object.keys(data)
+        .filter((key) => !!data[key])
+        .reduce((obj, key) => ({ ...obj, [key]: data[key] }), {}),
+      user.LoginToken
+    );
+  }
+
+  static async getQuote(user: any, ApplicationNumber: string) {
+    return HttpService.request<QuoteResponse>(
+      `${config.apiBaseURL}/GetQuickQuoteRq/json`,
+      "POST",
+      {
+        ApplicationNumber,
+        Owner: user.LoginId,
+      },
+      user.LoginToken
+    );
+  }
+}
+
+export default QuoteService;
 
 // export const updateQuote = (
 //   LoginId: string,
@@ -85,34 +139,6 @@ import { config } from "~/config";
 //       SavePaymentRequest: JSON.stringify(SavePaymentRequest),
 //     }
 //   );
-
-export const getQuoteList = (
-  LoginId: string,
-  query: string,
-  providerSystemId: string,
-  userToken: string
-) =>
-  httpClient<QuickQuoteInfoResponse>(
-    `${config.apiBaseURL}/GetQuickQuoteListRq/json`,
-    "POST",
-    {
-      LoginId,
-      quoteSearchKey: query,
-      ProviderRef: providerSystemId,
-    },
-    userToken
-  );
-
-export const getQuote = (ApplicationNumber: string, Owner: string, userToken: string) =>
-  httpClient<QuoteResponse>(
-    `${config.apiBaseURL}/GetQuickQuoteRq/json`,
-    "POST",
-    {
-      ApplicationNumber,
-      Owner: Owner,
-    },
-    userToken
-  );
 
 // export const convertQuoteToApplication = (
 //   LoginId: string,

@@ -8,6 +8,7 @@ import { utils } from "~/frontend/styles";
 import { useLocale } from "~/frontend/hooks";
 
 import { styles } from "./styles";
+import { formRedirect } from "~/frontend/utils";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
     },
     onSubmit: (value) => {
       setLoading(true);
-      login(value.userId, value.password).finally(() => setLoading(false));
+      formRedirect("/action/auth/login", value);
     },
   });
 

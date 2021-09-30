@@ -1,11 +1,12 @@
-import { explodeAddress, logger } from "~/frontend/utils";
+import { logger } from "~/frontend/utils";
 import { config } from "~/config";
 import { httpClient } from "./httpClient";
 import { EAddressObjectStatus } from "~/types";
+import { explodeAddress } from "~/helpers";
 
 const searchPlaces = (input: string): Promise<string[]> =>
   fetch(
-    `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&types=(regions)&key=${config.googleAPIKey}`
+    `/api/place-api?input=${input}`
   )
     .then((res) => res.json())
     .then((json) =>
@@ -23,7 +24,7 @@ const checkAddress = (address: string, unitNumber: string) =>
       explodeAddress(address, (err, addressObj) => {
         logger("parsed Address", addressObj);
 
-        httpClient(`${config.apiBaseURL}/ValidateAddressRq/json`, "POST", {
+        httpClient(`/api/proxy/ValidateAddressRq`, "POST", {
           Address1: addressObj.street_address1,
           Address2: unitNumber,
           City: addressObj.city,

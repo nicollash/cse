@@ -41,6 +41,7 @@
     "redis": "^3.1.2",
     "slick-carousel": "^1.8.1",
     "superjson": "^1.7.5",
+    "urlencoded-body-parser": "^3.0.0",
     "uuid": "^8.3.2",
     "yup": "^0.32.9"
   },

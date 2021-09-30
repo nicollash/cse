@@ -2,7 +2,6 @@ import { FunctionComponent, useState, useEffect } from "react";
 
 import { Screen, Container, Text } from "~/frontend/components";
 import { theme, utils } from "~/frontend/styles";
-import { getQuoteList } from "~/lib/quote";
 import { useError, useLocale, useQuote } from "~/frontend/hooks";
 import { CustomError, QuickQuoteInfo } from "~/types";
 
@@ -14,7 +13,8 @@ import {
   QuoteRow,
 } from "~/frontend/screens/pages/quote-list";
 import { useRouter } from "next/router";
-import { getSession } from "~/lib/get-session";
+import { getSession } from "~/backend/lib";
+import { QuoteService } from "~/backend/services";
 
 const QuoteListPage: FunctionComponent<any> = ({
   user,
@@ -155,11 +155,9 @@ export async function getServerSideProps({ req, res, query }) {
     const queryString = (query.query as string) || "";
 
     try {
-      const searchResult = await getQuoteList(
-        session.user.LoginId,
-        queryString,
-        session.user.DTOProvider[0].SystemId,
-        session.user.LoginToken
+      const searchResult = await QuoteService.getQuoteList(
+        session.user,
+        queryString
       );
 
       return {

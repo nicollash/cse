@@ -1,2 +1,2 @@
+export { default as HttpService } from "./http-service";
 export * from "./get-session";
-export * from "./http-client";

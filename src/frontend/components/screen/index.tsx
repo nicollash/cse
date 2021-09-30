@@ -13,7 +13,7 @@ import CookieConsent from "react-cookie-consent";
 
 import { theme } from "~/frontend/styles";
 import { useLocale } from "~/frontend/hooks";
-import { showChat } from "~/frontend/utils";
+import { formRedirect, httpClient, showChat } from "~/frontend/utils";
 
 interface ScreenProps {
   title?: string;
@@ -50,10 +50,10 @@ export const Screen: FunctionComponent<ScreenProps> = ({
     if (user) {
       showChat(user.LoginId);
       timer = setInterval(() => {
-        checkLoggedIn().then((res: any) => {
-          if (!res.isLoggedIn) {
+        httpClient("/api/auth/check").then((res: any) => {
+          if (!res.success || !res.isLoggedIn) {
             clearInterval(timer);
-            logout();
+            formRedirect("/action/auth/logout");
           }
         });
       }, 20 * 1000);

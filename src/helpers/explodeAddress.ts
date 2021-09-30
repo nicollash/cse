@@ -1,7 +1,3 @@
-//module.exports = explodeAddress
-//module.exports.explodeAddress = explodeAddress
-//module.exports.implodeAddress = implodeAddress
-
 export const explodeAddress = (singleLineAddress, cb) => {
   /*process.nextTick(
     function () {*/

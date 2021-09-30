@@ -1,10 +1,10 @@
 import { config } from "~/config";
-import { httpClient } from "~/backend/lib";
+import { HttpService } from "~/backend/lib";
 
 class AuthService {
   static async login(session: any, userId: string, password: string) {
     try {
-      const userInfo: any = await httpClient(
+      const userInfo: any = await HttpService.request(
         `${config.apiBaseURL}/ProviderLoginRq/json`,
         "POST",
         {
@@ -12,7 +12,6 @@ class AuthService {
           Password: password,
         }
       );
-
       session.user = { ...userInfo, LoginId: userId };
       return { success: true };
     } catch (error) {
@@ -23,16 +22,15 @@ class AuthService {
   static async logout(session: any) {
     try {
       if (session.user) {
-        await httpClient(
+        await HttpService.request(
           `${config.apiBaseURL}/LogoutTokenRq/json`,
           "POST",
           {},
           session.user.LoginToken
         );
-
         session.user = null;
+        session.destroy();
       }
-
       return { success: true };
     } catch (error) {
       return { success: false, error };
@@ -43,22 +41,17 @@ class AuthService {
     try {
       let isLoggedIn = false;
       if (session.user) {
-        const tokenInfo: any = await fetch(
+        const tokenInfo: any = await HttpService.request(
           `${config.apiBaseURL}/ValidateProviderLoginTokenRq/json`,
+          "POST",
           {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({
-              LoginToken: session.user.LoginToken,
-            }),
+            LoginToken: session.user.LoginToken,
           }
-        ).then((res) => res.json());
+        );
 
-        if (tokenInfo.tokenStatus !== "Invalid") {
+        if (tokenInfo.tokenStatus === "Invalid") {
+          session.user = null;
+        } else {
           isLoggedIn = true;
         }
       }

@@ -9,8 +9,6 @@ export const formatPhoneNumber = (e) => {
   return "+" + cleaned;
 };
 
-export const hasSameValue = (arr) =>
-  arr.filter((el) => el !== arr[0]).length === 0;
 
 export const formatCurrency = (v: any) => (isNaN(v) ? v : `$${v}`);
 
