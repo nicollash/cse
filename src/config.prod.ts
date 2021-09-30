@@ -1,9 +1,9 @@
 export const config = {
   googleAPIKey: 'AIzaSyDtxdIcnXhGqTu0yv1oM9cImBUG0pbF2PA',
   mockApiBaseURL: '/api',
-  apiBaseURL: 'https://spinn.csespi.com/msg',
+  apiBaseURL: 'https://uat3.cseinsurance.net/msg',
   supportURL: 'https://agentsupport.cseinsurance.com/support/home',
-  spinnURL: 'https://spinn.csespi.com/innovation',
+  spinnURL: 'https://uat3.cseinsurance.net/innovation',
 
   incontact: {
     serverHost: 'https://home-c30.incontact.com',
@@ -14,5 +14,5 @@ export const config = {
   constants: {
     phoneNumber: '1-800-282-6848',
   },
-  oneIncPaymentLib: 'https://portalone.processonepayments.com/Api/Api/Cdn/GenericModalV2/assets/js/PortalOne.js'
+  oneIncPaymentLib: 'https://stgportalone.processonepayments.com/Api/Api/Cdn/GenericModalV2/assets/js/PortalOne.js'
 }

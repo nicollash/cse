@@ -1,0 +1,1 @@
+web: /var/app/current/node_modules/next/dist/bin/next start
