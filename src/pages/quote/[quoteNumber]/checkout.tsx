@@ -25,7 +25,8 @@ import {
   Hr,
   Button,
   Switch,
-} from "~/components";
+  Loading,
+} from "~/frontend/components";
 import {
   UserAddressInput,
   TAddressObject,
@@ -33,35 +34,33 @@ import {
   CustomError,
   CommunicationInfo,
   QuoteDetail,
+  CustomErrorType,
 } from "~/types";
-import { theme, utils } from "~/styles";
-import { loadScript, logger } from "~/utils";
-import { placeAPI } from "~/utils";
+import { theme, utils } from "~/frontend/styles";
+import { loadScript, logger, parseQuoteResponse } from "~/frontend/utils";
+import { placeAPI } from "~/frontend/utils";
 import { PaymentOptions } from "~/options";
-import { useError, useLocale, useQuote } from "~/hooks";
+import { useError, useLocale, useQuote } from "~/frontend/hooks";
 
-import { styles } from "~/screens/pages/checkout/styles";
-import { oneIncInvokePortal } from "~/services";
-import { UserInfoModal } from "~/screens/modals/user-info";
+import { styles } from "~/frontend/screens/pages/checkout/styles";
+import { oneIncInvokePortal } from "~/backend/services";
+import { UserInfoModal } from "~/frontend/screens/modals/user-info";
 import { config } from "~/config";
-import { ErrorBox } from "~/components/error-box";
+import { ErrorBox } from "~/frontend/components/error-box";
 import { useRouter } from "next/router";
-import { AuthGuard } from "~/screens/guards";
-import { QuoteLayout } from "~/screens/layouts";
+import { getQuote } from "~/lib/quote";
+import { getSession } from "~/lib/get-session";
 
-const CheckoutPage: FunctionComponent = () => {
+const CheckoutPage: FunctionComponent<any> = ({
+  quoteDetail,
+  insurer,
+  policy,
+  error,
+  user,
+}) => {
   const router = useRouter();
   const { locale, messages } = useLocale();
   const quoteNumber = router.query.quoteNumber as string;
-  const {
-    quoteDetail,
-    insurer,
-    policy,
-    issuePolicy,
-    updateDownPaymentDetailsPostOneIncSave,
-    externalApplicationCloseOut,
-    getQuote,
-  } = useQuote();
   const { setError } = useError();
 
   const [paymentFrequency, setPaymentFrequency] = useState("full");
@@ -77,6 +76,10 @@ const CheckoutPage: FunctionComponent = () => {
 
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Checkout Page View");
+
+    if (error) {
+      setError(error);
+    }
   }, []);
 
   const processExternalApplicationCloseOut = useCallback(
@@ -293,8 +296,13 @@ const CheckoutPage: FunctionComponent = () => {
     );
   };
 
+  if (error || !quoteDetail) {
+    return <Loading />;
+  }
+
   return (
     <Screen
+      user={user}
       title={`${quoteNumber} | ${messages.MainTitle}`}
       greyBackground
       breadCrumb={
@@ -327,6 +335,7 @@ const CheckoutPage: FunctionComponent = () => {
             <ErrorBox
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
+              conversationId={user.ResponseParams[0].ConversationId}
             />
           </div>
         )}
@@ -336,6 +345,7 @@ const CheckoutPage: FunctionComponent = () => {
             <ErrorBox
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
+              conversationId={user.ResponseParams[0].ConversationId}
             />
           </div>
         )}
@@ -727,7 +737,89 @@ const getSchema = (messages) =>
     }),
   });
 
-(CheckoutPage as any).Guard = AuthGuard;
-(CheckoutPage as any).Layout = QuoteLayout;
+export async function getServerSideProps({ req, res, query }) {
+  const session = await getSession(req, res);
+  const quoteNumber = query.quoteNumber as string;
+
+  if (session.user && quoteNumber) {
+    let selectedPlan = null;
+    let error = null;
+    let quoteDetail = null;
+
+    const res = await getQuote(
+      quoteNumber,
+      session.user.LoginId,
+      session.user.LoginToken
+    )
+      .then((res) => {
+        quoteDetail = parseQuoteResponse(res);
+        return res;
+      })
+      .catch((e: Array<CustomError>) => {
+        if (Array.isArray(e)) {
+          e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
+        }
+        error = e;
+        return null;
+      });
+
+    if (res) {
+      const matched = res.DTOApplication.find(
+        (application) =>
+          application.ApplicationNumber === quoteNumber ||
+          application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
+      );
+      switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
+        case "BASIC":
+          selectedPlan = "Basic";
+          break;
+        case "STANDARD":
+          selectedPlan = "Standard";
+          break;
+        case "PREMIUM":
+          selectedPlan = "Premium";
+          break;
+      }
+    } else {
+      error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+        quoteNumber,
+      });
+    }
+
+    if (error) {
+      return {
+        props: {
+          user: session.user,
+          error,
+        },
+      };
+    } else {
+      return {
+        props: {
+          user: session.user,
+          quoteResponse: res,
+          policy: {},
+          quoteDetail,
+          insurer: {
+            firstName: quoteDetail.insurerFirstName,
+            lastName: quoteDetail.insurerLastName,
+            address: {
+              address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
+              unitNumber: quoteDetail.insuredAddress.Addr2,
+              requiredUnitNumber: false,
+              status: EAddressObjectStatus.success,
+            },
+          },
+        },
+      };
+    }
+  }
+
+  return {
+    redirect: {
+      destination: "/quote",
+    },
+  };
+}
 
 export default CheckoutPage;

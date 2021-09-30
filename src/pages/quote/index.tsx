@@ -4,11 +4,11 @@ import { useRouter } from "next/router";
 import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 
-import { useError, useLocale, useQuote } from "~/hooks";
+import { useError, useLocale, useQuote } from "~/frontend/hooks";
 import { EAddressObjectStatus, UserAddressInput } from "~/types";
-import { placeAPI } from "~/utils";
-import { isAKnownError } from "~/contexts";
-import { LoginModal, QuoteErrorModal } from "~/screens/modals";
+import { placeAPI } from "~/frontend/utils";
+import { isAKnownError } from "~/frontend/contexts";
+import { LoginModal, QuoteErrorModal } from "~/frontend/screens/modals";
 import {
   Button,
   Container,
@@ -16,9 +16,9 @@ import {
   FormikInput,
   Heading,
   Screen,
-} from "~/components";
-import { styles } from "~/screens/pages/customize/styles";
-import { utils } from "~/styles";
+} from "~/frontend/components";
+import { styles } from "~/frontend/screens/pages/quote/styles";
+import { utils } from "~/frontend/styles";
 import { getSession } from "~/lib/get-session";
 
 function QuotePage({ user }) {

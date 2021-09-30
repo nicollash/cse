@@ -6,21 +6,21 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import LogRocket from "logrocket";
 
-import { Header, Footer } from "~/components";
-import { LocaleProvider, ErrorProvider } from "../contexts";
-import { global } from "~/styles";
+import { Header, Footer } from "~/frontend/components";
+import { LocaleProvider, ErrorProvider } from "../frontend/contexts";
+import { global } from "~/frontend/styles";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-import "../custom-styles/custom-modal.css";
-import "../custom-styles/custom-date-picker.css";
-import "../custom-styles/custom-slider.css";
-import "../custom-styles/custom.css";
+import "~/frontend/styles/components/custom-modal.css";
+import "~/frontend/styles/components/custom-date-picker.css";
+import "~/frontend/styles/components/custom-slider.css";
+import "~/frontend/styles/components/custom.css";
+import "~/frontend/styles/components/slider.css";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "~/styles/components/slider.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {

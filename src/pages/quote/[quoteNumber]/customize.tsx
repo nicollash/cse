@@ -9,7 +9,15 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCar, faPlus } from "@fortawesome/free-solid-svg-icons";
 
-import { Screen, Container, Text, Row, Col, Button } from "~/components";
+import {
+  Screen,
+  Container,
+  Text,
+  Row,
+  Col,
+  Button,
+  Loading,
+} from "~/frontend/components";
 import {
   AddVehicleModal,
   EditVehicleModal,
@@ -19,36 +27,38 @@ import {
   RequiredInformationModal,
   AutoPolicyModal,
   DeleteDriverModal,
-} from "~/screens/modals";
-import { utils } from "~/styles";
+} from "~/frontend/screens/modals";
+import { utils } from "~/frontend/styles";
 import {
   AdditionalInterestInfo,
   CommunicationInfo,
   CustomError,
+  CustomErrorType,
   DefaultDriverInfo,
   DriverPointsInfo,
+  EAddressObjectStatus,
   LossHistoryInfo,
   QuoteDetail,
   ValidationError,
 } from "~/types";
 
-import { getNewDriverParam, logger } from "~/utils";
+import { getNewDriverParam, logger, parseQuoteResponse } from "~/frontend/utils";
 
 import {
   ItemBlock,
   ListItem,
   ReviewItem,
   PlanItem,
-} from "~/screens/pages/customize/components";
-import { styles } from "~/screens/pages/customize/styles";
-import { useError, useLocale, useMobile } from "~/hooks";
-import { AdditionalInterestModal } from "~/screens/modals/additional-interest";
-import { LossHistoryModal } from "~/screens/modals/loss-history/single-quote";
-import { ErrorBox } from "~/components/error-box";
-import { UserInfoModal } from "~/screens/modals/user-info";
+} from "~/frontend/screens/pages/customize/components";
+import { styles } from "~/frontend/screens/pages/customize/styles";
+import { useError, useLocale, useMobile } from "~/frontend/hooks";
+import { AdditionalInterestModal } from "~/frontend/screens/modals/additional-interest";
+import { LossHistoryModal } from "~/frontend/screens/modals/loss-history/single-quote";
+import { ErrorBox } from "~/frontend/components/error-box";
+import { UserInfoModal } from "~/frontend/screens/modals/user-info";
 import { useRouter } from "next/router";
-import { QuoteLayout } from "~/screens/layouts";
 import { getSession } from "~/lib/get-session";
+import { getQuote } from "~/lib/quote";
 
 const CustomizePage: FunctionComponent<any> = ({
   user,
@@ -178,6 +188,10 @@ const CustomizePage: FunctionComponent<any> = ({
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Customize Page View");
 
+    if (error) {
+      setError(error);
+    }
+
     setReviewableItems([
       ...quoteDetail.vehicles
         .filter((vehicle) => vehicle.status === "Active")
@@ -187,6 +201,10 @@ const CustomizePage: FunctionComponent<any> = ({
         .map((driver) => driver.id),
     ]);
   }, []);
+
+  if (error || !quoteDetail) {
+    return <Loading />;
+  }
 
   return (
     <Screen
@@ -278,6 +296,7 @@ const CustomizePage: FunctionComponent<any> = ({
           css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3)]}
         >
           <ErrorBox
+            conversationId={user.ResponseParams[0].ConversationId}
             data={quoteDetail.validationError}
             systemId={quoteDetail.systemId}
             actions={[
@@ -311,6 +330,7 @@ const CustomizePage: FunctionComponent<any> = ({
           <div css={[utils.fullWidth, utils.mx("auto")]}>
             <div css={[utils.mb(3), utils.hideOnMobile]}>
               <ErrorBox
+                conversationId={user.ResponseParams[0].ConversationId}
                 css={utils.maxWidth("65%")}
                 cp={true}
                 data={quoteDetail.validationError}
@@ -338,11 +358,7 @@ const CustomizePage: FunctionComponent<any> = ({
         <Container wide css={utils.display("flex")}>
           <Row css={[utils.fullWidth, styles.row]}>
             <Col
-              css={[
-                selectedTab !== 2 && utils.hideOnMobile,
-                utils.display("flex"),
-                utils.flexDirection("column"),
-              ]}
+              css={[selectedTab !== 2 && utils.hideOnMobile]}
               xl={3}
               lg={3}
               md={12}
@@ -380,11 +396,7 @@ const CustomizePage: FunctionComponent<any> = ({
             </Col>
 
             <Col
-              css={[
-                selectedTab !== 3 && utils.hideOnMobile,
-                utils.display("flex"),
-                utils.flexDirection("column"),
-              ]}
+              css={[selectedTab !== 3 && utils.hideOnMobile]}
               xl={3}
               lg={3}
               md={12}
@@ -421,11 +433,7 @@ const CustomizePage: FunctionComponent<any> = ({
             </Col>
 
             <Col
-              css={[
-                selectedTab !== 3 && utils.hideOnMobile,
-                utils.display("flex"),
-                utils.flexDirection("column"),
-              ]}
+              css={[selectedTab !== 3 && utils.hideOnMobile]}
               xl={3}
               lg={3}
               md={12}
@@ -465,11 +473,7 @@ const CustomizePage: FunctionComponent<any> = ({
             </Col>
 
             <Col
-              css={[
-                selectedTab !== 4 && utils.hideOnMobile,
-                utils.display("flex"),
-                utils.flexDirection("column"),
-              ]}
+              css={[selectedTab !== 4 && utils.hideOnMobile]}
               xl={3}
               lg={3}
               md={12}
@@ -752,6 +756,7 @@ const CustomizePage: FunctionComponent<any> = ({
         }}
       />
       <EditVehicleModal
+        quoteDetail={quoteDetail}
         isOpen={editCarIndex !== null}
         defaultValue={quoteDetail.vehicles[editCarIndex]}
         onDeleteVehicle={() => setDeleteCarIndex(editCarIndex)}
@@ -1023,12 +1028,87 @@ const CustomizePage: FunctionComponent<any> = ({
   );
 };
 
-export async function getServerSideProps({ req, res }) {
+export async function getServerSideProps({ req, res, query }) {
   const session = await getSession(req, res);
+  const quoteNumber = query.quoteNumber as string;
+
+  if (session.user && quoteNumber) {
+    let selectedPlan = null;
+    let error = null;
+    let quoteDetail = null;
+
+    const res = await getQuote(
+      quoteNumber,
+      session.user.LoginId,
+      session.user.LoginToken
+    )
+      .then((res) => {
+        quoteDetail = parseQuoteResponse(res);
+        return res;
+      })
+      .catch((e: Array<CustomError>) => {
+        if (Array.isArray(e)) {
+          e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
+        }
+        error = e;
+        return null;
+      });
+
+    if (res) {
+      const matched = res.DTOApplication.find(
+        (application) =>
+          application.ApplicationNumber === quoteNumber ||
+          application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
+      );
+      switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
+        case "BASIC":
+          selectedPlan = "Basic";
+          break;
+        case "STANDARD":
+          selectedPlan = "Standard";
+          break;
+        case "PREMIUM":
+          selectedPlan = "Premium";
+          break;
+      }
+    } else {
+      error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+        quoteNumber,
+      });
+    }
+
+    if (error) {
+      return {
+        props: {
+          user: session.user,
+          error,
+        },
+      };
+    } else {
+      return {
+        props: {
+          user: session.user,
+          quoteResponse: res,
+          quoteDetail,
+          selectedPlan,
+          insurer: {
+            firstName: quoteDetail.insurerFirstName,
+            lastName: quoteDetail.insurerLastName,
+            address: {
+              address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
+              unitNumber: quoteDetail.insuredAddress.Addr2,
+              requiredUnitNumber: false,
+              status: EAddressObjectStatus.success,
+            },
+          },
+        },
+      };
+    }
+  }
 
   return {
-    props: {
-      user: session.user,
+    redirect: {
+      destination: "/quote",
     },
   };
 }

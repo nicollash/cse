@@ -17,39 +17,49 @@ import {
   Screen,
   Button,
   FormikInput,
-} from "~/components";
+  Loading,
+} from "~/frontend/components";
 import {
   RequiredInformationModal,
   PriorIncidentsModal,
-} from "~/screens/modals";
-import { utils, theme } from "~/styles";
-import { useLocale, useQuote, useError, useAuth } from "~/hooks";
-import { AdditionalInterestInfo, LossHistoryInfo, QuoteDetail } from "~/types";
+} from "~/frontend/screens/modals";
+import { utils, theme } from "~/frontend/styles";
+import { useLocale, useQuote, useError } from "~/frontend/hooks";
+import {
+  AdditionalInterestInfo,
+  CustomError,
+  CustomErrorType,
+  EAddressObjectStatus,
+  LossHistoryInfo,
+  QuoteDetail,
+} from "~/types";
 
 import {
   CarCovered,
   ReviewItem,
   UWQuestions,
-} from "~/screens/pages/customize/components";
-import { styles } from "~/screens/pages/customize/styles";
-import { AdditionalInterestModal } from "~/screens/modals/additional-interest";
-import { LossHistoryModal } from "~/screens/modals/loss-history/single-quote";
-import { ErrorBox } from "~/components/error-box";
-import { questions } from "~/utils/configuration/questions";
+} from "~/frontend/screens/pages/customize/components";
+import { styles } from "~/frontend/screens/pages/customize/styles";
+import { AdditionalInterestModal } from "~/frontend/screens/modals/additional-interest";
+import { LossHistoryModal } from "~/frontend/screens/modals/loss-history/single-quote";
+import { ErrorBox } from "~/frontend/components/error-box";
+import { questions } from "~/frontend/utils/configuration/questions";
 import { FormikProvider, useFormik } from "formik";
 
 import * as Yup from "yup";
 import { useRouter } from "next/router";
-import { AuthGuard } from "~/screens/guards";
-import { QuoteLayout } from "~/screens/layouts";
+import { parseQuoteResponse } from "~/frontend/utils";
+import { getQuote } from "~/lib/quote";
+import { getSession } from "~/lib/get-session";
 
-const ReviewCoveragesPage: FunctionComponent = () => {
+const ReviewCoveragesPage: FunctionComponent<any> = ({
+  user,
+  quoteDetail,
+  error,
+}) => {
   const router = useRouter();
   const { messages } = useLocale();
   const quoteNumber = router.query.quoteNumber as string;
-  const { quoteDetail, updateQuote, externalApplicationCloseOut, shareQuote } =
-    useQuote();
-  const { user } = useAuth();
   const { setError } = useError();
 
   const [selectedTab, selectTab] = useState(1);
@@ -167,10 +177,19 @@ const ReviewCoveragesPage: FunctionComponent = () => {
 
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Review Page View");
+
+    if (error) {
+      setError(error);
+    }
   }, []);
+
+  if (error || !quoteDetail) {
+    return <Loading />;
+  }
 
   return (
     <Screen
+      user={user}
       title={`${quoteNumber} | ${messages.MainTitle}`}
       greyBackground
       breadCrumb={[
@@ -246,6 +265,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             <ErrorBox
               data={quoteDetail.validationError}
               systemId={quoteDetail.systemId}
+              conversationId={user.ResponseParams[0].ConversationId}
             />
           </div>
         )}
@@ -265,6 +285,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
           <ErrorBox
             data={quoteDetail.validationError}
             systemId={quoteDetail.systemId}
+            conversationId={user.ResponseParams[0].ConversationId}
           />
         </div>
       )}
@@ -283,11 +304,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
 
       <Container wide css={utils.hideOnMobile}>
         <Row css={utils.fullWidth}>
-          <Col
-            md={12}
-            lg={9}
-            css={[utils.display("flex"), utils.flexDirection("column")]}
-          >
+          <Col md={12} lg={9}>
             {/* auto policy */}
             <div css={[styles.whiteBackground, styles.autoPolicy]}>
               <Text size="2.5em" bold css={utils.mb(7)}>
@@ -302,9 +319,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                 </Text>
 
                 <Row>
-                  <Col
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col>
                     {quoteDetail.drivers
                       .filter((driver) => driver.status === "Active")
                       .map((driver, key) => (
@@ -321,9 +336,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                     <div css={styles.infoItem}></div>
                   </Col>
 
-                  <Col
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col>
                     <div css={[styles.infoItem, utils.height("4.5em")]}>
                       <Text bold>
                         {messages.ReviewCoverages.TotalTermPrice}
@@ -354,10 +367,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                 </Text>
 
                 <Row>
-                  <Col
-                    xs={7}
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col xs={7}>
                     <div css={styles.infoItem}>
                       <Text bold>{messages.ReviewCoverages.BodilyInjury}</Text>
                       <Text size="1.25em" bold>
@@ -391,10 +401,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                     </div>
                   </Col>
 
-                  <Col
-                    xs={5}
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col xs={5}>
                     <div css={styles.infoItem}>
                       <Text bold>
                         {messages.ReviewCoverages.MedicalPayments}
@@ -468,11 +475,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             </div>
           </Col>
 
-          <Col
-            md={12}
-            lg={3}
-            css={[utils.display("flex"), utils.flexDirection("column")]}
-          >
+          <Col md={12} lg={3}>
             <div css={[styles.whiteBackground, utils.pa(2), utils.fullHeight]}>
               {requiredItemsLabel.length > 0 && (
                 <ReviewItem
@@ -871,7 +874,89 @@ const ReviewCoveragesPage: FunctionComponent = () => {
   );
 };
 
-(ReviewCoveragesPage as any).Guard = AuthGuard;
-(ReviewCoveragesPage as any).Layout = QuoteLayout;
+export async function getServerSideProps({ req, res, query }) {
+  const session = await getSession(req, res);
+  const quoteNumber = query.quoteNumber as string;
+
+  if (session.user && quoteNumber) {
+    let selectedPlan = null;
+    let error = null;
+    let quoteDetail = null;
+
+    const res = await getQuote(
+      quoteNumber,
+      session.user.LoginId,
+      session.user.LoginToken
+    )
+      .then((res) => {
+        quoteDetail = parseQuoteResponse(res);
+        return res;
+      })
+      .catch((e: Array<CustomError>) => {
+        if (Array.isArray(e)) {
+          e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
+        }
+        error = e;
+        return null;
+      });
+
+    if (res) {
+      const matched = res.DTOApplication.find(
+        (application) =>
+          application.ApplicationNumber === quoteNumber ||
+          application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
+      );
+      switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
+        case "BASIC":
+          selectedPlan = "Basic";
+          break;
+        case "STANDARD":
+          selectedPlan = "Standard";
+          break;
+        case "PREMIUM":
+          selectedPlan = "Premium";
+          break;
+      }
+    } else {
+      error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+        quoteNumber,
+      });
+    }
+
+    if (error) {
+      return {
+        props: {
+          user: session.user,
+          error,
+        },
+      };
+    } else {
+      return {
+        props: {
+          user: session.user,
+          quoteResponse: res,
+          quoteDetail,
+          selectedPlan,
+          insurer: {
+            firstName: quoteDetail.insurerFirstName,
+            lastName: quoteDetail.insurerLastName,
+            address: {
+              address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
+              unitNumber: quoteDetail.insuredAddress.Addr2,
+              requiredUnitNumber: false,
+              status: EAddressObjectStatus.success,
+            },
+          },
+        },
+      };
+    }
+  }
+
+  return {
+    redirect: {
+      destination: "/quote",
+    },
+  };
+}
 
 export default ReviewCoveragesPage;

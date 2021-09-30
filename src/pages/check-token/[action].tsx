@@ -2,13 +2,11 @@ import { useRouter } from "next/router";
 import { FunctionComponent, useEffect, useState } from "react";
 import queryString from "query-string";
 
-import { Loading } from "~/components";
-import { useAuth } from "~/hooks";
-import { logger } from "~/utils";
+import { Loading } from "~/frontend/components";
+import { logger } from "~/frontend/utils";
 
 const CheckTokenPage: FunctionComponent = () => {
   const router = useRouter();
-  const { isAuthenticated, login } = useAuth();
   const [isLoginCalled, setLoginCalled] = useState(false);
 
   const action = router.query.action;

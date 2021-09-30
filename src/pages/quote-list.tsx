@@ -1,9 +1,9 @@
 import { FunctionComponent, useState, useEffect } from "react";
 
-import { Screen, Container, Text } from "~/components";
-import { theme, utils } from "~/styles";
+import { Screen, Container, Text } from "~/frontend/components";
+import { theme, utils } from "~/frontend/styles";
 import { getQuoteList } from "~/lib/quote";
-import { useError, useLocale, useQuote } from "~/hooks";
+import { useError, useLocale, useQuote } from "~/frontend/hooks";
 import { CustomError, QuickQuoteInfo } from "~/types";
 
 import {
@@ -12,7 +12,7 @@ import {
   QuoteHeader,
   QuoteBody,
   QuoteRow,
-} from "~/screens/pages/quote-list";
+} from "~/frontend/screens/pages/quote-list";
 import { useRouter } from "next/router";
 import { getSession } from "~/lib/get-session";
 
