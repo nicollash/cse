@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment } from "react";
+import { FunctionComponent, Fragment, useEffect } from "react";
 import Head from "next/head";
 
 import { TBreadCrumb } from "~/types";
@@ -13,6 +13,8 @@ import CookieConsent from "react-cookie-consent";
 
 import { theme } from "~/styles";
 import { useLocale } from "~/hooks";
+import { checkLoggedIn, logout } from "~/services";
+import { showChat } from "~/utils";
 
 interface ScreenProps {
   title?: string;
@@ -25,6 +27,7 @@ interface ScreenProps {
   systemId?: string;
   className?: string;
   conversationId?: string;
+  user?: any;
 }
 
 export const Screen: FunctionComponent<ScreenProps> = ({
@@ -39,8 +42,29 @@ export const Screen: FunctionComponent<ScreenProps> = ({
   systemId,
   className,
   conversationId,
+  user,
 }) => {
   const { messages } = useLocale();
+
+  useEffect(() => {
+    let timer = null;
+    if (user) {
+      showChat(user.LoginId);
+      timer = setInterval(() => {
+        checkLoggedIn().then((res: any) => {
+          if (!res.isLoggedIn) {
+            clearInterval(timer);
+            logout();
+          }
+        });
+      }, 20 * 1000);
+    }
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [user]);
 
   return (
     <Fragment>

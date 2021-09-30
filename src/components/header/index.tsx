@@ -21,20 +21,20 @@ export const Header: FunctionComponent = () => {
   const [isQuotePage, setQuotePage] = useState(false);
   const [query, setQuery] = useState<string>("");
 
-  const parseLocation = useCallback((location) => {
+  const parseLocation = useCallback((router) => {
     if (
-      location.pathname === "" ||
-      location.pathname === "/quote" ||
-      location.pathname === "/quote-list"
+      router.pathname === "" ||
+      router.pathname === "/quote" ||
+      router.pathname === "/quote-list"
     ) {
       setQuotePage(false);
     } else {
       setQuotePage(true);
     }
 
-    if (location.search) {
-      const query = queryString.parse(location.search);
-      setQuery((query.query as string) || "");
+    if (router.query) {
+      const query = (router.query.query as string) || "";
+      setQuery(query);
     } else {
       setQuery("");
     }
@@ -140,7 +140,7 @@ export const Header: FunctionComponent = () => {
         <img
           css={styles.logo}
           src="/assets/images/CSE_tm_signature_rgb.png"
-          onClick={() => router.push("/quote")}
+          onClick={() => (location.href = "/quote")}
         />
         <div css={[utils.display("flex"), utils.alignItems("center")]}>
           <div css={[utils.display("flex"), utils.mr(7), styles.searchBox]}>
@@ -156,9 +156,9 @@ export const Header: FunctionComponent = () => {
               width="70px"
               css={styles.searchButton}
               onClick={() =>
-                router.push(
-                  query ? `/quote-list?query=${query}` : `/quote-list`
-                )
+                (location.href = query
+                  ? `/quote-list?query=${query}`
+                  : `/quote-list`)
               }
             >
               <Text color="white" size="18px">
@@ -177,7 +177,7 @@ export const Header: FunctionComponent = () => {
                     css={styles.listItem}
                     textAlign="right"
                     onClick={() => {
-                      router.push("/quote");
+                      location.href = "/quote";
                       closePopup();
                     }}
                   >
@@ -188,7 +188,7 @@ export const Header: FunctionComponent = () => {
                     css={styles.listItem}
                     textAlign="right"
                     onClick={() => {
-                      router.push("/quote-list");
+                      location.href = "/quote-list";
                       closePopup();
                     }}
                   >

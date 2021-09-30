@@ -17,11 +17,11 @@ import {
   Heading,
   Screen,
 } from "~/components";
-import { styles } from "~/screens/pages/customize/single-quote/styles";
+import { styles } from "~/screens/pages/customize/styles";
 import { utils } from "~/styles";
 import { getSession } from "~/lib/get-session";
 
-function QuotePage({ isLoggedIn }) {
+function QuotePage({ user }) {
   const router = useRouter();
   const { locale, messages } = useLocale();
   const { generateQuote } = useQuote();
@@ -242,7 +242,7 @@ function QuotePage({ isLoggedIn }) {
 
   return (
     <Fragment>
-      <Screen title={messages.MainTitle} loading={isLoading}>
+      <Screen title={messages.MainTitle} loading={isLoading} user={user}>
         <div css={[styles.background]}>
           <img src="/assets/images/home-background.png" css={[styles.image]} />
         </div>
@@ -314,7 +314,7 @@ function QuotePage({ isLoggedIn }) {
           </FormikProvider>
         </Container>
       </Screen>
-      <LoginModal isOpen={!isLoggedIn} />
+      <LoginModal isOpen={!user} />
     </Fragment>
   );
 }
@@ -324,7 +324,7 @@ export async function getServerSideProps({ req, res }) {
 
   return {
     props: {
-      isLoggedIn: !!session.user,
+      user: session.user,
     },
   };
 }

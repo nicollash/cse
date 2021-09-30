@@ -16,14 +16,13 @@ export default async function handler(
         res.status(200).json({ isLoggedIn: false });
       } else {
         const tokenInfo: any = await fetch(
-          `${config.apiBaseURL}/LogoutTokenRq/json`,
+          `${config.apiBaseURL}/ValidateProviderLoginTokenRq/json`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Accept: "application/json",
               "Access-Control-Allow-Origin": "*",
-              LoginToken: session.user.LoginToken,
             },
             body: JSON.stringify({
               LoginToken: session.user.LoginToken,
@@ -32,7 +31,6 @@ export default async function handler(
         ).then((res) => res.json());
 
         if (tokenInfo.tokenStatus === "Invalid") {
-          session.user = null;
           res.status(200).json({ isLoggedIn: false });
         } else {
           res.status(200).json({ isLoggedIn: true });
@@ -40,9 +38,9 @@ export default async function handler(
       }
     } catch (e) {
       console.log(e);
-      res.status(500);
+      res.status(500).send({});
     }
   } else {
-    res.status(404);
+    res.status(404).send({});
   }
 }

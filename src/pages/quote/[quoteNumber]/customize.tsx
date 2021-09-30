@@ -41,30 +41,24 @@ import {
   PlanItem,
 } from "~/screens/pages/customize/components";
 import { styles } from "~/screens/pages/customize/styles";
-import { useError, useLocale, useMobile, useQuote } from "~/hooks";
+import { useError, useLocale, useMobile } from "~/hooks";
 import { AdditionalInterestModal } from "~/screens/modals/additional-interest";
 import { LossHistoryModal } from "~/screens/modals/loss-history/single-quote";
 import { ErrorBox } from "~/components/error-box";
 import { UserInfoModal } from "~/screens/modals/user-info";
 import { useRouter } from "next/router";
-import { AuthGuard } from "~/screens/guards";
 import { QuoteLayout } from "~/screens/layouts";
+import { getSession } from "~/lib/get-session";
 
-const CustomizePage: FunctionComponent = () => {
+const CustomizePage: FunctionComponent<any> = ({
+  user,
+  quoteDetail,
+  error,
+}) => {
   const router = useRouter();
   const { messages } = useLocale();
   const { setError } = useError();
   const quoteNumber = router.query.quoteNumber as string;
-  const {
-    quoteDetail,
-    updateQuote,
-    updateQuoteDetail,
-    addDriver,
-    addVehicle,
-    updateDriverPoints,
-    externalApplicationCloseOut,
-    convertToApplication,
-  } = useQuote();
 
   const { mobileView } = useMobile();
 
@@ -203,6 +197,7 @@ const CustomizePage: FunctionComponent = () => {
       loading={isLoading}
       quoteNumber={quoteNumber}
       systemId={quoteDetail.systemId}
+      user={user}
     >
       {/* Tabs - Car/Auto for now */}
       <Container
@@ -231,11 +226,7 @@ const CustomizePage: FunctionComponent = () => {
             css={[styles.tabSelector, selectedTab === 1 && styles.selectedTab]}
             onClick={() => selectTab(1)}
           >
-            <img
-              height="12px"
-              src="/assets/icons/car1.png"
-              css={utils.mr(1)}
-            />
+            <img height="12px" src="/assets/icons/car1.png" css={utils.mr(1)} />
             <Text bold>{messages.Common.Policy}</Text>
           </Col>
           <Col
@@ -243,11 +234,7 @@ const CustomizePage: FunctionComponent = () => {
             css={[styles.tabSelector, selectedTab === 2 && styles.selectedTab]}
             onClick={() => selectTab(2)}
           >
-            <img
-              height="12px"
-              src="/assets/icons/car2.png"
-              css={utils.mr(1)}
-            />
+            <img height="12px" src="/assets/icons/car2.png" css={utils.mr(1)} />
             <Text bold>{messages.Common.Cars}</Text>
           </Col>
           <Col
@@ -267,11 +254,7 @@ const CustomizePage: FunctionComponent = () => {
             css={[styles.tabSelector, selectedTab === 4 && styles.selectedTab]}
             onClick={() => selectTab(4)}
           >
-            <img
-              height="12px"
-              src="/assets/icons/car1.png"
-              css={utils.mr(1)}
-            />
+            <img height="12px" src="/assets/icons/car1.png" css={utils.mr(1)} />
             <Text bold>{messages.Common.ReviewItems}</Text>
           </Col>
         </Row>
@@ -355,7 +338,11 @@ const CustomizePage: FunctionComponent = () => {
         <Container wide css={utils.display("flex")}>
           <Row css={[utils.fullWidth, styles.row]}>
             <Col
-              css={[selectedTab !== 2 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
+              css={[
+                selectedTab !== 2 && utils.hideOnMobile,
+                utils.display("flex"),
+                utils.flexDirection("column"),
+              ]}
               xl={3}
               lg={3}
               md={12}
@@ -393,7 +380,11 @@ const CustomizePage: FunctionComponent = () => {
             </Col>
 
             <Col
-              css={[selectedTab !== 3 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
+              css={[
+                selectedTab !== 3 && utils.hideOnMobile,
+                utils.display("flex"),
+                utils.flexDirection("column"),
+              ]}
               xl={3}
               lg={3}
               md={12}
@@ -430,7 +421,11 @@ const CustomizePage: FunctionComponent = () => {
             </Col>
 
             <Col
-              css={[selectedTab !== 3 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
+              css={[
+                selectedTab !== 3 && utils.hideOnMobile,
+                utils.display("flex"),
+                utils.flexDirection("column"),
+              ]}
               xl={3}
               lg={3}
               md={12}
@@ -470,7 +465,11 @@ const CustomizePage: FunctionComponent = () => {
             </Col>
 
             <Col
-              css={[selectedTab !== 4 && utils.hideOnMobile, utils.display('flex'), utils.flexDirection('column')]}
+              css={[
+                selectedTab !== 4 && utils.hideOnMobile,
+                utils.display("flex"),
+                utils.flexDirection("column"),
+              ]}
               xl={3}
               lg={3}
               md={12}
@@ -1024,7 +1023,14 @@ const CustomizePage: FunctionComponent = () => {
   );
 };
 
-(CustomizePage as any).Guard = AuthGuard;
-(CustomizePage as any).Layout = QuoteLayout;
+export async function getServerSideProps({ req, res }) {
+  const session = await getSession(req, res);
+
+  return {
+    props: {
+      user: session.user,
+    },
+  };
+}
 
 export default CustomizePage;

@@ -1,7 +1,7 @@
 export { ItemBlock } from "./item-block";
 export { ListItem } from "./list-item";
 export { ReviewItem } from "./review-item";
-export { PlanItem } from "./single-quote/plan-item";
+export { PlanItem } from "./plan-item";
 export { Pricing } from "./pricing";
 export { CarCovered } from "./car-covered";
 export { AddInterestItem } from "./add-interest-item";

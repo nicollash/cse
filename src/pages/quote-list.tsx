@@ -16,12 +16,15 @@ import {
 import { useRouter } from "next/router";
 import { getSession } from "~/lib/get-session";
 
-const QuoteListPage: FunctionComponent<any> = ({ query, searchResult }) => {
+const QuoteListPage: FunctionComponent<any> = ({
+  user,
+  query,
+  searchResult,
+  error: serverError,
+}) => {
   const router = useRouter();
   const { messages } = useLocale();
   const { setError } = useError();
-
-  const { getQuote } = useQuote();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(2);
@@ -44,7 +47,9 @@ const QuoteListPage: FunctionComponent<any> = ({ query, searchResult }) => {
   useEffect(() => {
     let error = "";
     let filteredQuotes = [];
-    if (searchResult.QuickQuoteInfo) {
+    if (serverError) {
+      setError(serverError);
+    } else if (searchResult.QuickQuoteInfo) {
       filteredQuotes = searchResult.QuickQuoteInfo.filter(
         (info) =>
           info.InsuredName.toLowerCase().includes(query.toLowerCase()) ||
@@ -65,13 +70,14 @@ const QuoteListPage: FunctionComponent<any> = ({ query, searchResult }) => {
       setLocalError(error);
     }
     setQuotes(filteredQuotes);
-  }, [router.query]);
+  }, [query, searchResult, serverError]);
 
   return (
     <Screen
       title={messages.MainTitle}
       breadCrumb={[{ link: "/quote", label: "Home" }, { label: "My Quotes" }]}
       css={[utils.flex(1), utils.flexDirection("column")]}
+      user={user}
     >
       <Container wide css={[utils.flex(1)]}>
         {error && (
@@ -158,14 +164,17 @@ export async function getServerSideProps({ req, res, query }) {
 
       return {
         props: {
+          user: session.user,
           searchResult: searchResult || {},
           query: queryString,
+          error: null,
         },
       };
     } catch (e) {
       if (e.httpRes.status !== 401) {
         return {
           props: {
+            user: session.user,
             error: e.data,
           },
         };
