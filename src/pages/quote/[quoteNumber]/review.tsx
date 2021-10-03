@@ -283,11 +283,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
 
       <Container wide css={utils.hideOnMobile}>
         <Row css={utils.fullWidth}>
-          <Col
-            md={12}
-            lg={9}
-            css={[utils.display("flex"), utils.flexDirection("column")]}
-          >
+          <Col md={12} lg={9}>
             {/* auto policy */}
             <div css={[styles.whiteBackground, styles.autoPolicy]}>
               <Text size="2.5em" bold css={utils.mb(7)}>
@@ -302,9 +298,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                 </Text>
 
                 <Row>
-                  <Col
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col>
                     {quoteDetail.drivers
                       .filter((driver) => driver.status === "Active")
                       .map((driver, key) => (
@@ -321,9 +315,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                     <div css={styles.infoItem}></div>
                   </Col>
 
-                  <Col
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col>
                     <div css={[styles.infoItem, utils.height("4.5em")]}>
                       <Text bold>
                         {messages.ReviewCoverages.TotalTermPrice}
@@ -354,10 +346,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                 </Text>
 
                 <Row>
-                  <Col
-                    xs={7}
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col xs={7}>
                     <div css={styles.infoItem}>
                       <Text bold>{messages.ReviewCoverages.BodilyInjury}</Text>
                       <Text size="1.25em" bold>
@@ -391,10 +380,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
                     </div>
                   </Col>
 
-                  <Col
-                    xs={5}
-                    css={[utils.display("flex"), utils.flexDirection("column")]}
-                  >
+                  <Col xs={5}>
                     <div css={styles.infoItem}>
                       <Text bold>
                         {messages.ReviewCoverages.MedicalPayments}
@@ -468,11 +454,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             </div>
           </Col>
 
-          <Col
-            md={12}
-            lg={3}
-            css={[utils.display("flex"), utils.flexDirection("column")]}
-          >
+          <Col md={12} lg={3}>
             <div css={[styles.whiteBackground, utils.pa(2), utils.fullHeight]}>
               {requiredItemsLabel.length > 0 && (
                 <ReviewItem
