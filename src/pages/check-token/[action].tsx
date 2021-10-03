@@ -18,13 +18,15 @@ const CheckTokenPage: FunctionComponent = () => {
   logger("query", router.query);
 
   useEffect(() => {
-    login(
-      router.query.userName as string,
-      router.query.password as string
-    ).finally(() => {
-      setLoginCalled(true);
-    });
-  }, []);
+    if (router.query.userName && router.query.password) {
+      login(
+        router.query.userName as string,
+        router.query.password as string
+      ).finally(() => {
+        setLoginCalled(true);
+      });
+    }
+  }, [router.query]);
 
   useEffect(() => {
     if (!isLoginCalled) {

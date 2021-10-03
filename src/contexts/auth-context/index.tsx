@@ -237,6 +237,7 @@ export const AuthProvider: FunctionComponent<AuthProviderProps> = ({
   }, []);
 
   const handleLogin = useCallback(async (loginId: string, password: string) => {
+    console.log('login', loginId, password);
     dispatch({
       type: "SetLastCred",
       payload: {
