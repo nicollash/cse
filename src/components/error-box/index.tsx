@@ -11,6 +11,7 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { config } from "~/config";
 import { formatErrorMessage } from "~/utils";
 import { SerializedStyles } from "@emotion/utils";
+import { decrypt } from "~/lib/encryption";
 
 interface ErrorProps {
   data: Array<ValidationError>;
@@ -22,7 +23,7 @@ interface ErrorProps {
 
 export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
   const [linesToShow, setShowLines] = useState({ lines: 3 });
-  const conversationId = localStorage.getItem("cse_ConversationId");
+  const conversationId = decrypt(localStorage.getItem("cse_ConversationId"));
 
   return (
     <Container
