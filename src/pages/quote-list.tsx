@@ -20,11 +20,10 @@ const QuoteListPage: FunctionComponent<any> = ({
   user,
   query,
   searchResult,
-  error: serverError,
+  lastError,
 }) => {
   const router = useRouter();
   const { messages } = useLocale();
-  const { setError } = useError();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(2);
@@ -47,9 +46,7 @@ const QuoteListPage: FunctionComponent<any> = ({
   useEffect(() => {
     let error = "";
     let filteredQuotes = [];
-    if (serverError) {
-      setError(serverError);
-    } else if (searchResult.QuickQuoteInfo) {
+    if (searchResult.QuickQuoteInfo) {
       filteredQuotes = searchResult.QuickQuoteInfo.filter(
         (info) =>
           info.InsuredName.toLowerCase().includes(query.toLowerCase()) ||
@@ -70,7 +67,7 @@ const QuoteListPage: FunctionComponent<any> = ({
       setLocalError(error);
     }
     setQuotes(filteredQuotes);
-  }, [query, searchResult, serverError]);
+  }, [query, searchResult]);
 
   return (
     <Screen
@@ -78,6 +75,7 @@ const QuoteListPage: FunctionComponent<any> = ({
       breadCrumb={[{ link: "/quote", label: "Home" }, { label: "My Quotes" }]}
       css={[utils.flex(1), utils.flexDirection("column")]}
       user={user}
+      lastError={lastError}
     >
       <Container wide css={[utils.flex(1)]}>
         {error && (
@@ -165,7 +163,7 @@ export async function getServerSideProps({ req, res, query }) {
           user: session.user,
           searchResult: searchResult || {},
           query: queryString,
-          error: null,
+          lastError: null,
         },
       };
     } catch (e) {
@@ -173,7 +171,7 @@ export async function getServerSideProps({ req, res, query }) {
         return {
           props: {
             user: session.user,
-            error: e.data,
+            lastError: e.data,
           },
         };
       }

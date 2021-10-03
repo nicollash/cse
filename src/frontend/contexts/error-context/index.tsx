@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/router";
 import { ErrorModal } from "~/frontend/screens/modals";
 import { CustomError, CustomErrorType } from "~/types";
+import { formRedirect } from "~/frontend/utils";
 
 // states and initial values
 
@@ -65,9 +66,11 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
     if (
       state &&
       state.error != null &&
-      state.error.some((er) => er.errorType === CustomErrorType.SESSION_EXPIRED)
+      (Array.isArray(state.error) ? state.error : [state.error]).some(
+        (er) => er.errorType === CustomErrorType.SESSION_EXPIRED
+      )
     ) {
-      logout();
+      formRedirect("/action/auth/logout");
     } else {
       if (state.error) {
         setShowErrorModal(true);

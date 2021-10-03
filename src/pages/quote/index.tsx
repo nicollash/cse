@@ -21,7 +21,7 @@ import { styles } from "~/frontend/screens/pages/quote/styles";
 import { utils } from "~/frontend/styles";
 import { getSession } from "~/backend/lib";
 
-function QuotePage({ user, ...props }) {
+function QuotePage({ user, lastError, ...props }) {
   const router = useRouter();
   const { locale, messages } = useLocale();
 
@@ -163,7 +163,12 @@ function QuotePage({ user, ...props }) {
 
   return (
     <Fragment>
-      <Screen title={messages.MainTitle} loading={isLoading} user={user}>
+      <Screen
+        title={messages.MainTitle}
+        loading={isLoading}
+        user={user}
+        lastError={lastError}
+      >
         <div css={[styles.background]}>
           <img src="/assets/images/home-background.png" css={[styles.image]} />
         </div>
@@ -243,11 +248,12 @@ function QuotePage({ user, ...props }) {
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
 
-  // const { loginError, generateQuoteError } = session;
+  const { lastError } = session;
 
   return {
     props: {
       user: session.user,
+      lastError,
     },
   };
 }

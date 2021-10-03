@@ -1,5 +1,5 @@
 import { config } from '~/config'
-import { logger } from '~/frontend/utils'
+import { logger } from '~/helpers'
 
 export const showChat = (firstName: string) => {
   try {

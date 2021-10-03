@@ -9,7 +9,7 @@ const Logout: NextPage = () => {
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
 
-  session.logoutResult = await AuthService.logout(session);
+  await AuthService.logout(session);
 
   return {
     redirect: {

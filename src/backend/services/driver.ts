@@ -1,16 +1,40 @@
-import { DriverInfo, DTOApplication, QuoteResponse } from '~/types'
-import { httpClient } from '~/frontend/utils'
-import { config } from '~/config'
+import { HttpService } from "~/backend/lib";
+import { DTOApplication, DriverInfo } from "~/types";
+import { config } from "~/config";
 
-export const addDriver = (NewDriver: DriverInfo, DTOApplication: DTOApplication[]) =>
-  httpClient<QuoteResponse>(`${config.apiBaseURL}/UpdateQuickQuoteRq/json`, 'POST', {
-    NewDriver,
-    DTOApplication,
-  })
+class DriverService {
+  static async addDriver(
+    user: any,
+    NewDriver: DriverInfo,
+    DTOApplication: DTOApplication[]
+  ) {
+    return HttpService.request(
+      `${config.apiBaseURL}/UpdateQuickQuoteRq/json`,
+      "POST",
+      {
+        NewDriver,
+        DTOApplication,
+      },
+      user.LoginToken
+    );
+  }
 
-  export const updateDriverPoints = (LoginId: string, NewDriverPoint: any, DTOApplication: Array<DTOApplication>) =>
-  httpClient<QuoteResponse>(`${config.apiBaseURL}/QQExternalDriverPointsSaveRq/json`, 'POST', {
-    LoginId,
-    ...NewDriverPoint,
-    DTOApplication,
-  })
+  static async updateDriverPoints(
+    user: any,
+    NewDriverPoint: any,
+    DTOApplication: Array<DTOApplication>
+  ) {
+    return HttpService.request(
+      `${config.apiBaseURL}/QQExternalDriverPointsSaveRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        ...NewDriverPoint,
+        DTOApplication,
+      },
+      user.LoginToken
+    );
+  }
+}
+
+export default DriverService;

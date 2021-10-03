@@ -1,7 +1,6 @@
 import { FunctionComponent, useReducer, useCallback } from 'react'
 import LogRocket from 'logrocket'
 
-import { useAuth } from '~/frontend/hooks'
 import {
   DriverPointsInfo,
   DTORisk,
@@ -12,7 +11,7 @@ import {
   QuoteResponse,
   SavePaymentRequestInfo,
 } from '~/types'
-import { logger } from '~/frontend/utils'
+import { logger } from '~/helpers'
 
 import {
   handleGenerateQuote as generateQuote,
@@ -35,7 +34,6 @@ import { initialQuoteState, QuoteContext, QuoteProviderProps } from './types'
 
 export const QuoteProvider: FunctionComponent<QuoteProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialQuoteState)
-  const { user } = useAuth()
 
   const handleGenerateQuote = useCallback(
     async (params: InsurerInfo) => {

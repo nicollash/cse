@@ -1,5 +1,4 @@
-import { logger } from "~/frontend/utils";
-import { config } from "~/config";
+import { logger } from "~/helpers";
 import { httpClient } from "./httpClient";
 import { EAddressObjectStatus } from "~/types";
 import { explodeAddress } from "~/helpers";

@@ -12,7 +12,7 @@ export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
   const { userId, password } = await parse(req);
 
-  session.loginResult = await AuthService.login(session, userId, password);
+  await AuthService.login(session, userId, password);
 
   return {
     redirect: {

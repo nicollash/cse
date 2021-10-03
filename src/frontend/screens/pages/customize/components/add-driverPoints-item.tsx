@@ -14,7 +14,7 @@ import { FormikTextArea } from '~/frontend/components/text-area';
 import { mediaBreakpointDown } from 'react-grid'
 import { convertDateToString } from '~/frontend/utils/mapping/helpers';
 import { ErrorMessage } from 'formik';
-import { logger } from '~/frontend/utils';
+import { logger } from '~/helpers';
 
 interface Props {
     item: DriverPointsInfo,

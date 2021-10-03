@@ -12,7 +12,7 @@ import { faExternalLinkSquareAlt } from "@fortawesome/free-solid-svg-icons";
 import CookieConsent from "react-cookie-consent";
 
 import { theme } from "~/frontend/styles";
-import { useLocale } from "~/frontend/hooks";
+import { useError, useLocale } from "~/frontend/hooks";
 import { formRedirect, httpClient, showChat } from "~/frontend/utils";
 
 interface ScreenProps {
@@ -27,6 +27,7 @@ interface ScreenProps {
   className?: string;
   conversationId?: string;
   user?: any;
+  lastError?: any;
 }
 
 export const Screen: FunctionComponent<ScreenProps> = ({
@@ -42,8 +43,10 @@ export const Screen: FunctionComponent<ScreenProps> = ({
   className,
   conversationId,
   user,
+  lastError,
 }) => {
   const { messages } = useLocale();
+  const { setError } = useError();
 
   useEffect(() => {
     let timer = null;
@@ -64,6 +67,16 @@ export const Screen: FunctionComponent<ScreenProps> = ({
       }
     };
   }, [user]);
+
+  useEffect(() => {
+    if (lastError) {
+      setError(lastError);
+    }
+  }, [lastError]);
+
+  if (lastError) {
+    return <Loading />;
+  }
 
   return (
     <Fragment>

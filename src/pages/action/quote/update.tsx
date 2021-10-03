@@ -2,8 +2,9 @@ import type { NextPage } from "next";
 import parse from "urlencoded-body-parser";
 import { getSession } from "~/backend/lib";
 import { QuoteService } from "~/backend/services";
+import { getUpdatedDTOApplication } from "~/helpers";
 
-const GenerateQuotePage: NextPage = (props) => {
+const UpdateQuotePage: NextPage = (props) => {
   return <div />;
 };
 
@@ -12,25 +13,17 @@ export async function getServerSideProps({ req, res }) {
   const body = await parse(req);
 
   if (session.user && body.form) {
-    const { firstName, lastName, address } = JSON.parse(body.form);
-
-    const { addressObj, addressInfo } = await QuoteService.parseAddress(
-      session.user,
-      address
-    );
+    const { quoteResponse, quoteDetail } = JSON.parse(body.form);
 
     try {
-      const result = await QuoteService.generateQuote(session.user, {
-        FirstName: firstName,
-        LastName: lastName,
-        Addr1: addressObj.street_address1,
-        Addr2: address.unitNumber
-          ? `${addressInfo.FragmentUnit} #${addressInfo.FragmentUnitNumber}`
-          : null,
-        City: addressObj.city,
-        StateProvCd: addressObj.state,
-        PostalCode: addressObj.postal_code,
-      });
+      const newDTOApplications = getUpdatedDTOApplication(
+        quoteResponse,
+        quoteDetail
+      );
+      const result = await QuoteService.updateQuote(
+        session.user,
+        newDTOApplications
+      );
 
       session.lastError = null;
 
@@ -49,4 +42,4 @@ export async function getServerSideProps({ req, res }) {
     },
   };
 }
-export default GenerateQuotePage;
+export default UpdateQuotePage;

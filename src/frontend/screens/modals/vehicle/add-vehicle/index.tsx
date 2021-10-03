@@ -1,8 +1,6 @@
-
-import { jsx } from '@emotion/react'
-import { FunctionComponent, useMemo, useState } from 'react'
-import { useFormik, FormikProvider } from 'formik'
-import * as Yup from 'yup'
+import { FunctionComponent, useMemo, useState } from "react";
+import { useFormik, FormikProvider } from "formik";
+import * as Yup from "yup";
 
 import {
   Modal,
@@ -12,32 +10,46 @@ import {
   Button,
   Hr,
   Text,
-} from '~/frontend/components'
-import { utils } from '~/frontend/styles'
-import { AddVehicleByData, AddVehicleByVIN, VehicleInfo, DTORisk } from '~/types'
-import { getRiskByVIN, getRiskByModelSystemID } from '~/backend/services/vehicle'
-import { parseRisk, getUpdatedRisk } from '~/frontend/utils'
+} from "~/frontend/components";
+import { utils } from "~/frontend/styles";
+import {
+  AddVehicleByData,
+  AddVehicleByVIN,
+  VehicleInfo,
+  DTORisk,
+  QuoteDetail,
+} from "~/types";
 
-import { EditVehicleModal } from '../edit-vehicle'
+import { EditVehicleModal } from "../edit-vehicle";
 
-import { styles } from './styles'
-import { useYearList, useMakeList, useModelList } from './hooks'
-import { useLocale } from '~/frontend/hooks'
+import { styles } from "./styles";
+import { useYearList, useMakeList, useModelList } from "./hooks";
+import { useLocale } from "~/frontend/hooks";
+import { getUpdatedRisk, parseRisk } from "~/helpers";
+import { formRedirect } from "~/frontend/utils";
+import { useRouter } from "next/router";
 
 interface Props {
-  isOpen: boolean
-  onCloseModal?: () => any
-  onAddVehicle?: (risk: DTORisk) => any
+  quoteDetail: QuoteDetail;
+  newRisk?: DTORisk;
+  isOpen: boolean;
+  onCloseModal?: () => any;
+  onAddVehicle?: (risk: DTORisk) => any;
 }
 
 export const AddVehicleModal: FunctionComponent<Props> = ({
   isOpen,
+  quoteDetail,
+  newRisk: defaultNewRisk,
   onCloseModal,
   onAddVehicle,
 }) => {
-  const { locale, messages } = useLocale()
-  const [editCarVisible, setEditCarVisible] = useState(false)
-  const [newRisk, setNewRisk] = useState<DTORisk>(null)
+  const router = useRouter();
+  const quoteNumber = router.query.quoteNumber as string;
+
+  const { locale, messages } = useLocale();
+  const [newRisk, setNewRisk] = useState<DTORisk>(defaultNewRisk);
+  const [editCarVisible, setEditCarVisible] = useState(!!defaultNewRisk);
 
   const schemaByVin = useMemo(
     () =>
@@ -47,8 +59,8 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
           .required(messages.CarModal.Errors.RequiredVinNumber)
           .max(17, messages.CarModal.Errors.VinNumberMaxLimitExceed),
       }),
-    [locale],
-  )
+    [locale]
+  );
 
   const formikByVin = useFormik<AddVehicleByVIN>({
     validationSchema: schemaByVin,
@@ -56,37 +68,17 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
     validateOnChange: true,
     validateOnBlur: false,
     initialValues: {
-      vinNumber: '',
+      vinNumber: "",
     },
     onSubmit: (value) => {
-      getRiskByVIN(value.vinNumber).then((res) => {
-        setNewRisk({
-          ...res.DTORisk[0],
-          QuestionReplies: [
-            {
-              QuestionReply: [
-                {
-                  Name: 'OtherOwners',
-                  Value: 'NO',
-                  VisibleInd: 'Yes'
-                },
-                {
-                  Name: 'SpecialModificationsEquipment',
-                  Value: 'NO',
-                  VisibleInd: 'Yes'
-                },
-                {
-                  Name: 'ExistingDamage',
-                  Value: 'NO',
-                  VisibleInd: 'Yes'
-                }
-              ]
-            }]
-        })
-        setEditCarVisible(true)
-      })
+      formRedirect("/action/quote/GetRiskByVIN", {
+        form: JSON.stringify({
+          vinNumber: value.vinNumber,
+          redirectURL: `/quote/${quoteNumber}/customize`,
+        }),
+      });
     },
-  })
+  });
 
   const schemaByData = useMemo(
     () =>
@@ -101,8 +93,8 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
           .label(messages.CarModal.Model)
           .required(messages.CarModal.Errors.RequireModel),
       }),
-    [locale],
-  )
+    [locale]
+  );
 
   const formikByData = useFormik<AddVehicleByData>({
     validationSchema: schemaByData,
@@ -110,43 +102,26 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
     validateOnChange: true,
     validateOnBlur: false,
     initialValues: {
-      year: '',
-      make: '',
-      model: '',
+      year: "",
+      make: "",
+      model: "",
     },
     onSubmit: (value) => {
-      getRiskByModelSystemID(value.model).then((res) => {
-        setNewRisk({
-          ...res.DTORisk[0],
-          QuestionReplies: [
-            {
-              QuestionReply: [
-                {
-                  Name: 'OtherOwners',
-                  Value: 'NO',
-                  VisibleInd: 'Yes'
-                },
-                {
-                  Name: 'SpecialModificationsEquipment',
-                  Value: 'NO',
-                  VisibleInd: 'Yes'
-                },
-                {
-                  Name: 'ExistingDamage',
-                  Value: 'NO',
-                  VisibleInd: 'Yes'
-                }
-              ]
-            }]
-        })
-        setEditCarVisible(true)
-      })
+      formRedirect("/action/quote/GetRiskByModelSystemID", {
+        form: JSON.stringify({
+          model: value.model,
+          redirectURL: `/quote/${quoteNumber}/customize`,
+        }),
+      });
     },
-  })
+  });
 
-  const yearList = useYearList()
-  const makeList = useMakeList(formikByData.values.year)
-  const modelList = useModelList(formikByData.values.year, formikByData.values.make)
+  const yearList = useYearList();
+  const makeList = useMakeList(formikByData.values.year);
+  const modelList = useModelList(
+    formikByData.values.year,
+    formikByData.values.make
+  );
 
   return (
     <Modal
@@ -159,8 +134,8 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
       <FormikProvider value={formikByVin}>
         <form
           onSubmit={(e) => {
-            e.preventDefault()
-            formikByVin.handleSubmit()
+            e.preventDefault();
+            formikByVin.handleSubmit();
           }}
           css={styles.form}
         >
@@ -171,10 +146,10 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
               onChange={(e) => {
                 formikByVin.handleChange({
                   target: {
-                    name: 'vinNumber',
+                    name: "vinNumber",
                     value: e.target.value.trim(),
                   },
-                })
+                });
               }}
             />
           </FormGroup>
@@ -186,9 +161,9 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
         </form>
       </FormikProvider>
 
-      <div css={[utils.display('flex'), utils.alignItems('center')]}>
+      <div css={[utils.display("flex"), utils.alignItems("center")]}>
         <Hr css={utils.flex(1)} />
-        <Text bold css={utils.mx('80px')}>
+        <Text bold css={utils.mx("80px")}>
           {messages.CarModal.Or}
         </Text>
         <Hr css={utils.flex(1)} />
@@ -197,12 +172,15 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
       <FormikProvider value={formikByData}>
         <form
           onSubmit={(e) => {
-            e.preventDefault()
-            formikByData.handleSubmit()
+            e.preventDefault();
+            formikByData.handleSubmit();
           }}
           css={styles.form}
         >
-          <FormGroup label={messages.CarModal.ModelYear} css={styles.modelSelector}>
+          <FormGroup
+            label={messages.CarModal.ModelYear}
+            css={styles.modelSelector}
+          >
             <FormikSelect
               name="year"
               css={styles.selectInput}
@@ -211,14 +189,14 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
                 value: item,
               }))}
               onChange={(e) => {
-                formikByData.setFieldValue('make', '')
-                formikByData.setFieldValue('model', '')
+                formikByData.setFieldValue("make", "");
+                formikByData.setFieldValue("model", "");
                 formikByData.handleChange({
                   target: {
-                    name: 'year',
+                    name: "year",
                     value: e.value,
                   },
-                })
+                });
               }}
             />
           </FormGroup>
@@ -229,13 +207,13 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
               options={makeList}
               noOptionsMessage={messages.Common.Errors.NoneAvailable}
               onChange={(e) => {
-                formikByData.setFieldValue('model', '')
+                formikByData.setFieldValue("model", "");
                 formikByData.handleChange({
                   target: {
-                    name: 'make',
+                    name: "make",
                     value: e.value,
                   },
-                })
+                });
               }}
             />
           </FormGroup>
@@ -248,10 +226,10 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
               onChange={(e) => {
                 formikByData.handleChange({
                   target: {
-                    name: 'model',
+                    name: "model",
                     value: e.value,
                   },
-                })
+                });
               }}
             />
           </FormGroup>
@@ -265,17 +243,18 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
 
       {newRisk && (
         <EditVehicleModal
+          quoteDetail={quoteDetail}
           isOpen={editCarVisible}
           defaultValue={parseRisk(newRisk)}
           onCloseModal={() => {
-            setEditCarVisible(false)
-            onCloseModal()
+            setEditCarVisible(false);
+            onCloseModal();
           }}
           onUpdate={(vehicleInfo: VehicleInfo) => {
-            onAddVehicle(getUpdatedRisk(newRisk, vehicleInfo))
+            onAddVehicle(getUpdatedRisk(newRisk, vehicleInfo));
           }}
         />
       )}
     </Modal>
-  )
-}
+  );
+};

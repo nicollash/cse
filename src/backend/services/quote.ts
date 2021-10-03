@@ -1,4 +1,4 @@
-import { explodeAddress } from "~/helpers";
+import { explodeAddress, handleSSN } from "~/helpers";
 import { HttpService } from "~/backend/lib";
 import {
   DTOApplication,
@@ -95,22 +95,48 @@ class QuoteService {
       user.LoginToken
     );
   }
+
+  static async updateQuote(user: any, DTOApplication: DTOApplication[]) {
+    return HttpService.request<QuoteResponse>(
+      `${config.apiBaseURL}/UpdateQuickQuoteRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        DTOApplication,
+      },
+      user.LoginToken
+    );
+  }
+
+  static async getInfractionList(user: any, DTOApplication: DTOApplication[]) {
+    return HttpService.request(
+      `${config.apiBaseURL}/QQGetInfractionListRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        DTOApplication: handleSSN(DTOApplication),
+      },
+      user.LoginToken
+    );
+  }
+
+  static async externalApplicationCloseOut(
+    user: any,
+    DTOApplication: DTOApplication
+  ) {
+    return HttpService.request(
+      `${config.apiBaseURL}/QQExternalApplicationCloseOutRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        DTOApplication,
+      },
+      user.LoginToken
+    );
+  }
 }
 
 export default QuoteService;
-
-// export const updateQuote = (
-//   LoginId: string,
-//   DTOApplication: DTOApplication[]
-// ) =>
-//   httpClient<QuoteResponse>(
-//     `${config.apiBaseURL}/UpdateQuickQuoteRq/json`,
-//     "POST",
-//     {
-//       LoginId,
-//       DTOApplication,
-//     }
-//   );
 
 // export const externalApplicationCloseOut = (
 //   LoginId: string,

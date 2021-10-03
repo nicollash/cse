@@ -1,52 +1,82 @@
-import { config } from '~/config'
-import { httpClient } from '~/frontend/utils'
+import { config } from "~/config";
 import {
   DTOApplication,
   DTORisk,
   MakeModelResponse,
   NewRiskResponse,
   QuoteResponse,
-} from '~/types'
+} from "~/types";
+import { HttpService } from "../lib";
 
-export const getMakeList = (year: string) =>
-  httpClient<MakeModelResponse>(
-    `${config.apiBaseURL}/GetVinManufacturerSelectListRq/json`,
-    'POST',
-    {
-      ModelYear: year,
-    },
-  ).then((res) => {
-    return res.Option?.map((el) => ({ label: el.Name, value: el.Name })) || []
-  })
+class VehicleService {
+  static async getMakeList(user: any, year: string) {
+    return HttpService.request<MakeModelResponse>(
+      `${config.apiBaseURL}/GetVinManufacturerSelectListRq/json`,
+      "POST",
+      {
+        ModelYear: year,
+      },
+      user.LoginToken
+    ).then((res) => {
+      return (
+        res.Option?.map((el) => ({ label: el.Name, value: el.Name })) || []
+      );
+    });
+  }
 
-export const getModelList = (year: string, make: string) =>
-  httpClient<MakeModelResponse>(
-    `${config.apiBaseURL}/GetVinModelSelectListRq/json`,
-    'POST',
-    {
-      ModelYear: year,
-      Manufacturer: make,
-    },
-  ).then((res) => {
-    return res.Option?.map((el) => ({ label: el.Name, value: el.Value })) || []
-  })
+  static async getModelList(user: any, year: string, make: string) {
+    return HttpService.request<MakeModelResponse>(
+      `${config.apiBaseURL}/GetVinModelSelectListRq/json`,
+      "POST",
+      {
+        ModelYear: year,
+        Manufacturer: make,
+      },
+      user.LoginToken
+    ).then((res) => {
+      return (
+        res.Option?.map((el) => ({ label: el.Name, value: el.Value })) || []
+      );
+    });
+  }
 
-export const getRiskByVIN = (VIN: string) =>
-  httpClient<NewRiskResponse>(`${config.apiBaseURL}/GetRiskByVehicleIdRq/json`, 'POST', {
-    VIN,
-  })
+  static async getRiskByVIN(user: any, VIN: string) {
+    return HttpService.request<NewRiskResponse>(
+      `${config.apiBaseURL}/GetRiskByVehicleIdRq/json`,
+      "POST",
+      {
+        VIN,
+      },
+      user.LoginToken
+    );
+  }
 
-export const getRiskByModelSystemID = (ModelSystemId: string) =>
-  httpClient<NewRiskResponse>(
-    `${config.apiBaseURL}/GetRiskByVehicleModelRq/json`,
-    'POST',
-    {
-      ModelSystemId,
-    },
-  )
+  static async getRiskByModelSystemID(user: any, ModelSystemId: string) {
+    return HttpService.request<NewRiskResponse>(
+      `${config.apiBaseURL}/GetRiskByVehicleModelRq/json`,
+      "POST",
+      {
+        ModelSystemId,
+      },
+      user.LoginToken
+    );
+  }
 
-export const addVehicle = (DTORisk: DTORisk, DTOApplication: DTOApplication[]) =>
-  httpClient<QuoteResponse>(`${config.apiBaseURL}/UpdateQuickQuoteRq/json`, 'POST', {
-    DTORisk,
-    DTOApplication,
-  })
+  static async addVehicle(
+    user: any,
+    DTORisk: DTORisk,
+    DTOApplication: DTOApplication[]
+  ) {
+    return HttpService.request<QuoteResponse>(
+      `${config.apiBaseURL}/UpdateQuickQuoteRq/json`,
+      "POST",
+      {
+        DTORisk,
+        DTOApplication,
+      },
+      user.LoginToken
+    );
+  }
+}
+
+export default VehicleService;

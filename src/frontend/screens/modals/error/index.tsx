@@ -5,13 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 
 import { Button, Modal, Text } from "~/frontend/components";
-import { useLocale, useQuote } from "~/frontend/hooks";
+import { useLocale } from "~/frontend/hooks";
 import { utils } from "~/frontend/styles";
 import { CustomError, CustomErrorType } from "~/types";
 import { config } from "~/config";
 import { styles } from "./styles";
 import { useRouter } from "next/router";
-import { formatErrorMessage } from "~/frontend/utils";
+import { formatErrorMessage, formRedirect } from "~/frontend/utils";
 
 interface Props {
   error?: Array<CustomError>;
@@ -21,15 +21,17 @@ interface Props {
 }
 
 export const ErrorModal: FunctionComponent<Props> = ({
-  error,
   conversationId,
   onGoHome,
   onClose,
+  ...props
 }) => {
+  const error = Array.isArray(props.error) ? props.error : [props.error];
   const { messages } = useLocale();
-  const { quoteDetail, selectedPlan } = useQuote();
 
   const router = useRouter();
+
+  const quoteNumber = router.query.quoteNumber;
 
   return (
     <Modal
@@ -41,21 +43,16 @@ export const ErrorModal: FunctionComponent<Props> = ({
         if (
           error.some(
             (e) =>
-              e.errorData.Name === "ApplicationNotFound" ||
-              e.errorData.Name === "ApplicationDeleted" ||
-              e.errorData.Name === "IncorrectOwner"
+              e.errorData &&
+              (e.errorData.Name === "ApplicationNotFound" ||
+                e.errorData.Name === "ApplicationDeleted" ||
+                e.errorData.Name === "IncorrectOwner")
           ) ||
           error.some((e) => e.errorType == CustomErrorType.PARSE_QUOTE_FAIL)
         ) {
-          router.push("/quote");
+          formRedirect("/quote");
         } else {
-          router.push(
-            `/quote/${
-              quoteDetail.planDetails?.applicationNumber
-                ? quoteDetail.planDetails?.applicationNumber
-                : quoteDetail.planInfo[selectedPlan].applicationNumber
-            }/customize`
-          );
+          location.reload();
         }
         onClose();
       }}
@@ -170,19 +167,14 @@ export const ErrorModal: FunctionComponent<Props> = ({
               QuoteNumber: {error[0].errorData.quoteNumber}
             </Text>
           ) : (
-            quoteDetail &&
-            (router.pathname.includes("/AP") ||
-              router.pathname.includes("/NB")) && (
+            quoteNumber && (
               <Text size="1em" css={[utils.mt(6), utils.textAlign("center")]}>
-                QuoteNumber:{" "}
-                {quoteDetail.planDetails?.applicationNumber
-                  ? quoteDetail.planDetails?.applicationNumber
-                  : quoteDetail.planInfo[selectedPlan].applicationNumber}
+                QuoteNumber: {quoteNumber}
               </Text>
             )
           )}
 
-          <a
+          {/* <a
             css={styles.centerLink}
             href={
               quoteDetail?.planDetails?.systemId
@@ -193,7 +185,7 @@ export const ErrorModal: FunctionComponent<Props> = ({
             rel="noreferrer"
           >
             {messages.ErrorModal.VisitSPINN}
-          </a>
+          </a> */}
         </div>
 
         {/*<a css={[styles.centerLink, utils.mt(1)]} href='' onClick={() => {
@@ -202,9 +194,10 @@ export const ErrorModal: FunctionComponent<Props> = ({
 
         {!error.some(
           (e) =>
-            e.errorData.Name === "ApplicationNotFound" ||
-            e.errorData.Name === "ApplicationDeleted" ||
-            e.errorData.Name === "IncorrectOwner"
+            e.errorData &&
+            (e.errorData.Name === "ApplicationNotFound" ||
+              e.errorData.Name === "ApplicationDeleted" ||
+              e.errorData.Name === "IncorrectOwner")
         ) &&
           !error.some(
             (e) => e.errorType == CustomErrorType.PARSE_QUOTE_FAIL
@@ -213,14 +206,7 @@ export const ErrorModal: FunctionComponent<Props> = ({
               css={utils.mt(4)}
               buttonType="black"
               onClick={() => {
-                router.push(
-                  `/quote/${
-                    quoteDetail.planDetails?.applicationNumber
-                      ? quoteDetail.planDetails?.applicationNumber
-                      : quoteDetail.planInfo[selectedPlan].applicationNumber
-                  }/customize`
-                );
-                onClose();
+                location.reload();
               }}
             >
               {"Go to customize"}

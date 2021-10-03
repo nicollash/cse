@@ -4,6 +4,7 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  Fragment,
 } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,7 +17,6 @@ import {
   Row,
   Col,
   Button,
-  Loading,
 } from "~/frontend/components";
 import {
   AddVehicleModal,
@@ -42,11 +42,7 @@ import {
   ValidationError,
 } from "~/types";
 
-import {
-  getNewDriverParam,
-  logger,
-  parseQuoteResponse,
-} from "~/frontend/utils";
+import { formRedirect } from "~/frontend/utils";
 
 import {
   ItemBlock,
@@ -57,27 +53,31 @@ import {
 import { styles } from "~/frontend/screens/pages/customize/styles";
 import { useError, useLocale, useMobile } from "~/frontend/hooks";
 import { AdditionalInterestModal } from "~/frontend/screens/modals/additional-interest";
-import { LossHistoryModal } from "~/frontend/screens/modals/loss-history/single-quote";
+import { LossHistoryModal } from "~/frontend/screens/modals/loss-history";
 import { ErrorBox } from "~/frontend/components/error-box";
 import { UserInfoModal } from "~/frontend/screens/modals/user-info";
 import { useRouter } from "next/router";
 import { getSession } from "~/backend/lib";
 import { QuoteService } from "~/backend/services";
+import { getNewDriverParam, logger, parseQuoteResponse } from "~/helpers";
 
 const CustomizePage: FunctionComponent<any> = ({
   user,
-  quoteDetail,
-  error,
+  lastError,
+  quoteDetail: originalQuoteDetail,
+  quoteResponse,
+  infractionList,
+  newRisk,
 }) => {
-  const router = useRouter();
   const { messages } = useLocale();
   const { setError } = useError();
+  const router = useRouter();
   const quoteNumber = router.query.quoteNumber as string;
 
   const { mobileView } = useMobile();
 
   // modal visibilities
-  const [addCarVisible, setAddCarVisible] = useState(false);
+  const [addCarVisible, setAddCarVisible] = useState(!!newRisk);
   const [editCarIndex, setEditCarIndex] = useState(null);
   const [deleteCarIndex, setDeleteCarIndex] = useState(null);
   const [editDriverIndex, setEditDriverIndex] = useState(null);
@@ -89,6 +89,9 @@ const CustomizePage: FunctionComponent<any> = ({
   const [selectedTab, selectTab] = useState(1);
   const [showDetail, setShowDetail] = useState(false);
   const [reviewableItems, setReviewableItems] = useState([]);
+
+  const [quoteDetail, setQuoteDetail] = useState(originalQuoteDetail);
+
   const [isLoading, setLoading] = useState(false);
 
   const [additionalInterestRequired, setAdditionalInterestVisible] =
@@ -97,32 +100,48 @@ const CustomizePage: FunctionComponent<any> = ({
 
   const [userInfoRequired, setUserInfoVisible] = useState(false);
 
-  const calcRequiredItemsLabel = (qD: QuoteDetail) => {
-    return [
-      ...qD.vehicles
-        .filter(
-          (v) =>
-            v.status === "Active" &&
-            (v.vinNumber === undefined ||
-              v.odometerReading === undefined ||
-              v.readingDate === undefined)
-        )
-        .map(
-          (info) =>
-            `${[
-              info.vinNumber ? undefined : "Vin Number",
-              info.odometerReading && info.readingDate ? undefined : "Odometer",
-            ]
-              .filter((v) => !!v)
-              .join(",")} - ${info.model}`
-        ),
-      ...qD.drivers
-        .filter((v) => v.status === "Active" && v.licenseNumber === "")
-        .map(
-          (info) => `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
-        ),
-    ];
-  };
+  const updateQuoteDetail = useCallback(
+    (newData) => setQuoteDetail((qD) => ({ ...qD, ...newData })),
+    []
+  );
+
+  const updateQuote = useCallback((quoteData) => {
+    formRedirect("/action/quote/update", {
+      form: JSON.stringify(quoteData),
+    });
+  }, []);
+
+  const calcRequiredItemsLabel = useCallback((qD: QuoteDetail) => {
+    return qD
+      ? [
+          ...qD.vehicles
+            .filter(
+              (v) =>
+                v.status === "Active" &&
+                (v.vinNumber === undefined ||
+                  v.odometerReading === undefined ||
+                  v.readingDate === undefined)
+            )
+            .map(
+              (info) =>
+                `${[
+                  info.vinNumber ? undefined : "Vin Number",
+                  info.odometerReading && info.readingDate
+                    ? undefined
+                    : "Odometer",
+                ]
+                  .filter((v) => !!v)
+                  .join(",")} - ${info.model}`
+            ),
+          ...qD.drivers
+            .filter((v) => v.status === "Active" && v.licenseNumber === "")
+            .map(
+              (info) =>
+                `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
+            ),
+        ]
+      : [];
+  }, []);
   const requiredItemsLabel = useMemo(() => {
     return calcRequiredItemsLabel(quoteDetail);
   }, [quoteDetail]);
@@ -163,13 +182,15 @@ const CustomizePage: FunctionComponent<any> = ({
       newDriverPoints: DriverPointsInfo
     ) => {
       setLoading(true);
-      updateDriverPoints(action, driverNumber, newDriverPoints)
-        .then(() => {
-          setLoading(false);
-        })
-        .catch((e) => {
-          setError(e);
-        });
+      formRedirect("/action/quote/UpdateDriverPoints", {
+        form: JSON.stringify({
+          action,
+          driverNumber,
+          newDriverPoints,
+          quoteResponse,
+          redirectURL: `/quote/${quoteNumber}/customize`,
+        }),
+      });
     },
     []
   );
@@ -177,13 +198,13 @@ const CustomizePage: FunctionComponent<any> = ({
   const processExternalApplicationCloseOut = useCallback(
     (updatedQuote: QuoteDetail) => {
       setLoading(true);
-      externalApplicationCloseOut(updatedQuote)
-        .then(() => {
-          setLoading(false);
-        })
-        .catch((e) => {
-          setError(e);
-        });
+      formRedirect("/action/quote/ExternalApplicationCloseOut", {
+        form: JSON.stringify({
+          updatedQuote,
+          quoteResponse,
+          redirectURL: `/quote/${quoteNumber}/customize`,
+        }),
+      });
     },
     []
   );
@@ -192,23 +213,17 @@ const CustomizePage: FunctionComponent<any> = ({
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Customize Page View");
 
-    if (error) {
-      setError(error);
+    if (quoteDetail) {
+      setReviewableItems([
+        ...quoteDetail.vehicles
+          .filter((vehicle) => vehicle.status === "Active")
+          .map((vehicle) => vehicle.id),
+        ...quoteDetail.drivers
+          .filter((driver) => driver.status === "Active")
+          .map((driver) => driver.id),
+      ]);
     }
-
-    setReviewableItems([
-      ...quoteDetail.vehicles
-        .filter((vehicle) => vehicle.status === "Active")
-        .map((vehicle) => vehicle.id),
-      ...quoteDetail.drivers
-        .filter((driver) => driver.status === "Active")
-        .map((driver) => driver.id),
-    ]);
   }, []);
-
-  if (error || !quoteDetail) {
-    return <Loading />;
-  }
 
   return (
     <Screen
@@ -218,363 +233,260 @@ const CustomizePage: FunctionComponent<any> = ({
       css={[utils.flex(1), utils.flexDirection("column")]}
       loading={isLoading}
       quoteNumber={quoteNumber}
-      systemId={quoteDetail.systemId}
+      systemId={quoteDetail?.systemId}
       user={user}
+      lastError={lastError && JSON.parse(lastError)}
     >
-      {/* Tabs - Car/Auto for now */}
-      <Container
-        wide
-        css={[
-          utils.display("flex"),
-          utils.alignItems("flex-start"),
-          //utils.mt('60px'),
-          utils.hideOnMobile,
-        ]}
-      >
-        {/* Header */}
-        <div css={[styles.tab, styles.activeTab]}>
-          <Text size="2.5em" bold>
-            <img src="/assets/icons/car1.png" css={utils.mr(1)} />
-            {messages.Common.Car}
-          </Text>
-        </div>
-      </Container>
-
-      {/* Mobile Tabs */}
-      <Container css={[utils.fullWidth, utils.visibleOnMobile, utils.pa(0)]}>
-        <Row css={utils.flexWrap("nowrap")}>
-          <Col
-            data-testid="mobile-tab-policy"
-            css={[styles.tabSelector, selectedTab === 1 && styles.selectedTab]}
-            onClick={() => selectTab(1)}
-          >
-            <img height="12px" src="/assets/icons/car1.png" css={utils.mr(1)} />
-            <Text bold>{messages.Common.Policy}</Text>
-          </Col>
-          <Col
-            data-testid="mobile-tab-cars"
-            css={[styles.tabSelector, selectedTab === 2 && styles.selectedTab]}
-            onClick={() => selectTab(2)}
-          >
-            <img height="12px" src="/assets/icons/car2.png" css={utils.mr(1)} />
-            <Text bold>{messages.Common.Cars}</Text>
-          </Col>
-          <Col
-            data-testid="mobile-tab-drivers"
-            css={[styles.tabSelector, selectedTab === 3 && styles.selectedTab]}
-            onClick={() => selectTab(3)}
-          >
-            <img
-              height="12px"
-              src="/assets/icons/steering.png"
-              css={utils.mr(1)}
-            />
-            <Text bold>{messages.Common.Drivers}</Text>
-          </Col>
-          <Col
-            data-testid="mobile-tab-reviewItems"
-            css={[styles.tabSelector, selectedTab === 4 && styles.selectedTab]}
-            onClick={() => selectTab(4)}
-          >
-            <img height="12px" src="/assets/icons/car1.png" css={utils.mr(1)} />
-            <Text bold>{messages.Common.ReviewItems}</Text>
-          </Col>
-        </Row>
-      </Container>
-
-      <Container
-        data-testid="text-quotenumber"
-        css={[
-          utils.fullWidth,
-          utils.visibleOnMobile,
-          utils.my(3),
-          utils.centerAlign,
-        ]}
-      >
-        <Text>{quoteNumber}</Text>
-      </Container>
-
-      {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
-        <div
-          data-testid="error-box-mobile"
-          css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3)]}
-        >
-          <ErrorBox
-            conversationId={user.ResponseParams[0].ConversationId}
-            data={quoteDetail.validationError}
-            systemId={quoteDetail.systemId}
-            actions={[
-              {
-                //Rated mileage on Veh
-                text: "View",
-                contains: "Rated mileage on Veh#",
-                action: (e: ValidationError) => {
-                  const sT = e.Msg.substring(
-                    e.Msg.lastIndexOf("#") + 1,
-                    e.Msg.indexOf(" has")
-                  ).trim();
-                  logger(`editing vehicle: ${sT}`);
-                  setEditCarIndex(parseInt(sT) - 1);
-                },
-              },
+      {quoteDetail && (
+        <Fragment>
+          {/* Tabs - Car/Auto for now */}
+          <Container
+            wide
+            css={[
+              utils.display("flex"),
+              utils.alignItems("flex-start"),
+              //utils.mt('60px'),
+              utils.hideOnMobile,
             ]}
-          />
-        </div>
-      )}
-
-      {/* Items */}
-      <div
-        css={[
-          styles.whiteBackground,
-          utils.py("16px"),
-          selectedTab === 1 && utils.hideOnMobile,
-        ]}
-      >
-        {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
-          <div css={[utils.fullWidth, utils.mx("auto")]}>
-            <div css={[utils.mb(3), utils.hideOnMobile]}>
-              <ErrorBox
-                conversationId={user.ResponseParams[0].ConversationId}
-                css={utils.maxWidth("65%")}
-                cp={true}
-                data={quoteDetail.validationError}
-                systemId={quoteDetail.systemId}
-                actions={[
-                  {
-                    //Rated mileage on Veh
-                    text: "View",
-                    contains: "Rated mileage on Veh#",
-                    action: (e: ValidationError) => {
-                      const sT = e.Msg.substring(
-                        e.Msg.lastIndexOf("#") + 1,
-                        e.Msg.indexOf(" has")
-                      ).trim();
-                      logger(`editing vehicle: ${sT}`);
-                      setEditCarIndex(parseInt(sT) - 1);
-                    },
-                  },
-                ]}
-              />
+          >
+            {/* Header */}
+            <div css={[styles.tab, styles.activeTab]}>
+              <Text size="2.5em" bold>
+                <img src="/assets/icons/car1.png" css={utils.mr(1)} />
+                {messages.Common.Car}
+              </Text>
             </div>
-          </div>
-        )}
+          </Container>
 
-        <Container wide css={utils.display("flex")}>
-          <Row css={[utils.fullWidth, styles.row]}>
-            <Col
-              css={[selectedTab !== 2 && utils.hideOnMobile]}
-              xl={3}
-              lg={3}
-              md={12}
-            >
-              <ItemBlock
-                data-testid="block-vehicles"
-                icon="/assets/icons/car2.png"
-                headerText={messages.Common.Cars}
-              >
-                {quoteDetail.vehicles.map(
-                  (vehicle, key) =>
-                    vehicle.status === "Active" && (
-                      <ListItem
-                        data-testid={`vehicle-${key}`}
-                        key={key}
-                        text={vehicle.model}
-                        onEdit={() => setEditCarIndex(key)}
-                        onDelete={() => setDeleteCarIndex(key)}
-                      />
-                    )
-                )}
-
-                <Button
-                  data-testid="button-add-vehicle"
-                  width="120px"
-                  css={utils.mt(5)}
-                  onClick={() => setAddCarVisible(true)}
-                >
-                  <Text color="white">
-                    <FontAwesomeIcon icon={faPlus} css={utils.mr(2)} />
-                    {messages.Customize.Add}
-                  </Text>
-                </Button>
-              </ItemBlock>
-            </Col>
-
-            <Col
-              css={[selectedTab !== 3 && utils.hideOnMobile]}
-              xl={3}
-              lg={3}
-              md={12}
-            >
-              <ItemBlock
-                data-testid="block-drivers"
-                icon="/assets/icons/steering.png"
-                headerText={messages.Common.Drivers}
-              >
-                {quoteDetail.drivers.map(
-                  (driver, key) =>
-                    driver.status === "Active" && (
-                      <ListItem
-                        data-testid={`driver-${key}`}
-                        text={`${driver.firstName} ${driver.lastName}`}
-                        key={key}
-                        onEdit={() => setEditDriverIndex(key)}
-                        onDelete={() => setDeleteDriverIndex(key)}
-                      />
-                    )
-                )}
-                <Button
-                  data-testid="button-add-driver"
-                  width="120px"
-                  css={utils.mt(5)}
-                  onClick={() => setEditDriverIndex("new")}
-                >
-                  <Text color="white">
-                    <FontAwesomeIcon icon={faPlus} css={utils.mr(2)} />
-                    {messages.Customize.Add}
-                  </Text>
-                </Button>
-              </ItemBlock>
-            </Col>
-
-            <Col
-              css={[selectedTab !== 3 && utils.hideOnMobile]}
-              xl={3}
-              lg={3}
-              md={12}
-            >
-              <PlanItem
-                data-testid={"Standard"}
-                planInfo={quoteDetail.planDetails}
-                onCustomize={() => setAutoPolicyModalVisible(true)}
-                onSelect={() => {}}
-                selected={true}
-                showDetail={showDetail}
-                toggleDetails={() => setShowDetail((state) => !state)}
-                onUpdatePlanInfo={(updatedPlanInfo) => {
-                  updateQuoteDetail({
-                    planDetails: updatedPlanInfo,
-                  });
-                }}
-                onContinueToCheckout={() => {
-                  processCheckout();
-                }}
-                changeEffectiveDate={(e) => {
-                  setLoading(true);
-                  updateQuote({
-                    ...quoteDetail,
-                    planDetails: {
-                      ...quoteDetail.planDetails,
-                      effectiveDate: e,
-                    },
-                  })
-                    .then(() => {})
-                    .catch((e) => {
-                      setError(e);
-                    })
-                    .finally(() => setLoading(false));
-                }}
-              />
-            </Col>
-
-            <Col
-              css={[selectedTab !== 4 && utils.hideOnMobile]}
-              xl={3}
-              lg={3}
-              md={12}
-            >
-              <ItemBlock
-                data-testid="block-review-items"
-                icon="/assets/icons/car1.png"
-                headerText={messages.Common.ReviewItems}
-              >
-                {quoteDetail.vehicles.map(
-                  (vehicle, key) =>
-                    reviewableItems.includes(vehicle.id) &&
-                    vehicle.status === "Active" && (
-                      <ListItem
-                        data-testid={`review-item-${vehicle.id}`}
-                        key={key}
-                        text={vehicle.model}
-                        onEdit={() => setEditCarIndex(key)}
-                      />
-                    )
-                )}
-                {quoteDetail.drivers.map(
-                  (driver, key) =>
-                    reviewableItems.includes(driver.id) &&
-                    driver.status === "Active" && (
-                      <ListItem
-                        data-testid={`review-item-${driver.id}`}
-                        text={`${driver.firstName} ${driver.lastName}`}
-                        key={key}
-                        onEdit={() => setEditDriverIndex(key)}
-                      />
-                    )
-                )}
-                <ReviewItem
-                  data-testid="review-item-discount"
-                  css={utils.mt(3)}
-                  header={messages.Customize.AppliedDiscounts}
-                  items={quoteDetail.discounts
-                    .filter((discount) => discount.applied === "Yes")
-                    .map((discount) => discount.description)}
-                  onEdit={() => setDiscountsModalVisible(true)}
-                />
-                {requiredItemsLabel.length > 0 && (
-                  <ReviewItem
-                    data-testid="review-item-required"
-                    css={utils.mt(3)}
-                    header={messages.Customize.RequiredInformation}
-                    items={requiredItemsLabel}
-                    onEdit={() =>
-                      setRequiredInformationModalVisible({
-                        required: true,
-                        from: "review-item",
-                      })
-                    }
-                  />
-                )}
-                <ReviewItem
-                  css={utils.mt(3)}
-                  header={messages.AIModal.Title}
-                  onEdit={() => {
-                    setAdditionalInterestVisible(true);
-                  }}
-                />
-                <ReviewItem
-                  css={utils.mt(3)}
-                  header={"Loss History"}
-                  onEdit={() => {
-                    setLossHistoryVisible(true);
-                  }}
-                />
-              </ItemBlock>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-
-      {/* Plan */}
-      {!quoteDetail.infoReq && mobileView ? (
-        <Container
-          wide
-          css={[utils.flex(1), selectedTab !== 1 && utils.hideOnMobile]}
-        >
-          <Row css={[utils.fullWidth, utils.ma(0)]}>
-            <Col xl={12} lg={12}>
-              <Row
+          {/* Mobile Tabs */}
+          <Container
+            css={[utils.fullWidth, utils.visibleOnMobile, utils.pa(0)]}
+          >
+            <Row css={utils.flexWrap("nowrap")}>
+              <Col
+                data-testid="mobile-tab-policy"
                 css={[
-                  utils.display("flex"),
-                  utils.justifyContent("center"),
-                  utils.alignItems("center"),
-                  styles.row,
+                  styles.tabSelector,
+                  selectedTab === 1 && styles.selectedTab,
                 ]}
+                onClick={() => selectTab(1)}
               >
+                <img
+                  height="12px"
+                  src="/assets/icons/car1.png"
+                  css={utils.mr(1)}
+                />
+                <Text bold>{messages.Common.Policy}</Text>
+              </Col>
+              <Col
+                data-testid="mobile-tab-cars"
+                css={[
+                  styles.tabSelector,
+                  selectedTab === 2 && styles.selectedTab,
+                ]}
+                onClick={() => selectTab(2)}
+              >
+                <img
+                  height="12px"
+                  src="/assets/icons/car2.png"
+                  css={utils.mr(1)}
+                />
+                <Text bold>{messages.Common.Cars}</Text>
+              </Col>
+              <Col
+                data-testid="mobile-tab-drivers"
+                css={[
+                  styles.tabSelector,
+                  selectedTab === 3 && styles.selectedTab,
+                ]}
+                onClick={() => selectTab(3)}
+              >
+                <img
+                  height="12px"
+                  src="/assets/icons/steering.png"
+                  css={utils.mr(1)}
+                />
+                <Text bold>{messages.Common.Drivers}</Text>
+              </Col>
+              <Col
+                data-testid="mobile-tab-reviewItems"
+                css={[
+                  styles.tabSelector,
+                  selectedTab === 4 && styles.selectedTab,
+                ]}
+                onClick={() => selectTab(4)}
+              >
+                <img
+                  height="12px"
+                  src="/assets/icons/car1.png"
+                  css={utils.mr(1)}
+                />
+                <Text bold>{messages.Common.ReviewItems}</Text>
+              </Col>
+            </Row>
+          </Container>
+
+          <Container
+            data-testid="text-quotenumber"
+            css={[
+              utils.fullWidth,
+              utils.visibleOnMobile,
+              utils.my(3),
+              utils.centerAlign,
+            ]}
+          >
+            <Text>{quoteNumber}</Text>
+          </Container>
+
+          {quoteDetail?.validationError &&
+            quoteDetail.validationError.length > 0 && (
+              <div
+                data-testid="error-box-mobile"
+                css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3)]}
+              >
+                <ErrorBox
+                  conversationId={user.ResponseParams[0].ConversationId}
+                  data={quoteDetail.validationError}
+                  systemId={quoteDetail.systemId}
+                  actions={[
+                    {
+                      //Rated mileage on Veh
+                      text: "View",
+                      contains: "Rated mileage on Veh#",
+                      action: (e: ValidationError) => {
+                        const sT = e.Msg.substring(
+                          e.Msg.lastIndexOf("#") + 1,
+                          e.Msg.indexOf(" has")
+                        ).trim();
+                        logger(`editing vehicle: ${sT}`);
+                        setEditCarIndex(parseInt(sT) - 1);
+                      },
+                    },
+                  ]}
+                />
+              </div>
+            )}
+
+          {/* Items */}
+          <div
+            css={[
+              styles.whiteBackground,
+              utils.py("16px"),
+              selectedTab === 1 && utils.hideOnMobile,
+            ]}
+          >
+            {quoteDetail?.validationError &&
+              quoteDetail.validationError.length > 0 && (
+                <div css={[utils.fullWidth, utils.mx("auto")]}>
+                  <div css={[utils.mb(3), utils.hideOnMobile]}>
+                    <ErrorBox
+                      conversationId={user.ResponseParams[0].ConversationId}
+                      css={utils.maxWidth("65%")}
+                      cp={true}
+                      data={quoteDetail.validationError}
+                      systemId={quoteDetail.systemId}
+                      actions={[
+                        {
+                          //Rated mileage on Veh
+                          text: "View",
+                          contains: "Rated mileage on Veh#",
+                          action: (e: ValidationError) => {
+                            const sT = e.Msg.substring(
+                              e.Msg.lastIndexOf("#") + 1,
+                              e.Msg.indexOf(" has")
+                            ).trim();
+                            logger(`editing vehicle: ${sT}`);
+                            setEditCarIndex(parseInt(sT) - 1);
+                          },
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+              )}
+
+            <Container wide css={utils.display("flex")}>
+              <Row css={[utils.fullWidth, styles.row]}>
                 <Col
-                  css={[styles.col, !mobileView && utils.maxWidth("60%")]}
-                  key={"Standard"}
-                  xl={8}
-                  lg={12}
+                  css={[selectedTab !== 2 && utils.hideOnMobile]}
+                  xl={3}
+                  lg={3}
+                  md={12}
+                >
+                  <ItemBlock
+                    data-testid="block-vehicles"
+                    icon="/assets/icons/car2.png"
+                    headerText={messages.Common.Cars}
+                  >
+                    {quoteDetail.vehicles.map(
+                      (vehicle, key) =>
+                        vehicle.status === "Active" && (
+                          <ListItem
+                            data-testid={`vehicle-${key}`}
+                            key={key}
+                            text={vehicle.model}
+                            onEdit={() => setEditCarIndex(key)}
+                            onDelete={() => setDeleteCarIndex(key)}
+                          />
+                        )
+                    )}
+
+                    <Button
+                      data-testid="button-add-vehicle"
+                      width="120px"
+                      css={utils.mt(5)}
+                      onClick={() => setAddCarVisible(true)}
+                    >
+                      <Text color="white">
+                        <FontAwesomeIcon icon={faPlus} css={utils.mr(2)} />
+                        {messages.Customize.Add}
+                      </Text>
+                    </Button>
+                  </ItemBlock>
+                </Col>
+
+                <Col
+                  css={[selectedTab !== 3 && utils.hideOnMobile]}
+                  xl={3}
+                  lg={3}
+                  md={12}
+                >
+                  <ItemBlock
+                    data-testid="block-drivers"
+                    icon="/assets/icons/steering.png"
+                    headerText={messages.Common.Drivers}
+                  >
+                    {quoteDetail.drivers.map(
+                      (driver, key) =>
+                        driver.status === "Active" && (
+                          <ListItem
+                            data-testid={`driver-${key}`}
+                            text={`${driver.firstName} ${driver.lastName}`}
+                            key={key}
+                            onEdit={() => setEditDriverIndex(key)}
+                            onDelete={() => setDeleteDriverIndex(key)}
+                          />
+                        )
+                    )}
+                    <Button
+                      data-testid="button-add-driver"
+                      width="120px"
+                      css={utils.mt(5)}
+                      onClick={() => setEditDriverIndex("new")}
+                    >
+                      <Text color="white">
+                        <FontAwesomeIcon icon={faPlus} css={utils.mr(2)} />
+                        {messages.Customize.Add}
+                      </Text>
+                    </Button>
+                  </ItemBlock>
+                </Col>
+
+                <Col
+                  css={[selectedTab !== 3 && utils.hideOnMobile]}
+                  xl={3}
+                  lg={3}
+                  md={12}
                 >
                   <PlanItem
                     data-testid={"Standard"}
@@ -600,29 +512,208 @@ const CustomizePage: FunctionComponent<any> = ({
                           ...quoteDetail.planDetails,
                           effectiveDate: e,
                         },
-                      })
-                        .then(() => {})
-                        .catch((e) => {
-                          setError(e);
-                        })
-                        .finally(() => setLoading(false));
+                      });
                     }}
                   />
                 </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Container>
-      ) : null}
 
-      {/* Details */}
-      {showDetail && (
-        <div css={[styles.whiteBackground, utils.py("16px"), utils.my("16px")]}>
-          <Container wide>
-            {quoteDetail.planDetails.vehicleInfo
-              .filter((vehicle) => vehicle.status === "Active")
-              .map((vehicle, key) => (
-                <Row key={key} css={[utils.fullWidth, utils.my("20px")]}>
+                <Col
+                  css={[selectedTab !== 4 && utils.hideOnMobile]}
+                  xl={3}
+                  lg={3}
+                  md={12}
+                >
+                  <ItemBlock
+                    data-testid="block-review-items"
+                    icon="/assets/icons/car1.png"
+                    headerText={messages.Common.ReviewItems}
+                  >
+                    {quoteDetail.vehicles.map(
+                      (vehicle, key) =>
+                        reviewableItems.includes(vehicle.id) &&
+                        vehicle.status === "Active" && (
+                          <ListItem
+                            data-testid={`review-item-${vehicle.id}`}
+                            key={key}
+                            text={vehicle.model}
+                            onEdit={() => setEditCarIndex(key)}
+                          />
+                        )
+                    )}
+                    {quoteDetail.drivers.map(
+                      (driver, key) =>
+                        reviewableItems.includes(driver.id) &&
+                        driver.status === "Active" && (
+                          <ListItem
+                            data-testid={`review-item-${driver.id}`}
+                            text={`${driver.firstName} ${driver.lastName}`}
+                            key={key}
+                            onEdit={() => setEditDriverIndex(key)}
+                          />
+                        )
+                    )}
+                    <ReviewItem
+                      data-testid="review-item-discount"
+                      css={utils.mt(3)}
+                      header={messages.Customize.AppliedDiscounts}
+                      items={quoteDetail.discounts
+                        .filter((discount) => discount.applied === "Yes")
+                        .map((discount) => discount.description)}
+                      onEdit={() => setDiscountsModalVisible(true)}
+                    />
+                    {requiredItemsLabel.length > 0 && (
+                      <ReviewItem
+                        data-testid="review-item-required"
+                        css={utils.mt(3)}
+                        header={messages.Customize.RequiredInformation}
+                        items={requiredItemsLabel}
+                        onEdit={() =>
+                          setRequiredInformationModalVisible({
+                            required: true,
+                            from: "review-item",
+                          })
+                        }
+                      />
+                    )}
+                    <ReviewItem
+                      css={utils.mt(3)}
+                      header={messages.AIModal.Title}
+                      onEdit={() => {
+                        setAdditionalInterestVisible(true);
+                      }}
+                    />
+                    <ReviewItem
+                      css={utils.mt(3)}
+                      header={"Loss History"}
+                      onEdit={() => {
+                        setLossHistoryVisible(true);
+                      }}
+                    />
+                  </ItemBlock>
+                </Col>
+              </Row>
+            </Container>
+          </div>
+
+          {/* Plan */}
+          {!quoteDetail.infoReq && mobileView ? (
+            <Container
+              wide
+              css={[utils.flex(1), selectedTab !== 1 && utils.hideOnMobile]}
+            >
+              <Row css={[utils.fullWidth, utils.ma(0)]}>
+                <Col xl={12} lg={12}>
+                  <Row
+                    css={[
+                      utils.display("flex"),
+                      utils.justifyContent("center"),
+                      utils.alignItems("center"),
+                      styles.row,
+                    ]}
+                  >
+                    <Col
+                      css={[styles.col, !mobileView && utils.maxWidth("60%")]}
+                      key={"Standard"}
+                      xl={8}
+                      lg={12}
+                    >
+                      <PlanItem
+                        data-testid={"Standard"}
+                        planInfo={quoteDetail.planDetails}
+                        onCustomize={() => setAutoPolicyModalVisible(true)}
+                        onSelect={() => {}}
+                        selected={true}
+                        showDetail={showDetail}
+                        toggleDetails={() => setShowDetail((state) => !state)}
+                        onUpdatePlanInfo={(updatedPlanInfo) => {
+                          updateQuoteDetail({
+                            planDetails: updatedPlanInfo,
+                          });
+                        }}
+                        onContinueToCheckout={() => {
+                          processCheckout();
+                        }}
+                        changeEffectiveDate={(e) => {
+                          setLoading(true);
+                          updateQuote({
+                            ...quoteDetail,
+                            planDetails: {
+                              ...quoteDetail.planDetails,
+                              effectiveDate: e,
+                            },
+                          });
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </Container>
+          ) : null}
+
+          {/* Details */}
+          {showDetail && (
+            <div
+              css={[styles.whiteBackground, utils.py("16px"), utils.my("16px")]}
+            >
+              <Container wide>
+                {quoteDetail.planDetails.vehicleInfo
+                  .filter((vehicle) => vehicle.status === "Active")
+                  .map((vehicle, key) => (
+                    <Row key={key} css={[utils.fullWidth, utils.my("20px")]}>
+                      <Col>
+                        <table css={[utils.fullWidth, styles.table]}>
+                          <caption>
+                            <div
+                              css={[
+                                utils.display("flex"),
+                                utils.justifyContent("space-between"),
+                                utils.alignItems("center"),
+                              ]}
+                            >
+                              <Text bold size="1.5em">
+                                {vehicle.model} - {vehicle.vinNumber}
+                              </Text>
+                              <Text bold size="1.5em">
+                                {`${
+                                  messages.Customize.AssignedDriver
+                                }: ${getAssignedDriverName(vehicle)}`}
+                              </Text>
+                            </div>
+                          </caption>
+                          <colgroup>
+                            <col width="50%" />
+                            <col width="25%" />
+                            <col width="25%" />
+                          </colgroup>
+                          <tbody>
+                            {vehicle.coverages.map((coverage, key1) => (
+                              <tr key={key1}>
+                                <td>{coverage.description}</td>
+                                <td>
+                                  <Text
+                                    css={utils.fullWidth}
+                                    bold
+                                    textAlign="right"
+                                  ></Text>
+                                </td>
+                                <td>
+                                  <Text
+                                    css={utils.fullWidth}
+                                    bold
+                                    textAlign="right"
+                                  >
+                                    $ {coverage.amount}
+                                  </Text>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </Col>
+                    </Row>
+                  ))}
+                <Row css={[utils.fullWidth, utils.my("20px")]}>
                   <Col>
                     <table css={[utils.fullWidth, styles.table]}>
                       <caption>
@@ -634,13 +725,9 @@ const CustomizePage: FunctionComponent<any> = ({
                           ]}
                         >
                           <Text bold size="1.5em">
-                            {vehicle.model} - {vehicle.vinNumber}
+                            {`${messages.Customize.AdditionalPremiumCredits}`}
                           </Text>
-                          <Text bold size="1.5em">
-                            {`${
-                              messages.Customize.AssignedDriver
-                            }: ${getAssignedDriverName(vehicle)}`}
-                          </Text>
+                          <Text bold size="1.5em"></Text>
                         </div>
                       </caption>
                       <colgroup>
@@ -649,9 +736,9 @@ const CustomizePage: FunctionComponent<any> = ({
                         <col width="25%" />
                       </colgroup>
                       <tbody>
-                        {vehicle.coverages.map((coverage, key1) => (
-                          <tr key={key1}>
-                            <td>{coverage.description}</td>
+                        {quoteDetail.planDetails.fees.map((fee, key) => (
+                          <tr key={key}>
+                            <td>{fee.description}</td>
                             <td>
                               <Text
                                 css={utils.fullWidth}
@@ -665,7 +752,7 @@ const CustomizePage: FunctionComponent<any> = ({
                                 bold
                                 textAlign="right"
                               >
-                                $ {coverage.amount}
+                                $ {fee.amount}
                               </Text>
                             </td>
                           </tr>
@@ -674,360 +761,293 @@ const CustomizePage: FunctionComponent<any> = ({
                     </table>
                   </Col>
                 </Row>
-              ))}
-            <Row css={[utils.fullWidth, utils.my("20px")]}>
-              <Col>
-                <table css={[utils.fullWidth, styles.table]}>
-                  <caption>
-                    <div
-                      css={[
-                        utils.display("flex"),
-                        utils.justifyContent("space-between"),
-                        utils.alignItems("center"),
-                      ]}
-                    >
-                      <Text bold size="1.5em">
-                        {`${messages.Customize.AdditionalPremiumCredits}`}
-                      </Text>
-                      <Text bold size="1.5em"></Text>
-                    </div>
-                  </caption>
-                  <colgroup>
-                    <col width="50%" />
-                    <col width="25%" />
-                    <col width="25%" />
-                  </colgroup>
-                  <tbody>
-                    {quoteDetail.planDetails.fees.map((fee, key) => (
-                      <tr key={key}>
-                        <td>{fee.description}</td>
-                        <td>
-                          <Text
-                            css={utils.fullWidth}
-                            bold
-                            textAlign="right"
-                          ></Text>
-                        </td>
-                        <td>
-                          <Text css={utils.fullWidth} bold textAlign="right">
-                            $ {fee.amount}
-                          </Text>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Col>
-            </Row>
-          </Container>
-        </div>
-      )}
+              </Container>
+            </div>
+          )}
 
-      {/* Footer */}
-      {!quoteDetail.infoReq ? (
-        <div css={[utils.centerAlign, utils.mt(5), utils.pa(3), styles.footer]}>
-          <div css={[utils.centerAlign, utils.pa(3)]}>
-            <Text bold size="1.25em">
-              <FontAwesomeIcon icon={faCar} css={utils.mr(2)} />$
-              {quoteDetail.planDetails.paymentPlan === "monthly"
-                ? quoteDetail.planDetails.monthlyPrice
-                : Math.round(+quoteDetail.planDetails.fullPrice).toString()}
-            </Text>
-          </div>
-          <Button
-            onClick={() => {
-              processCheckout();
-            }}
-          >
-            {messages.Common.ContinueToReview}
-          </Button>
-        </div>
-      ) : null}
+          {/* Footer */}
+          {!quoteDetail.infoReq ? (
+            <div
+              css={[utils.centerAlign, utils.mt(5), utils.pa(3), styles.footer]}
+            >
+              <div css={[utils.centerAlign, utils.pa(3)]}>
+                <Text bold size="1.25em">
+                  <FontAwesomeIcon icon={faCar} css={utils.mr(2)} />$
+                  {quoteDetail.planDetails.paymentPlan === "monthly"
+                    ? quoteDetail.planDetails.monthlyPrice
+                    : Math.round(+quoteDetail.planDetails.fullPrice).toString()}
+                </Text>
+              </div>
+              <Button
+                onClick={() => {
+                  processCheckout();
+                }}
+              >
+                {messages.Common.ContinueToReview}
+              </Button>
+            </div>
+          ) : null}
 
-      {/* Modals */}
-      <AddVehicleModal
-        isOpen={addCarVisible}
-        onCloseModal={() => setAddCarVisible(false)}
-        onAddVehicle={(risk) => {
-          setLoading(true);
-          addVehicle(risk)
-            .then(() => {
-              setLoading(false);
-            })
-            .catch((e) => {
-              setError(e);
-            });
-        }}
-      />
-      <EditVehicleModal
-        quoteDetail={quoteDetail}
-        isOpen={editCarIndex !== null}
-        defaultValue={quoteDetail.vehicles[editCarIndex]}
-        onDeleteVehicle={() => setDeleteCarIndex(editCarIndex)}
-        onCloseModal={() => {
-          if (editCarIndex !== null) {
-            setReviewableItems(
-              reviewableItems.filter(
-                (id) => id !== quoteDetail.vehicles[editCarIndex].id
-              )
-            );
-            setEditCarIndex(null);
-          }
-        }}
-        onUpdate={(updatedValue) => {
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            vehicles: quoteDetail.vehicles.map((v, i) =>
-              i === editCarIndex ? updatedValue : v
-            ),
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-      />
-      <DeleteVehicleModal
-        isOpen={deleteCarIndex !== null}
-        vehicle={quoteDetail.vehicles[deleteCarIndex]}
-        onCloseModal={() => setDeleteCarIndex(null)}
-        onDeleteVehicle={() => {
-          setEditCarIndex(null);
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            vehicles: quoteDetail.vehicles.map((v, i) =>
-              i === deleteCarIndex ? { ...v, status: "Deleted" } : v
-            ),
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-      />
-      <EditDriverModal
-        driverIndex={editDriverIndex}
-        isOpen={editDriverIndex !== null}
-        defaultValue={
-          editDriverIndex === "new"
-            ? DefaultDriverInfo
-            : quoteDetail.drivers[editDriverIndex]
-        }
-        onDeleteDriver={() => setDeleteDriverIndex(editDriverIndex)}
-        onCloseModal={() => {
-          if (editDriverIndex !== null && editDriverIndex !== "new") {
-            setReviewableItems(
-              reviewableItems.filter(
-                (id) => id !== quoteDetail.drivers[editDriverIndex].id
-              )
-            );
-          }
-          setEditDriverIndex(null);
-        }}
-        onCancel={() => {
-          if (editDriverIndex !== null && editDriverIndex !== "new") {
-            setReviewableItems(
-              reviewableItems.filter(
-                (id) => id !== quoteDetail.drivers[editDriverIndex].id
-              )
-            );
-          }
-          setEditDriverIndex(null);
-        }}
-        onUpdate={(updatedValue) => {
-          if (editDriverIndex === "new") {
-            setLoading(true);
-            addDriver(getNewDriverParam(updatedValue))
-              .then(() => setLoading(false))
-              .catch((e) => {
-                const { errorType, errorData } = e as CustomError;
-                setError([
-                  new CustomError(errorType, {
-                    ...(errorData || {}),
-                    quoteNumber,
-                  }),
-                ]);
+          {/* Modals */}
+          <AddVehicleModal
+            isOpen={addCarVisible}
+            quoteDetail={quoteDetail}
+            newRisk={newRisk}
+            onCloseModal={() => setAddCarVisible(false)}
+            onAddVehicle={(risk) => {
+              setLoading(true);
+              formRedirect("/action/quote/AddVehicle", {
+                form: JSON.stringify({
+                  risk,
+                  quoteResponse,
+                  redirectURL: `/quote/${quoteNumber}/customize`,
+                }),
               });
-            setEditDriverIndex(null);
-          } else {
-            setLoading(true);
-            updateQuote({
-              ...quoteDetail,
-              drivers: quoteDetail.drivers.map((v, i) =>
-                i === editDriverIndex ? updatedValue : v
-              ),
-            })
-              .then(() => {})
-              .catch((e) => {
-                setError(e);
-              })
-              .finally(() => setLoading(false));
-            setEditDriverIndex(null);
-          }
-        }}
-        onUpdateDriverPoints={(action, driverNumber, updatedDriverPoint) => {
-          logger(updatedDriverPoint);
-          processUpdateDriverPoints(action, driverNumber, updatedDriverPoint);
-        }}
-      />
-      <DeleteDriverModal
-        isOpen={deleteDriverIndex !== null}
-        driver={quoteDetail.drivers[deleteDriverIndex]}
-        onCloseModal={() => setDeleteDriverIndex(null)}
-        onDeleteDriver={() => {
-          setEditDriverIndex(null);
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            drivers: quoteDetail.drivers.map((v, i) =>
-              i === deleteDriverIndex ? { ...v, status: "Deleted" } : v
-            ),
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-      />
-
-      <DiscountsModal
-        isOpen={discountsModalVisible}
-        lineInfo={quoteDetail.lineInfo}
-        basicPolicyInfo={quoteDetail.basicPolicyInfo}
-        onCloseModal={() => setDiscountsModalVisible(false)}
-        onUpdate={(updatedLine, updatedBasicPolicy) => {
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            lineInfo: updatedLine,
-            basicPolicyInfo: updatedBasicPolicy,
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-      />
-      <RequiredInformationModal
-        isOpen={requiredInformationModalVisible.required}
-        defaultValue={quoteDetail}
-        onCloseModal={() =>
-          setRequiredInformationModalVisible({ required: false, from: null })
-        }
-        onUpdate={(v) => {
-          setLoading(true);
-          updateQuote(v)
-            .then(() => {
-              if (requiredInformationModalVisible.from === "checkout") {
-                if (calcRequiredItemsLabel(v).length > 0) {
-                  setRequiredInformationModalVisible({
-                    required: true,
-                    from: "checkout",
-                  });
-                } else {
-                  setUserInfoVisible(true);
-                }
+            }}
+          />
+          <EditVehicleModal
+            quoteDetail={quoteDetail}
+            isOpen={editCarIndex !== null}
+            defaultValue={quoteDetail.vehicles[editCarIndex]}
+            onDeleteVehicle={() => setDeleteCarIndex(editCarIndex)}
+            onCloseModal={() => {
+              if (editCarIndex !== null) {
+                setReviewableItems(
+                  reviewableItems.filter(
+                    (id) => id !== quoteDetail.vehicles[editCarIndex].id
+                  )
+                );
+                setEditCarIndex(null);
               }
-            })
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-      />
-      <AutoPolicyModal
-        isOpen={autoPolicyModalVisible}
-        defaultValue={quoteDetail.planDetails}
-        onUpdatePlanInfo={(updatedPlanInfo) => {
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            planDetails: updatedPlanInfo,
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-        onCloseModal={() => setAutoPolicyModalVisible(false)}
-      />
-
-      <AdditionalInterestModal
-        additionalInterest={quoteDetail.additionalInterest}
-        vehicles={quoteDetail.planDetails.vehicleInfo}
-        isOpen={additionalInterestRequired}
-        onCloseModal={() => setAdditionalInterestVisible(false)}
-        onUpdate={(additionalInterestInfo: Array<AdditionalInterestInfo>) => {
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            additionalInterest: additionalInterestInfo,
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-      />
-
-      <LossHistoryModal
-        isOpen={lossHistoryRequired}
-        onCloseModal={() => setLossHistoryVisible(false)}
-        lossHistory={quoteDetail.lossHistory}
-        onUpdate={(lhInfo: Array<LossHistoryInfo>) => {
-          setLoading(true);
-          updateQuote({
-            ...quoteDetail,
-            lossHistory: lhInfo,
-          })
-            .then(() => {})
-            .catch((e) => {
-              setError(e);
-            })
-            .finally(() => setLoading(false));
-        }}
-        onAppCloseOut={(lhInfo: Array<LossHistoryInfo>) => {
-          processExternalApplicationCloseOut({
-            ...quoteDetail,
-            lossHistory: lhInfo,
-          });
-        }}
-      />
-
-      <UserInfoModal
-        isOpen={userInfoRequired}
-        communicationInfo={quoteDetail.communicationInfo}
-        onCloseModal={() => setUserInfoVisible(false)}
-        onUpdate={(communicationInfo: CommunicationInfo) => {
-          setLoading(true);
-          updateQuote({ ...quoteDetail, communicationInfo: communicationInfo })
-            .then(() => {
-              if (quoteDetail.planDetails.isQuote) {
-                convertToApplication()
-                  .then(async ({ applicationNumber }) => {
-                    setLoading(false);
-                    router.replace(`/quote/${applicationNumber}/review`);
-                  })
-                  .catch((e) => {
-                    setError(e);
-                  });
+            }}
+            onUpdate={(updatedValue) => {
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                vehicles: quoteDetail.vehicles.map((v, i) =>
+                  i === editCarIndex ? updatedValue : v
+                ),
+              });
+            }}
+          />
+          <DeleteVehicleModal
+            isOpen={deleteCarIndex !== null}
+            vehicle={quoteDetail.vehicles[deleteCarIndex]}
+            onCloseModal={() => setDeleteCarIndex(null)}
+            onDeleteVehicle={() => {
+              setEditCarIndex(null);
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                vehicles: quoteDetail.vehicles.map((v, i) =>
+                  i === deleteCarIndex ? { ...v, status: "Deleted" } : v
+                ),
+              });
+            }}
+          />
+          <EditDriverModal
+            infractionList={infractionList}
+            driverIndex={editDriverIndex}
+            isOpen={editDriverIndex !== null}
+            defaultValue={
+              editDriverIndex === "new"
+                ? DefaultDriverInfo
+                : quoteDetail.drivers[editDriverIndex]
+            }
+            onDeleteDriver={() => setDeleteDriverIndex(editDriverIndex)}
+            onCloseModal={() => {
+              if (editDriverIndex !== null && editDriverIndex !== "new") {
+                setReviewableItems(
+                  reviewableItems.filter(
+                    (id) => id !== quoteDetail.drivers[editDriverIndex].id
+                  )
+                );
+              }
+              setEditDriverIndex(null);
+            }}
+            onCancel={() => {
+              if (editDriverIndex !== null && editDriverIndex !== "new") {
+                setReviewableItems(
+                  reviewableItems.filter(
+                    (id) => id !== quoteDetail.drivers[editDriverIndex].id
+                  )
+                );
+              }
+              setEditDriverIndex(null);
+            }}
+            onUpdate={(updatedValue) => {
+              if (editDriverIndex === "new") {
+                setLoading(true);
+                formRedirect("/action/quote/AddDriver", {
+                  form: JSON.stringify({
+                    newDriver: getNewDriverParam(updatedValue),
+                    quoteResponse: quoteResponse,
+                    redirectURL: `/quote/${quoteNumber}/customize`,
+                  }),
+                });
               } else {
-                router.push("review");
+                setLoading(true);
+                updateQuote({
+                  ...quoteDetail,
+                  drivers: quoteDetail.drivers.map((v, i) =>
+                    i === editDriverIndex ? updatedValue : v
+                  ),
+                });
               }
-            })
-            .catch((e) => {
-              setError(e);
-            });
-        }}
-      />
+            }}
+            onUpdateDriverPoints={(
+              action,
+              driverNumber,
+              updatedDriverPoint
+            ) => {
+              logger(updatedDriverPoint);
+              processUpdateDriverPoints(
+                action,
+                driverNumber,
+                updatedDriverPoint
+              );
+            }}
+          />
+          <DeleteDriverModal
+            isOpen={deleteDriverIndex !== null}
+            driver={quoteDetail.drivers[deleteDriverIndex]}
+            onCloseModal={() => setDeleteDriverIndex(null)}
+            onDeleteDriver={() => {
+              setEditDriverIndex(null);
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                drivers: quoteDetail.drivers.map((v, i) =>
+                  i === deleteDriverIndex ? { ...v, status: "Deleted" } : v
+                ),
+              });
+            }}
+          />
+
+          <DiscountsModal
+            isOpen={discountsModalVisible}
+            lineInfo={quoteDetail.lineInfo}
+            basicPolicyInfo={quoteDetail.basicPolicyInfo}
+            onCloseModal={() => setDiscountsModalVisible(false)}
+            onUpdate={(updatedLine, updatedBasicPolicy) => {
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                lineInfo: updatedLine,
+                basicPolicyInfo: updatedBasicPolicy,
+              });
+            }}
+          />
+          <RequiredInformationModal
+            isOpen={requiredInformationModalVisible.required}
+            defaultValue={quoteDetail}
+            onCloseModal={() =>
+              setRequiredInformationModalVisible({
+                required: false,
+                from: null,
+              })
+            }
+            onUpdate={(v) => {
+              setLoading(true);
+              updateQuote(v)
+                .then(() => {
+                  if (requiredInformationModalVisible.from === "checkout") {
+                    if (calcRequiredItemsLabel(v).length > 0) {
+                      setRequiredInformationModalVisible({
+                        required: true,
+                        from: "checkout",
+                      });
+                    } else {
+                      setUserInfoVisible(true);
+                    }
+                  }
+                })
+                .catch((e) => {
+                  setError(e);
+                })
+                .finally(() => setLoading(false));
+            }}
+          />
+          <AutoPolicyModal
+            isOpen={autoPolicyModalVisible}
+            defaultValue={quoteDetail.planDetails}
+            onUpdatePlanInfo={(updatedPlanInfo) => {
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                planDetails: updatedPlanInfo,
+              });
+            }}
+            onCloseModal={() => setAutoPolicyModalVisible(false)}
+          />
+
+          <AdditionalInterestModal
+            additionalInterest={quoteDetail.additionalInterest}
+            vehicles={quoteDetail.planDetails.vehicleInfo}
+            isOpen={additionalInterestRequired}
+            onCloseModal={() => setAdditionalInterestVisible(false)}
+            onUpdate={(
+              additionalInterestInfo: Array<AdditionalInterestInfo>
+            ) => {
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                additionalInterest: additionalInterestInfo,
+              });
+            }}
+          />
+
+          <LossHistoryModal
+            quoteDetail={quoteDetail}
+            isOpen={lossHistoryRequired}
+            onCloseModal={() => setLossHistoryVisible(false)}
+            lossHistory={quoteDetail.lossHistory}
+            onUpdate={(lhInfo: Array<LossHistoryInfo>) => {
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                lossHistory: lhInfo,
+              });
+            }}
+            onAppCloseOut={(lhInfo: Array<LossHistoryInfo>) => {
+              processExternalApplicationCloseOut({
+                ...quoteDetail,
+                lossHistory: lhInfo,
+              });
+            }}
+          />
+
+          <UserInfoModal
+            isOpen={userInfoRequired}
+            communicationInfo={quoteDetail.communicationInfo}
+            onCloseModal={() => setUserInfoVisible(false)}
+            onUpdate={(communicationInfo: CommunicationInfo) => {
+              setLoading(true);
+              updateQuote({
+                ...quoteDetail,
+                communicationInfo: communicationInfo,
+              })
+                .then(() => {
+                  if (quoteDetail.planDetails.isQuote) {
+                    convertToApplication()
+                      .then(async ({ applicationNumber }) => {
+                        setLoading(false);
+                        router.replace(`/quote/${applicationNumber}/review`);
+                      })
+                      .catch((e) => {
+                        setError(e);
+                      });
+                  } else {
+                    router.push("review");
+                  }
+                })
+                .catch((e) => {
+                  setError(e);
+                });
+            }}
+          />
+        </Fragment>
+      )}
     </Screen>
   );
 };
@@ -1037,11 +1057,11 @@ export async function getServerSideProps({ req, res, query }) {
   const quoteNumber = query.quoteNumber as string;
 
   if (session.user && quoteNumber) {
-    let selectedPlan = null;
     let error = null;
     let quoteDetail = null;
+    let infractionList = null;
 
-    const res = await QuoteService.getQuote(session.user, quoteNumber)
+    const quoteResponse = await QuoteService.getQuote(session.user, quoteNumber)
       .then((res) => {
         quoteDetail = parseQuoteResponse(res);
         return res;
@@ -1054,56 +1074,51 @@ export async function getServerSideProps({ req, res, query }) {
         return null;
       });
 
-    if (res) {
-      const matched = res.DTOApplication.find(
+    const matched =
+      quoteResponse &&
+      quoteResponse.DTOApplication.find(
         (application) =>
           application.ApplicationNumber === quoteNumber ||
           application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
       );
-      switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
-        case "BASIC":
-          selectedPlan = "Basic";
-          break;
-        case "STANDARD":
-          selectedPlan = "Standard";
-          break;
-        case "PREMIUM":
-          selectedPlan = "Premium";
-          break;
-      }
+
+    if (matched) {
+      infractionList = await QuoteService.getInfractionList(
+        session.user,
+        quoteResponse.DTOApplication.filter(
+          (app) =>
+            app.ApplicationNumber === quoteDetail.planDetails.applicationNumber
+        )
+      );
     } else {
       error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
         quoteNumber,
       });
     }
 
-    if (error) {
-      return {
-        props: {
-          user: session.user,
-          error,
-        },
-      };
-    } else {
-      return {
-        props: {
-          user: session.user,
-          quoteResponse: res,
-          quoteDetail,
-          selectedPlan,
-          insurer: {
-            firstName: quoteDetail.insurerFirstName,
-            lastName: quoteDetail.insurerLastName,
-            address: {
-              address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
-              unitNumber: quoteDetail.insuredAddress.Addr2,
-              requiredUnitNumber: false,
-              status: EAddressObjectStatus.success,
-            },
+    const newRisk = session.newRisk;
+    session.newRisk = null;
+
+    return {
+      props: {
+        user: session.user,
+        lastError: JSON.stringify(error || session.lastError),
+        infractionList: infractionList,
+        quoteResponse: quoteResponse,
+        quoteDetail,
+        newRisk,
+        insurer: {
+          firstName: quoteDetail.insurerFirstName,
+          lastName: quoteDetail.insurerLastName,
+          address: {
+            address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
+            unitNumber: quoteDetail.insuredAddress.Addr2,
+            requiredUnitNumber: false,
+            status: EAddressObjectStatus.success,
           },
         },
-      };
-    }
+      },
+    };
   }
 
   return {
