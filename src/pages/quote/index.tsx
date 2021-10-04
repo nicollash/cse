@@ -6,10 +6,7 @@ import * as Yup from "yup";
 
 import { useError, useLocale, useQuote } from "~/hooks";
 import { AuthGuard } from "~/screens/guards";
-import {
-  EAddressObjectStatus,
-  UserAddressInput,
-} from "~/types";
+import { EAddressObjectStatus, UserAddressInput } from "~/types";
 import { placeAPI } from "~/utils";
 import { isAKnownError } from "~/contexts";
 import { QuoteErrorModal } from "~/screens/modals";
@@ -214,8 +211,7 @@ function QuotePage() {
   useEffect(() => {
     isMountedRef.current = true;
     (window as any).ga && (window as any).ga("send", "Quote Page View");
-
-    if (Object.keys(initials).length > 0) {
+    if (Object.keys(initials).filter((key) => !!initials[key]).length > 0) {
       formik.submitForm();
     }
     return () => {
