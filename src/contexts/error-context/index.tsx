@@ -69,7 +69,9 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
     if (
       state &&
       state.error != null &&
-      state.error.some((er) => er.errorType === CustomErrorType.SESSION_EXPIRED)
+      (Array.isArray(state.error) ? state.error : [state.error]).some(
+        (er) => er.errorType === CustomErrorType.SESSION_EXPIRED
+      )
     ) {
       logoutSimple();
     } else {
@@ -129,7 +131,7 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
 export default ErrorContext;
 
 export const isAKnownError = (errors: Array<CustomError>) => {
-  return errors.some(
+  return (Array.isArray(errors) ? errors : [errors]).some(
     (error: CustomError) =>
       error.errorData.Message === "At least one active vehicle is required "
   );

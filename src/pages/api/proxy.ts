@@ -22,12 +22,19 @@ export default async function handler(
       headers["LoginToken"] = decrypt(LoginToken);
     }
 
+    console.log("Proxy - ", {
+      method,
+      body: JSON.stringify(data),
+      headers,
+    });
+
     const result = await fetch(url, {
       method,
       body: JSON.stringify(data),
       headers,
     });
-    const returnData = await result.json();
+
+    const returnData = await (result.ok ? result.json() : result.text());
 
     res.status(result.status).json({
       data: encrypt(returnData),
