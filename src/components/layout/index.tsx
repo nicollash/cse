@@ -1,6 +1,7 @@
 import { jsx, css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FunctionComponent } from "react";
+import { FunctionComponent, useLayoutEffect } from "react";
+import Head from "next/head";
 
 import {
   Row as ReactRow,
@@ -11,6 +12,7 @@ import {
 import { Text, InfoMark } from "..";
 
 import { utils, theme } from "~/styles";
+import head from "next/head";
 
 export const Container = styled.div<{ wide?: boolean }>`
   width: 100%;
@@ -108,3 +110,41 @@ export const FormGroup: FunctionComponent<FromGroupProps> = ({
     <div className={containerClassName}>{children}</div>
   </div>
 );
+
+export const Layout: FunctionComponent = ({ children }) => {
+  useLayoutEffect(() => {
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    function gtag(...args) {
+      (window as any).dataLayer.push(args);
+    }
+    gtag("js", new Date());
+    gtag("config", "UA-62630007-1");
+  }, []);
+  return (
+    <>
+      <Head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>CSE QuickQuote</title>
+
+        <link
+          href="https://fonts.googleapis.com/css?family=Cabin:400,500,600,700"
+          rel="stylesheet"
+        />
+      </Head>
+      {children}
+      <script
+        type="text/javascript"
+        src="https://home-c30.incontact.com/inContact/ChatClient/js/embed.min.js"
+      ></script>
+      <script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=UA-62630007-1"
+      ></script>
+
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </>
+  );
+};

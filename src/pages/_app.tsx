@@ -1,4 +1,4 @@
-import { jsx, Global, css } from "@emotion/react";
+import { Global, css } from "@emotion/react";
 
 import "normalize.css";
 import type { AppProps } from "next/app";
@@ -6,7 +6,7 @@ import type { AppProps } from "next/app";
 import { useEffect, Fragment } from "react";
 import LogRocket from "logrocket";
 
-import { Header, Footer } from "~/components";
+import { Header, Footer, Layout } from "~/components";
 import {
   LocaleProvider,
   AuthProvider,
@@ -37,27 +37,29 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const Guard = (Component as any).Guard || Fragment;
   const guardOptions = (Component as any).guardOptions || {};
-  const Layout = (Component as any).Layout || Fragment;
+  const ComponentLayout = (Component as any).Layout || Fragment;
 
   return (
-    <LocaleProvider>
-      <AuthProvider>
-        <Global styles={global} />
-        <QuoteProvider>
-          <ErrorProvider>
-            <div css={styles.container}>
-              <Header />
-              <Guard {...guardOptions}>
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              </Guard>
-              <Footer />
-            </div>
-          </ErrorProvider>
-        </QuoteProvider>
-      </AuthProvider>
-    </LocaleProvider>
+    <Layout>
+      <LocaleProvider>
+        <AuthProvider>
+          <Global styles={global} />
+          <QuoteProvider>
+            <ErrorProvider>
+              <div css={styles.container}>
+                <Header />
+                <Guard {...guardOptions}>
+                  <ComponentLayout>
+                    <Component {...pageProps} />
+                  </ComponentLayout>
+                </Guard>
+                <Footer />
+              </div>
+            </ErrorProvider>
+          </QuoteProvider>
+        </AuthProvider>
+      </LocaleProvider>
+    </Layout>
   );
 }
 export default MyApp;
