@@ -1,6 +1,6 @@
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FunctionComponent, useLayoutEffect } from "react";
+import { FunctionComponent, useLayoutEffect, Fragment } from "react";
 import Head from "next/head";
 
 import {
@@ -12,7 +12,6 @@ import {
 import { Text, InfoMark } from "..";
 
 import { utils, theme } from "~/styles";
-import head from "next/head";
 
 export const Container = styled.div<{ wide?: boolean }>`
   width: 100%;
@@ -121,18 +120,13 @@ export const Layout: FunctionComponent = ({ children }) => {
     gtag("config", "UA-62630007-1");
   }, []);
   return (
-    <>
+    <Fragment>
       <Head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
         <title>CSE QuickQuote</title>
-
-        <link
-          href="https://fonts.googleapis.com/css?family=Cabin:400,500,600,700"
-          rel="stylesheet"
-        />
       </Head>
       {children}
       <script
@@ -145,6 +139,6 @@ export const Layout: FunctionComponent = ({ children }) => {
       ></script>
 
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    </>
+    </Fragment>
   );
 };

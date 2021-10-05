@@ -21,9 +21,9 @@ interface Props {
 }
 
 export const ErrorModal: FunctionComponent<Props> = ({
-  error,
   onGoHome,
   onClose,
+  ...props
 }) => {
   const { messages } = useLocale();
   const { quoteDetail, selectedPlan } = useQuote();
@@ -31,6 +31,8 @@ export const ErrorModal: FunctionComponent<Props> = ({
   const router = useRouter();
 
   const conversationId = decrypt(localStorage.getItem("cse_ConversationId"));
+
+  const error = Array.isArray(props.error) ? props.error : [props.error];
 
   return (
     <Modal
