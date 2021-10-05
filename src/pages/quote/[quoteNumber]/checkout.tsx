@@ -307,8 +307,8 @@ const CheckoutPage: FunctionComponent = () => {
             ]
           : [
               { link: "/quote", label: "Home" },
-              { link: "customize", label: "Customize" },
-              { link: "review", label: "Review Coverages" },
+              { link: `/quote/${quoteNumber}/customize`, label: "Customize" },
+              { link: `/quote/${quoteNumber}/review`, label: "Review Coverages" },
               { label: "Checkout" },
             ]
       }

@@ -175,7 +175,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
       greyBackground
       breadCrumb={[
         { link: "/quote", label: "Home" },
-        { link: "customize", label: "Customize" },
+        { link: `/quote/${quoteNumber}/customize`, label: "Customize" },
         { label: "Review Coverages" },
       ]}
       loading={isLoading}

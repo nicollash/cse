@@ -88,8 +88,8 @@ export const styles = {
   `,
 
   autoPolicy: css`
-    padding: 20px 100px 20px 1000px;
-    margin-left: -1000px;
+    padding: 20px 20px 20px 20px;
+    margin-left: -20px;
   `,
 
   infoItem: css`
