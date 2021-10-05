@@ -6,15 +6,7 @@ export { Clickover } from "./clickover";
 export { Footer } from "./footer";
 export { Header } from "./header";
 export { Input, FormikInput } from "./input";
-export {
-  Container,
-  Row,
-  Col,
-  BorderBox,
-  Hr,
-  FormGroup,
-  Layout,
-} from "./layout";
+export { Container, Row, Col, BorderBox, Hr, FormGroup } from "./layout";
 export { Modal } from "./modal";
 export { Screen } from "./screen";
 export { Heading, Text, Description } from "./typography";

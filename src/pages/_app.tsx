@@ -6,7 +6,7 @@ import type { AppProps } from "next/app";
 import { useEffect, Fragment } from "react";
 import LogRocket from "logrocket";
 
-import { Header, Footer, Layout } from "~/components";
+import { Header, Footer } from "~/components";
 import {
   LocaleProvider,
   AuthProvider,
@@ -14,6 +14,12 @@ import {
   ErrorProvider,
 } from "../contexts";
 import { global } from "~/styles";
+import dynamic from "next/dynamic";
+
+const LayoutNoSSR = dynamic(
+  () => import("~/components/layout").then(({ Layout }) => Layout),
+  { ssr: false }
+);
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -40,7 +46,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const ComponentLayout = (Component as any).Layout || Fragment;
 
   return (
-    <Layout>
+    <LayoutNoSSR>
       <LocaleProvider>
         <AuthProvider>
           <Global styles={global} />
@@ -59,7 +65,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </QuoteProvider>
         </AuthProvider>
       </LocaleProvider>
-    </Layout>
+    </LayoutNoSSR>
   );
 }
 export default MyApp;

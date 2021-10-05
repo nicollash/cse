@@ -119,6 +119,7 @@ export const Layout: FunctionComponent = ({ children }) => {
     gtag("js", new Date());
     gtag("config", "UA-62630007-1");
   }, []);
+  
   return (
     <Fragment>
       <Head>
