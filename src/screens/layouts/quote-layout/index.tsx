@@ -15,7 +15,7 @@ export const QuoteLayout: FunctionComponent<any> = ({ children }) => {
   const [isInitialized, setInitialize] = useState(false);
   const router = useRouter();
   const quoteNumber = router.query.quoteNumber as string;
-  const { setError } = useError();
+  const { setError } = useError();  
 
   useEffect(() => {
     setInitialize(false);
@@ -30,7 +30,7 @@ export const QuoteLayout: FunctionComponent<any> = ({ children }) => {
     if (matchedApplication) {
       setInitialize(true);
     } else {
-      if (router.pathname === `/quote/${quoteNumber}/checkout`) {
+      if (router.asPath === `/quote/${quoteNumber}/checkout`) {
         if (quoteNumber.startsWith("AP")) {
           getQuote(quoteNumber)
             .then((res: QuoteResponse) => {

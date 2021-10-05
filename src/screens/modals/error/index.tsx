@@ -174,8 +174,8 @@ export const ErrorModal: FunctionComponent<Props> = ({
             </Text>
           ) : (
             quoteDetail &&
-            (router.pathname.includes("/AP") ||
-              router.pathname.includes("/NB")) && (
+            (router.asPath.includes("/AP") ||
+              router.asPath.includes("/NB")) && (
               <Text size="1em" css={[utils.mt(6), utils.textAlign("center")]}>
                 QuoteNumber:{" "}
                 {quoteDetail.planDetails?.applicationNumber
