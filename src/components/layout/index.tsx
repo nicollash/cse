@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { FunctionComponent, useLayoutEffect, Fragment } from "react";
 import Head from "next/head";
+import Script from "next/script";
 
 import {
   Row as ReactRow,
@@ -131,16 +132,16 @@ export const Layout: FunctionComponent = ({ children }) => {
 
       </Head>
       {children}
-      <script
+      <Script
         type="text/javascript"
         src="https://home-c30.incontact.com/inContact/ChatClient/js/embed.min.js"
-      ></script>
-      <script
+      ></Script>
+      <Script
         async
         src="https://www.googletagmanager.com/gtag/js?id=UA-62630007-1"
-      ></script>
+      ></Script>
 
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <Script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></Script>
     </Fragment>
   );
 };
