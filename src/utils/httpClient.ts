@@ -50,7 +50,7 @@ export function httpClient<T extends any>(
         const result =
           res.status === 401
             ? { Message: "Login Token Error" }
-            : decrypt((await res.json()).data);
+            : JSON.parse(decrypt((await res.json()).data));
         throw { httpRes: res, data: result };
       }
     })
