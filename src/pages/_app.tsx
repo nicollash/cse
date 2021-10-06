@@ -72,6 +72,7 @@ export default MyApp;
 
 const styles = {
   container: css`
+    position: relative;
     min-height: 100vh;
     display: flex;
     flex-direction: column;

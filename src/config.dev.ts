@@ -1,9 +1,9 @@
 export const config = {
   googleAPIKey: "AIzaSyDtxdIcnXhGqTu0yv1oM9cImBUG0pbF2PA",
   mockApiBaseURL: "/api",
-  apiBaseURL: "https://quickquote.csespi.com/msg",
+  apiBaseURL: "https://uat3.cseinsurance.net/msg",
   supportURL: "https://agentsupport.cseinsurance.com/support/home",
-  spinnURL: "https://quickquote.csespi.com/innovation",
+  spinnURL: "https://uat3.cseinsurance.net/innovation",
 
   incontact: {
     serverHost: "https://home-c30.incontact.com",
