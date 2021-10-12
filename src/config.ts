@@ -3,21 +3,20 @@ import { config as prodConfig } from "./config.prod";
 
 /* eslint-disable no-undef */
 const env = process.env.ENV || "development";
-console.log(env)
+
 let envConfig = null;
 switch (env) {
   case "development":
     envConfig = devConfig;
-    console.log("dev")
-	break;
+    console.log(env)
+    break;
   case "production":
     envConfig = prodConfig;
-    console.log("prod")
-	break;
+    break;
   default:
     envConfig = devConfig;
-    console.log("default")
-	break;
+    console.log(env)
+    break;
 }
 
 export const config = envConfig;

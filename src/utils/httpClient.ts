@@ -29,12 +29,17 @@ export function httpClient<T extends any>(
     }),
   };
 
+  //console.log(params)
+
   if (token && !noToken) {
     params.headers["LoginToken"] = token;
   }
 
   return fetch("/api/proxy", params)
     .then(async (res) => {
+
+      //console.log(res)
+
       if (res.ok) {
         const result = decrypt((await res.json()).data);
         if (Object.keys(result).length === 1 && result["Error"]) {
