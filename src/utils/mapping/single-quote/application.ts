@@ -28,7 +28,7 @@ export const convertApplicationToPlan = (
   systemId: application.SystemId,
   isQuote: application.ApplicationNumber.startsWith('NRA'),
   planType: type,
-  monthlyPrice: Math.round(+arPayPlan.DTOARSchedule[0].GrossAmt).toString(),
+  monthlyPrice: Math.round(+arPayPlan.DTOARSchedule[1].GrossAmt).toString(),
   downPayment: arPayPlan.DTOARSchedule[0].BillAmt.toString(),
   paymentSchedule: parseSchedulePlan(arPayPlan.DTOARSchedule),
   installmentFee: arPayPlan.DTOARSchedule[0].DTOARApply[arPayPlan.DTOARSchedule[0].DTOARApply.length - 1].Amount,

@@ -4,6 +4,7 @@ import CryptoJS from "crypto-js";
 
 /* eslint-disable no-undef */
 const env = process.env.ENV || "development";
+
 let envConfig = null;
 
 const decrypt = (encryptedString: string, secretKey = null) => {
