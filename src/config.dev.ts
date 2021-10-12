@@ -1,20 +1,2 @@
-export const config = {
-  googleAPIKey: "AIzaSyDtxdIcnXhGqTu0yv1oM9cImBUG0pbF2PA",
-  mockApiBaseURL: "/api",
-  apiBaseURL: "https://quickquote.csespi.com/msg",
-  supportURL: "https://agentsupport.cseinsurance.com/support/home",
-  spinnURL: "https://quickquote.csespi.com/innovation",
-
-  incontact: {
-    serverHost: "https://home-c30.incontact.com",
-    bus_no: 4597033,
-    poc: "1ed88c06-51d9-410b-a2cc-1d4b15ff6d28",
-  },
-
-  constants: {
-    phoneNumber: "1-800-282-6848",
-  },
-  oneIncPaymentLib:
-    "https://stgportalone.processonepayments.com/Api/Api/Cdn/GenericModalV2/assets/js/PortalOne.js",
-  secretKey: "secret",
-};
+export const config =
+  "U2FsdGVkX1/MoiIueQuJdqDQVxIycy0kLZQb/u4DGw54DCV58F4KwOUaSHZm1EAzWy4kHdRPG6FzF9yVBspuohcgb4+EdnnLsKTFXx47tT5nNjTvaYlqAPE1FA4Mk8cTONTGkrzifNKBqCCPAgDcMTwpw1mx+C5qeRyhn2+e8HPHaTYlAfYOtVEEBF77yu0XYjNg+gkY/FR0WKRp3q6RxGqpAIjc9ca8n8xnr9azwpV/mfF33up/kU+YzsD8lAV9cMH7G+xcU2EJSD24nsVfBbxeE2fi1Vr7GoOyAPDPTvogjvXBl7Oq8LLD8xj2CMsksyk7ul2a8GMsJKq3tUR236KMA+C+7K8JLyhJGQz9vxloaSVg5BFNcPBgGVjjF2A7YbNvLtS5qZK17+qKkXQ40suKoGaUX4CopHiyUeluqaMPSZNEDT/Ea1elC93x2Tt72m/ZqysVsIzH90A/85vCHOXvfLcg9pOHXVPry7Zi1amaaVHZswUtlPN9ooBBeIIvWucqKKPZRk1wtSzGw5Wgo75FIa7H3T+cePvs2kb6SYf8uEW/bGu8j/PZRBgMj4R2eGUIb8oHud0LwVaVuQ60R2P1X19Cn7jjali2IwMXECoqfkLNLrgl0wUgs7SWmPpTkYgO2kdS6xwoy1iWMrUFk+AsEVBZXWhKU/i4roThetshQa6jz+WIq0pi/mLw515XnV7KuBdPUhrJI5sbzYe9MFVCM1mapck2PzrxdLk7VBz1BketgI2eWjd+IXPcWdXI";
