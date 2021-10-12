@@ -4,9 +4,9 @@ import { config as prodConfig } from "./config.prod";
 /* eslint-disable no-undef */
 const env = process.env.ENV || "development";
 let envConfig = null;
+console.log(env)
 switch (env) {
   case "development":
-    console.log(env);
     envConfig = devConfig;
     break;
   case "production":
