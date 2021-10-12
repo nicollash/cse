@@ -6,6 +6,7 @@ import CryptoJS from "crypto-js";
 const env = process.env.ENV || "development";
 
 let envConfig = null;
+let AppName = "CSE Insurance";
 
 const decrypt = (encryptedString: string, secretKey = null) => {
   if (encryptedString) {
@@ -21,13 +22,13 @@ const decrypt = (encryptedString: string, secretKey = null) => {
 switch (env) {
   case "development":
     console.log(env);
-    envConfig = decrypt(devConfig, "CSE Insurance");
+    envConfig = decrypt(devConfig, AppName);
     break;
   case "production":
-    envConfig = decrypt(prodConfig, "CSE Insurance");
+    envConfig = decrypt(prodConfig, AppName);
     break;
   default:
-    envConfig = decrypt(devConfig, "CSE Insurance");
+    envConfig = decrypt(devConfig, AppName);
     break;
 }
 
