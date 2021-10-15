@@ -1,5 +1,6 @@
 import { config as devConfig } from "./config.dev";
 import { config as prodConfig } from "./config.prod";
+import { config as trainingConfig } from "./config.training";
 import CryptoJS from "crypto-js";
 
 /* eslint-disable no-undef */
@@ -22,6 +23,10 @@ switch (env) {
   case "development":
     console.log(env);
     envConfig = decrypt(devConfig, customENC);
+    break;
+  case "training":
+    console.log(env);
+    envConfig = decrypt(trainingConfig, customENC);
     break;
   case "production":
     envConfig = decrypt(prodConfig, customENC);
