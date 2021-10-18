@@ -2,6 +2,7 @@ import querystring from "query-string";
 
 import { CustomError, CustomErrorType } from "~/types";
 import { encrypt, decrypt } from "~/lib/encryption";
+import { logger } from ".";
 
 type THttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -29,7 +30,11 @@ export function httpClient<T extends any>(
     }),
   };
 
-  //console.log(params)
+  if (!url.includes('ValidateProviderLoginTokenRq/json')) {
+    logger('---------------------------------------------------')
+    logger('Request: ', url, data)
+  }
+
 
   if (token && !noToken) {
     params.headers["LoginToken"] = token;
@@ -37,11 +42,11 @@ export function httpClient<T extends any>(
 
   return fetch("/api/proxy", params)
     .then(async (res) => {
-
-      //console.log(res)
-
       if (res.ok) {
         const result = decrypt((await res.json()).data);
+        if (!url.includes('ValidateProviderLoginTokenRq/json')) {
+          logger('Response: ', url, result)
+        }
         if (Object.keys(result).length === 1 && result["Error"]) {
           throw { httpRes: res, data: result };
         } else {

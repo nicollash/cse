@@ -1,5 +1,5 @@
 export const logger = (...params) => {
-  // if (process.env.NODE_ENV === 'development') {
-  //console.log(...params)
-  // }
+  if (process.env.ENV === 'debug') {
+    console.log(...params)
+  }
 }
