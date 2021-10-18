@@ -205,7 +205,7 @@ const CheckoutPage: FunctionComponent = () => {
         setPaid(true);
       } catch (e) {
         logger(e);
-        getQuote(quoteDetail.planDetails.applicationNumber).catch(() => {});
+        setError(e);
       } finally {
         setLoading(false);
       }
