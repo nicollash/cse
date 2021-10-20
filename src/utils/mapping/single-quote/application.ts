@@ -129,7 +129,7 @@ export const updateApplicationFromPlan = (
   application.DTOBasicPolicy[0].PayPlanCd = planInfo.paymentPlan === 'monthly' ? 'insured direct bill 5 pay ca sg pa 2.0' : 'insured direct bill full pay ca sg pa 2.0';
 
   if (application.DTOTransactionInfo[0]?.ElectronicPaymentSource) {
-    application.DTOTransactionInfo[0].ElectronicPaymentSource[0].OneIncPaymentToken = planInfo.paymentMethod.oneIncPaymentToken
+    application.DTOTransactionInfo[0].ElectronicPaymentSource[0].OneIncPaymentToken = planInfo.paymentMethod?.oneIncPaymentToken
   }
 }
 
