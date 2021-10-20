@@ -196,22 +196,20 @@ const CheckoutPage: FunctionComponent = () => {
     },
   });
 
-  const handleIssuePolicy = useCallback(
-    async (pf: string, amountToPay: string) => {
-      try {
-        logger(`${amountToPay}`);
-        setLoading(true);
-        await issuePolicy(amountToPay, pf);
-        setPaid(true);
-      } catch (e) {
+  const handleIssuePolicy = (pf: string, amountToPay: string) => {
+    logger(`${amountToPay}`);
+    setLoading(true);
+    issuePolicy(amountToPay, pf).then(() => {
+      setPaid(true);
+    })
+      .catch((e) => {
         logger(e);
         setError(e);
-      } finally {
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    },
-    []
-  );
+      });
+  }
 
   const onSavePaymentMethod = useCallback(async (data: any) => {
     setLoading(true);
