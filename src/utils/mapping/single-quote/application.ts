@@ -165,6 +165,7 @@ export const parseQuoteResponse = (quoteResponse: QuoteResponse): QuoteDetail =>
         firstName: party.NameInfo[0].GivenName,
         lastName: party.NameInfo[0].Surname,
         birthDate: convertStringToDate(party.PersonInfo[0].BirthDt),
+        originalBirthDate: convertStringToDate(party.PersonInfo[0].BirthDt),
         age: +party.PersonInfo[0].Age,
         gender: party.PersonInfo[0].GenderCd,
         maritalStatus: party.PersonInfo[0].MaritalStatusCd,

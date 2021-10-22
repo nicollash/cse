@@ -59,6 +59,7 @@ export type DriverInfo = {
   lastName?: string
   age?: number
   birthDate?: Date
+  originalBirthDate?: Date
   gender?: string
   maritalStatus?: string
   occupation?: string

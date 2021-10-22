@@ -179,6 +179,8 @@ export const EditDriverModal: FunctionComponent<Props> = ({
             >
               <FormikDatePicker
                 name="birthDate"
+                dob
+                originalDOBValue={formik.values.originalBirthDate}
                 css={[utils.mb(3), utils.fullWidth]}
                 maxDate={new Date(new Date().getFullYear() - 10, new Date().getMonth())}
                 onChange={(e) => {

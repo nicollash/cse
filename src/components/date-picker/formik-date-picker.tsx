@@ -5,7 +5,8 @@ import { DatePicker, Props } from './date-picker'
 
 interface FormikProps extends Props {
   name?: string
-  disabled?:boolean
+  disabled?: boolean
+  dob?: boolean
 }
 
 export const FormikDatePicker: FunctionComponent<FormikProps> = ({ name, ...props }) => {

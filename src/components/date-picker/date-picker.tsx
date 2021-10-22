@@ -1,6 +1,6 @@
 import { jsx, css } from '@emotion/react'
 import styled from '@emotion/styled'
-import { FunctionComponent, useRef } from 'react'
+import { forwardRef, FunctionComponent, useRef } from 'react'
 
 import ReactDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.min.css'
@@ -11,6 +11,7 @@ import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
 import { theme, utils } from '~/styles'
 
 import { Text } from '..'
+import { logger, maskDOB } from '~/utils'
 
 export interface Props {
   minDate?: Date
@@ -23,6 +24,8 @@ export interface Props {
   hasError?: boolean
   locale?: string
   helperText?: string
+  dob?: boolean
+  originalDOBValue?: Date
 }
 
 const DatePickerWrapper = styled.div<{ width?: string }>`
@@ -64,37 +67,83 @@ export const DatePicker: FunctionComponent<Props> = ({
   className,
   hasError,
   helperText,
+  dob,
+  originalDOBValue,
   ...props
 }) => {
   const ref = useRef(null)
+  const ref2 = useRef(null)
+
+  const Input = ({ onChange, placeholder, valueI, isSecure, id, onClick }) => (
+    <input
+      onChange={onChange}
+      placeholder={placeholder}
+      value={valueI}
+      css={[styles.input, styles.bgColor(disabled)]}
+      //isSecure={isSecure}
+      id={id}
+      onClick={onClick}
+    />
+  )
+
+
   return (
     <DatePickerWrapper width={width} className={className}>
       <DatePickerControlWrapper hasError={hasError} css={utils.fullWidth}>
-        <ReactDatePicker
-          readOnly={disabled}
-          css={[styles.input, styles.bgColor(disabled)]}
-          minDate={minDate}
-          maxDate={maxDate}
-          selected={value}
-          onChange={onChange}
-          showMonthDropdown
-          showYearDropdown
-          dropdownMode="select"
-          scrollableYearDropdown
-          ref={ref}
-          {...props}
-        />
+
+        {dob && (value.getTime() == originalDOBValue.getTime()) ?
+          <ReactDatePicker
+            readOnly={disabled}
+            css={[styles.input, styles.bgColor(disabled)]}
+            minDate={minDate}
+            maxDate={maxDate}
+            selected={value}
+            onChange={onChange}
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select"
+            scrollableYearDropdown
+            customInput={<Input onChange={onChange} placeholder={''}
+              valueI={maskDOB(value)}
+              isSecure={false} id={undefined} onClick={() => { }} />}
+            ref={ref2}
+            {...props}
+          />
+          :
+          <ReactDatePicker
+            readOnly={disabled}
+            css={[styles.input, styles.bgColor(disabled)]}
+            minDate={minDate}
+            maxDate={maxDate}
+            selected={value}
+            onChange={onChange}
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select"
+            scrollableYearDropdown
+            ref={ref}
+            {...props}
+          />
+        }
 
 
         <ActionIcon
           css={styles.visible(disabled)}
           type="button"
           onClick={() => {
-            ref.current.setFocus()
+            if (value.getTime() == originalDOBValue.getTime()) {
+              ref2.current.setFocus()
+              ref2.current.handleFocus()
+            }
+            else {
+              ref.current.setFocus()
+            }
           }}
         >
           <FontAwesomeIcon icon={faCalendarAlt} color={theme.color.primary} />
         </ActionIcon>
+
+
 
       </DatePickerControlWrapper>
 

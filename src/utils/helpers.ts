@@ -1,3 +1,5 @@
+import { logger } from "."
+
 export const formatPhoneNumber = (e) => {
   const cleaned = ('' + e).replace(/\D/g, '')
   const match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/)
@@ -44,4 +46,17 @@ export const maskLicenseNumber = (licenseNumber: string, markStartingOnCharNumbe
     return part1.concat(maskedPart2)
   }
   return licenseNumber
+}
+
+
+export const maskDOB = (dob: Date): string => {
+  try {
+    if (dob) {
+      return '**/**/'.concat(dob.getFullYear().toString())
+    }
+  } catch (error) {
+    logger(error)
+  }
+
+  return '**/**/****'
 }
