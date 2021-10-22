@@ -295,6 +295,7 @@ const CustomizePage: FunctionComponent = () => {
           css={[utils.fullWidth, utils.visibleOnMobile, utils.my(3)]}
         >
           <ErrorBox
+            isQuote={quoteDetail.planDetails.isQuote}
             data={quoteDetail.validationError}
             systemId={quoteDetail.systemId}
             actions={[
@@ -328,6 +329,7 @@ const CustomizePage: FunctionComponent = () => {
           <div css={[utils.fullWidth, utils.mx("auto")]}>
             <div css={[utils.mb(3), utils.hideOnMobile]}>
               <ErrorBox
+                isQuote={quoteDetail.planDetails.isQuote}
                 css={utils.maxWidth("65%")}
                 cp={true}
                 data={quoteDetail.validationError}

@@ -351,7 +351,7 @@ export default {
       LicenseState: 'License State',
       AtFault: 'At Fault',
       DriverName: 'Driver Name',
-      LicenseNumber: 'LicenseNumber',
+      LicenseNumber: 'License Number',
       Comments: 'Comments',
       LossDescription: 'Loss Description',
       Save: 'Save',

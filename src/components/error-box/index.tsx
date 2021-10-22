@@ -19,6 +19,7 @@ interface ErrorProps {
   actions?: Array<{ text: string; contains: string; action: any }>;
   systemId: string;
   css?: SerializedStyles | SerializedStyles[];
+  isQuote: boolean
 }
 
 export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
@@ -96,7 +97,7 @@ export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
                           - View
                         </a>
                       )}
-                    {error.TypeCd && error.TypeCd == "Non-bound" && (
+                    {error.TypeCd && error.TypeCd == "Non-bound" && !props.isQuote && (
                       <Button
                         css={[styles.goToSpBtn, utils.ml(2)]}
                         type="button"

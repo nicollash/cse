@@ -26,7 +26,7 @@ export const BreadCrumb: FunctionComponent<props> = ({
         key < breadCrumb.length - 1 ? (
           <div css={[utils.mr(1), utils.display("flex")]} key={key}>
             <Link href={item.link ? item.link : "/quote"}>
-              <Text color={theme.color.link} bold css={[utils.mr(1)]}>
+              <Text color={theme.color.link} bold css={[utils.mr(1), utils.cursor('pointer')]}>
                 {item.label}
               </Text>
             </Link>

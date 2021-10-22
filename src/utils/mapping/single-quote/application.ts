@@ -18,6 +18,7 @@ import { parseAdditionalInterestAItoDTO, parseAdditionalInterestDTOtoAI } from '
 import { ElectronicPaymentSource } from '../../../types/DTO/common'
 import { parseDTOtoLossHistorySingleQuote, parseLossHistorytoDTO } from '../loss-history'
 import { DTOARSchedule } from '~/types/DTO/pay-plan'
+import { maskLicenseNumber } from '~/utils'
 
 export const convertApplicationToPlan = (
   application: DTOApplication,
@@ -169,7 +170,8 @@ export const parseQuoteResponse = (quoteResponse: QuoteResponse): QuoteDetail =>
         maritalStatus: party.PersonInfo[0].MaritalStatusCd,
         occupation: party.PersonInfo[0].OccupationClassCd,
         licenseState: party.DriverInfo[0].LicensedStateProvCd,
-        licenseNumber: party.DriverInfo[0].LicenseNumber || '',
+        licenseNumber: party.DriverInfo[0].LicenseNumber ? maskLicenseNumber(party.DriverInfo[0].LicenseNumber, 4) : '',
+        originalLicenseNumber: party.DriverInfo[0].LicenseNumber || '',
         licenseDt: party.DriverInfo[0].LicenseDt || '',
         ageFirstLicensed: +party.DriverInfo[0].AgeFirstLicensed,
         status: party.Status,
@@ -286,7 +288,7 @@ export const getUpdatedDTOApplication = (
             {
               ...party.DriverInfo[0],
               LicensedStateProvCd: quoteDetail.drivers[driverIndex].licenseState,
-              LicenseNumber: quoteDetail.drivers[driverIndex].licenseNumber,
+              LicenseNumber: quoteDetail.drivers[driverIndex].licenseNumber && !quoteDetail.drivers[driverIndex].licenseNumber.includes('*') ? quoteDetail.drivers[driverIndex].licenseNumber : quoteDetail.drivers[driverIndex].originalLicenseNumber,
               ScholasticDiscountInd: quoteDetail.drivers[driverIndex].scholasticDiscountInd ? 'Yes' : 'No',
               ScholasticCertificationDt: quoteDetail.drivers[driverIndex].scholasticDiscountInd && quoteDetail.drivers[driverIndex].scholasticCertificationDt ? convertDateToString(quoteDetail.drivers[driverIndex].scholasticCertificationDt) : '',
               MatureDriverInd: quoteDetail.drivers[driverIndex].matureDriverInd ? 'Yes' : 'No',
@@ -413,22 +415,3 @@ export const parseDriverPoint = (action: string, driverNumber: string, dP: Drive
 
   return { ...dpObject, DriverPointUpdateInd: 'Yes', DriverPointsNumber: dP.driverPointsNumber }
 }
-
-/*export const driverPointsToDTO = (dP: DriverPointsInfo): any =>   {
-  return {
-    id: dP.id,
-    Status: dP.status,
-    DriverPointsNumber: dP.driverPointsNumber,
-    SourceCd: dP.sourceCd,
-    InfractionCd: dP.infractionCd,
-    InfractionDt: convertDateToString(dP.infractionDt),
-    PointsChargeable: dP.pointsChargeable,
-    PointsCharged: dP.pointsCharged,
-    ExpirationDt: convertDateToString(dP.expirationDt),
-    Comments: dP.comments,
-    ConvictionDt: convertDateToString(dP.convictionDt),
-    TypeCd: dP.typeCd,
-    AddedByUserId: dP.addedByUserId,
-    GoodDriverPoints: dP.goodDriverPoints
-  }
-}*/

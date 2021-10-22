@@ -324,6 +324,7 @@ export const CheckoutScreen: FunctionComponent = () => {
         {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
           <div css={[utils.mb(3), utils.hideOnMobile]}>
             <ErrorBox
+              isQuote={quoteDetail.planDetails.isQuote}
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
             />
@@ -333,6 +334,7 @@ export const CheckoutScreen: FunctionComponent = () => {
         {quoteDetail.validationError && quoteDetail.validationError.length > 0 && (
           <div css={[utils.mb(3), utils.fullWidth, utils.visibleOnMobile]}>
             <ErrorBox
+              isQuote={quoteDetail.planDetails.isQuote}
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
             />

@@ -325,6 +325,7 @@ const CheckoutPage: FunctionComponent = () => {
             <ErrorBox
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
+              isQuote={quoteDetail.planDetails.isQuote}
             />
           </div>
         )}
@@ -334,6 +335,7 @@ const CheckoutPage: FunctionComponent = () => {
             <ErrorBox
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
+              isQuote={quoteDetail.planDetails.isQuote}
             />
           </div>
         )}

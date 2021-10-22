@@ -1,4 +1,5 @@
 import { DTOApplication, DTOLossHistory, LossHistoryInfo } from "~/types";
+import { maskLicenseNumber } from "../helpers";
 import { convertStringToDate } from "./helpers";
 
 export const parseLossHistorytoDTO = (lhI: Array<LossHistoryInfo>): Array<DTOLossHistory> => {
@@ -22,7 +23,7 @@ export const parseLossHistorytoDTO = (lhI: Array<LossHistoryInfo>): Array<DTOLos
       AtFaultCd: lh.AtFaultCd,
       DriverName: lh.DriverName ? lh.DriverName : '',
       DriverLicensedStateProvCd: lh.DriverLicensedStateProvCd ? lh.DriverLicensedStateProvCd : '',
-      DriverLicenseNumber: lh.DriverLicenseNumber ? lh.DriverLicenseNumber : '',
+      DriverLicenseNumber: lh.DriverLicenseNumber && !lh.DriverLicenseNumber.includes('*') ? lh.DriverLicenseNumber : lh.OriginalDriverLicenseNumber,
       Comment: lh.Comment ? lh.Comment : '',
       LossDesc: lh.LossDesc ? lh.LossDesc : '',
       StatusCd: lh.StatusCd ? lh.StatusCd : 'Active',
@@ -67,31 +68,32 @@ export const parseDTOtoLossHistory = (dtoApp: Array<DTOApplication>): Array<Loss
 }
 
 export const parseDTOtoLossHistorySingleQuote = (dtoApp: DTOLossHistory): LossHistoryInfo => {
-    return ({
-      LossHistoryNumber: dtoApp.LossHistoryNumber,
-      LossDt: convertStringToDate(dtoApp.LossDt),
-      LossCauseCd: dtoApp.LossCauseCd,
-      ClaimNumber: dtoApp.ClaimNumber,
-      ClaimStatusCd: dtoApp.ClaimStatusCd,
-      CatastropheNumber: dtoApp.CatastropheNumber,
-      CarrierName: dtoApp.CarrierName,
-      TypeCd: dtoApp.TypeCd,
-      PolicyNumber: dtoApp.PolicyNumber,
-      LossAmt: dtoApp.LossAmt,
-      PaidAmt: dtoApp.PaidAmt,
-      VehIdentificationNumber: dtoApp.VehIdentificationNumber,
-      AtFaultCd: dtoApp.AtFaultCd,
-      DriverName: dtoApp.DriverName,
-      DriverLicensedStateProvCd: dtoApp.DriverLicensedStateProvCd,
-      DriverLicenseNumber: dtoApp.DriverLicenseNumber,
-      Comment: dtoApp.Comment,
-      LossDesc: dtoApp.LossDesc,
-      id: dtoApp.id,
-      StatusCd: dtoApp.StatusCd,
-      SourceCd: dtoApp.SourceCd,
-      PolicyTypeCd: dtoApp.PolicyTypeCd
-    })
-  }
+  return ({
+    LossHistoryNumber: dtoApp.LossHistoryNumber,
+    LossDt: convertStringToDate(dtoApp.LossDt),
+    LossCauseCd: dtoApp.LossCauseCd,
+    ClaimNumber: dtoApp.ClaimNumber,
+    ClaimStatusCd: dtoApp.ClaimStatusCd,
+    CatastropheNumber: dtoApp.CatastropheNumber,
+    CarrierName: dtoApp.CarrierName,
+    TypeCd: dtoApp.TypeCd,
+    PolicyNumber: dtoApp.PolicyNumber,
+    LossAmt: dtoApp.LossAmt,
+    PaidAmt: dtoApp.PaidAmt,
+    VehIdentificationNumber: dtoApp.VehIdentificationNumber,
+    AtFaultCd: dtoApp.AtFaultCd,
+    DriverName: dtoApp.DriverName,
+    DriverLicensedStateProvCd: dtoApp.DriverLicensedStateProvCd,
+    DriverLicenseNumber: dtoApp.DriverLicenseNumber ? maskLicenseNumber(dtoApp.DriverLicenseNumber, 4) : '',
+    OriginalDriverLicenseNumber: dtoApp.DriverLicenseNumber,
+    Comment: dtoApp.Comment,
+    LossDesc: dtoApp.LossDesc,
+    id: dtoApp.id,
+    StatusCd: dtoApp.StatusCd,
+    SourceCd: dtoApp.SourceCd,
+    PolicyTypeCd: dtoApp.PolicyTypeCd
+  })
+}
 
 function parseDate(LossDt: any): string {
 

@@ -244,6 +244,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
             ]}
           >
             <ErrorBox
+              isQuote={quoteDetail.planDetails.isQuote}
               data={quoteDetail.validationError}
               systemId={quoteDetail.systemId}
             />
@@ -263,6 +264,7 @@ const ReviewCoveragesPage: FunctionComponent = () => {
           css={[utils.fullWidth, utils.hideOnMobile, utils.my(3)]}
         >
           <ErrorBox
+            isQuote={quoteDetail.planDetails.isQuote}
             data={quoteDetail.validationError}
             systemId={quoteDetail.systemId}
           />
