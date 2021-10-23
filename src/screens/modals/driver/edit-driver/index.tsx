@@ -183,6 +183,7 @@ export const EditDriverModal: FunctionComponent<Props> = ({
                 originalDOBValue={formik.values.originalBirthDate}
                 css={[utils.mb(3), utils.fullWidth]}
                 maxDate={new Date(new Date().getFullYear() - 10, new Date().getMonth())}
+                openToDate={new Date(new Date(new Date().getFullYear() - 10, new Date().getMonth()).toLocaleDateString('en-ZA'))}
                 onChange={(e) => {
                   formik.handleChange({
                     target: {

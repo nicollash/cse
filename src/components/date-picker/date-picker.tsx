@@ -1,6 +1,6 @@
-import { jsx, css } from '@emotion/react'
+import { css } from '@emotion/react'
 import styled from '@emotion/styled'
-import { forwardRef, FunctionComponent, useRef } from 'react'
+import { FunctionComponent, useRef } from 'react'
 
 import ReactDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.min.css'
@@ -11,11 +11,12 @@ import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
 import { theme, utils } from '~/styles'
 
 import { Text } from '..'
-import { logger, maskDOB } from '~/utils'
+import { maskDOB } from '~/utils'
 
 export interface Props {
   minDate?: Date
   maxDate?: Date
+  openToDate?: Date
   value?: Date
   onChange: (v: Date) => any
   disabled?: boolean
@@ -60,6 +61,7 @@ const ActionIcon = styled.button`
 export const DatePicker: FunctionComponent<Props> = ({
   minDate = null,
   maxDate = null,
+  openToDate,
   value,
   disabled,
   onChange,
@@ -73,6 +75,7 @@ export const DatePicker: FunctionComponent<Props> = ({
 }) => {
   const ref = useRef(null)
   const ref2 = useRef(null)
+  const today = new Date()
 
   const Input = ({ onChange, placeholder, valueI, isSecure, id, onClick }) => (
     <input
@@ -97,6 +100,7 @@ export const DatePicker: FunctionComponent<Props> = ({
             css={[styles.input, styles.bgColor(disabled)]}
             minDate={minDate}
             maxDate={maxDate}
+            openToDate={openToDate}
             selected={value}
             onChange={onChange}
             showMonthDropdown
