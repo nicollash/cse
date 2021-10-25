@@ -38,10 +38,11 @@ export const maskLicenseNumber = (licenseNumber: string, markStartingOnCharNumbe
   if (licenseNumber?.length > markStartingOnCharNumber) {
     const part1 = licenseNumber.substring(0, markStartingOnCharNumber)
     const part2 = licenseNumber.substring(markStartingOnCharNumber, licenseNumber.length)
+
     for (let c of part2) {
 
     }
-    let maskedPart2 = [...part2].map(c => '*').reduce((actual, accumulator: string) => accumulator.concat(actual), '')
+    let maskedPart2 = [...part2.split("")].map(c => '*').reduce((actual, accumulator: string) => accumulator.concat(actual), '')
 
     return part1.concat(maskedPart2)
   }
