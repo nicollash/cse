@@ -94,7 +94,7 @@ export const DatePicker: FunctionComponent<Props> = ({
     <DatePickerWrapper width={width} className={className}>
       <DatePickerControlWrapper hasError={hasError} css={utils.fullWidth}>
 
-        {dob && (value.getTime() == originalDOBValue.getTime()) ?
+        {dob && value && originalDOBValue && (value.getTime() == originalDOBValue.getTime()) ?
           <ReactDatePicker
             readOnly={disabled}
             css={[styles.input, styles.bgColor(disabled)]}
@@ -135,7 +135,7 @@ export const DatePicker: FunctionComponent<Props> = ({
           css={styles.visible(disabled)}
           type="button"
           onClick={() => {
-            if (value.getTime() == originalDOBValue.getTime()) {
+            if (value && originalDOBValue && (value.getTime() == originalDOBValue.getTime())) {
               ref2.current.setFocus()
               ref2.current.handleFocus()
             }
