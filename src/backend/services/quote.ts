@@ -134,6 +134,20 @@ class QuoteService {
       user.LoginToken
     );
   }
+
+  static async convertQuoteToApplication(
+    LoginId: string,
+    DTOApplication: DTOApplication[]
+  ) {
+    return HttpService.request<QuoteResponse>(
+      `${config.apiBaseURL}/ConvertQuickQuoteToApplicationRq/json`,
+      "POST",
+      {
+        LoginId,
+        DTOApplication,
+      }
+    );
+  }
 }
 
 export default QuoteService;
@@ -163,19 +177,6 @@ export default QuoteService;
 //       //LoginId,
 //       DTOApplication,
 //       SavePaymentRequest: JSON.stringify(SavePaymentRequest),
-//     }
-//   );
-
-// export const convertQuoteToApplication = (
-//   LoginId: string,
-//   DTOApplication: DTOApplication[]
-// ) =>
-//   httpClient<QuoteResponse>(
-//     `${config.apiBaseURL}/ConvertQuickQuoteToApplicationRq/json`,
-//     "POST",
-//     {
-//       LoginId,
-//       DTOApplication,
 //     }
 //   );
 

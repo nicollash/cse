@@ -195,6 +195,40 @@ export async function getServerSideProps({ req, res, query }) {
           },
         };
       }
+
+      case "convertToApplication": {
+        const { quoteResponse, quoteDetail } = form;
+
+        try {
+          const newDTOApplications = getUpdatedDTOApplication(
+            quoteResponse,
+            quoteDetail
+          );
+          await QuoteService.updateQuote(session.user, newDTOApplications);
+
+          if (quoteDetail.planDetails.isQuote) {
+            const result = await QuoteService.convertQuoteToApplication(
+              session.user,
+              quoteDetail.planDetails.applicationNumber
+            );
+            session.lastError = null;
+
+            return {
+              redirect: {
+                destination: `/quote/${result.DTOApplication[0].ApplicationNumber}/review`,
+              },
+            };
+          } else {
+            return {
+              redirect: {
+                destination: `/quote/${quoteResponse.DTOApplication[0].ApplicationNumber}/review`,
+              },
+            };
+          }
+        } catch (err) {
+          session.lastError = err;
+        }
+      }
     }
   }
 

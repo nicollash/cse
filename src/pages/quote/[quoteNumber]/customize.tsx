@@ -105,9 +105,22 @@ const CustomizePage: FunctionComponent<any> = ({
     []
   );
 
-  const updateQuote = useCallback((quoteData) => {
+  const updateQuote = useCallback((quoteData, redirectURL?) => {
     formRedirect("/action/quote/update", {
-      form: JSON.stringify(quoteData),
+      form: JSON.stringify({
+        quoteResponse,
+        quoteDetail: quoteData,
+        redirectURL,
+      }),
+    });
+  }, []);
+
+  const convertToApplication = useCallback((quoteData) => {
+    formRedirect("action/quote/convertToApplication", {
+      form: JSON.stringify({
+        quoteResponse,
+        quoteDetail: quoteData,
+      }),
     });
   }, []);
 
@@ -809,6 +822,7 @@ const CustomizePage: FunctionComponent<any> = ({
             quoteDetail={quoteDetail}
             isOpen={editCarIndex !== null}
             defaultValue={quoteDetail.vehicles[editCarIndex]}
+            quoteNumber={quoteNumber}
             onDeleteVehicle={() => setDeleteCarIndex(editCarIndex)}
             onCloseModal={() => {
               if (editCarIndex !== null) {
@@ -949,23 +963,23 @@ const CustomizePage: FunctionComponent<any> = ({
             }
             onUpdate={(v) => {
               setLoading(true);
-              updateQuote(v)
-                .then(() => {
-                  if (requiredInformationModalVisible.from === "checkout") {
-                    if (calcRequiredItemsLabel(v).length > 0) {
-                      setRequiredInformationModalVisible({
-                        required: true,
-                        from: "checkout",
-                      });
-                    } else {
-                      setUserInfoVisible(true);
-                    }
-                  }
-                })
-                .catch((e) => {
-                  setError(e);
-                })
-                .finally(() => setLoading(false));
+              updateQuote(v);
+              // .then(() => {
+              //   if (requiredInformationModalVisible.from === "checkout") {
+              //     if (calcRequiredItemsLabel(v).length > 0) {
+              //       setRequiredInformationModalVisible({
+              //         required: true,
+              //         from: "checkout",
+              //       });
+              //     } else {
+              //       setUserInfoVisible(true);
+              //     }
+              //   }
+              // })
+              // .catch((e) => {
+              //   setError(e);
+              // })
+              // .finally(() => setLoading(false));
             }}
           />
           <AutoPolicyModal
@@ -1023,27 +1037,10 @@ const CustomizePage: FunctionComponent<any> = ({
             onCloseModal={() => setUserInfoVisible(false)}
             onUpdate={(communicationInfo: CommunicationInfo) => {
               setLoading(true);
-              updateQuote({
+              convertToApplication({
                 ...quoteDetail,
                 communicationInfo: communicationInfo,
-              })
-                .then(() => {
-                  if (quoteDetail.planDetails.isQuote) {
-                    convertToApplication()
-                      .then(async ({ applicationNumber }) => {
-                        setLoading(false);
-                        router.replace(`/quote/${applicationNumber}/review`);
-                      })
-                      .catch((e) => {
-                        setError(e);
-                      });
-                  } else {
-                    router.push("review");
-                  }
-                })
-                .catch((e) => {
-                  setError(e);
-                });
+              });
             }}
           />
         </Fragment>

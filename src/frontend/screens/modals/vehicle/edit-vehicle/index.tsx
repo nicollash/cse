@@ -25,11 +25,13 @@ import { VehicleOptions } from "~/options";
 import { styles } from "./styles";
 import { questions } from "~/frontend/utils/configuration/questions";
 import { UWQuestionsNoForm } from "~/frontend/screens/pages/customize/components/uw-questions-noform";
+import { formRedirect } from "~/frontend/utils";
 
 interface Props {
   quoteDetail: QuoteDetail;
   isOpen: boolean;
   defaultValue: VehicleInfo;
+  quoteNumber: string;
   onDeleteVehicle?: () => any;
   onUpdate?: (value: VehicleInfo) => any;
   onCloseModal?: () => any;
@@ -39,6 +41,7 @@ export const EditVehicleModal: FunctionComponent<Props> = ({
   quoteDetail,
   isOpen,
   defaultValue,
+  quoteNumber,
   onCloseModal,
   onUpdate,
   onDeleteVehicle,
@@ -110,33 +113,12 @@ export const EditVehicleModal: FunctionComponent<Props> = ({
       formik.values.vinNumber != actualVIN
     ) {
       setVinChanged(true);
-      getRiskByVIN(formik.values.vinNumber.trim())
-        .then((res) => {
-          formik.handleChange({
-            target: {
-              name: "year",
-              value: res.DTORisk[0].DTOVehicle[0].ModelYr,
-            },
-          });
-
-          formik.handleChange({
-            target: {
-              name: "make",
-              value: res.DTORisk[0].DTOVehicle[0].Manufacturer,
-            },
-          });
-
-          formik.handleChange({
-            target: {
-              name: "model",
-              value: res.DTORisk[0].DTOVehicle[0].Model,
-            },
-          });
-        })
-        .catch(() => {
-          setVINRequestError(true);
-        })
-        .finally(() => setVinChanged(false));
+      formRedirect("/action/quote/GetRiskByVIN", {
+        form: JSON.stringify({
+          vinNumber: formik.values.vinNumber.trim(),
+          redirectURL: `/quote/${quoteNumber}/customize`,
+        }),
+      });
       setActualVIN(formik.values.vinNumber.trim());
       //setVinChanged(true)
     } else {

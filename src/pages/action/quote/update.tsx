@@ -13,7 +13,7 @@ export async function getServerSideProps({ req, res }) {
   const body = await parse(req);
 
   if (session.user && body.form) {
-    const { quoteResponse, quoteDetail } = JSON.parse(body.form);
+    const { quoteResponse, quoteDetail, redirectURL } = JSON.parse(body.form);
 
     try {
       const newDTOApplications = getUpdatedDTOApplication(
@@ -27,11 +27,19 @@ export async function getServerSideProps({ req, res }) {
 
       session.lastError = null;
 
-      return {
-        redirect: {
-          destination: `/quote/${result.DTOApplication[0].ApplicationNumber}/customize`,
-        },
-      };
+      if (redirectURL === "customize") {
+        return {
+          redirect: {
+            destination: `/quote/${result.DTOApplication[0].ApplicationNumber}/customize`,
+          },
+        };
+      } else {
+        return {
+          redirect: {
+            destination: `/quote`,
+          },
+        };
+      }
     } catch (error) {
       session.lastError = error;
     }

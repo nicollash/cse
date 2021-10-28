@@ -246,6 +246,7 @@ export const AddVehicleModal: FunctionComponent<Props> = ({
           quoteDetail={quoteDetail}
           isOpen={editCarVisible}
           defaultValue={parseRisk(newRisk)}
+          quoteNumber={quoteNumber}
           onCloseModal={() => {
             setEditCarVisible(false);
             onCloseModal();
