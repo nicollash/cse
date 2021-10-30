@@ -47,7 +47,7 @@ export const PlanItem: FunctionComponent<Props> = ({
         css={[utils.fullWidth, selected && styles.selectedContent]}
         onClick={onSelect}
       >
-        <div css={[styles.content, utils.fullHeight, utils.pt('1em')]}>
+        <div css={[styles.content, utils.pt('1em')]}>
           {/* pricing */}
           <Pricing
             planInfo={planInfo}

@@ -59,11 +59,13 @@ export type DriverInfo = {
   lastName?: string
   age?: number
   birthDate?: Date
+  originalBirthDate?: Date
   gender?: string
   maritalStatus?: string
   occupation?: string
   licenseState?: string
   licenseNumber?: string
+  originalLicenseNumber?: string
   licenseDt?: string
   ageFirstLicensed?: number
   status?: string
@@ -339,6 +341,7 @@ export type LossHistoryInfo = {
   DriverName: string,
   DriverLicensedStateProvCd?: string,
   DriverLicenseNumber?: string,
+  OriginalDriverLicenseNumber?: string,
   Comment?: string,
   LossDesc?: string,
   id?: string,

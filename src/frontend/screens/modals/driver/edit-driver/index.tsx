@@ -49,7 +49,7 @@ interface Props {
   ) => any;
   onCloseModal?: () => any;
   onCancel?: () => any;
-  infractionList: any,
+  infractionList: any;
 }
 
 export const EditDriverModal: FunctionComponent<Props> = ({
@@ -206,9 +206,19 @@ export const EditDriverModal: FunctionComponent<Props> = ({
             >
               <FormikDatePicker
                 name="birthDate"
+                dob
+                originalDOBValue={formik.values.originalBirthDate}
                 css={[utils.mb(3), utils.fullWidth]}
                 maxDate={
                   new Date(new Date().getFullYear() - 10, new Date().getMonth())
+                }
+                openToDate={
+                  new Date(
+                    new Date(
+                      new Date().getFullYear() - 10,
+                      new Date().getMonth()
+                    ).toLocaleDateString("en-ZA")
+                  )
                 }
                 onChange={(e) => {
                   formik.handleChange({

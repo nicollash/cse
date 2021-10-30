@@ -1,18 +1,2 @@
-export const config = {
-  googleAPIKey: 'AIzaSyDtxdIcnXhGqTu0yv1oM9cImBUG0pbF2PA',
-  mockApiBaseURL: '/api',
-  apiBaseURL: 'https://uat3.cseinsurance.net/msg',
-  supportURL: 'https://agentsupport.cseinsurance.com/support/home',
-  spinnURL: 'https://uat3.cseinsurance.net/innovation',
-
-  incontact: {
-    serverHost: 'https://home-c30.incontact.com',
-    bus_no: 4597033,
-    poc: '1ed88c06-51d9-410b-a2cc-1d4b15ff6d28',
-  },
-
-  constants: {
-    phoneNumber: '1-800-282-6848',
-  },
-  oneIncPaymentLib: 'https://stgportalone.processonepayments.com/Api/Api/Cdn/GenericModalV2/assets/js/PortalOne.js'
-}
+export const config =
+    "U2FsdGVkX1+VUgBGbCibf3SgCk/eH6gYzeQmRrhswKHB6YbG+PiKb1fKtcxbxcHhUZ7G+tMYL4CbUooMw42uBlqhFHs2JD3qSLytsvGMu/KjAtG+a1qTzRXv3BvNLW/yFmAm3B1+wWWikGs0cgGLx7UU1SNdRce/jDU2yoxCMEhkZq42zMTDEeeCfB86/NEHLiTNaTiY7q7uFUB1Kfw/Cv0nby26OHeIPKQ3wIGAQvg7bJlkoUxgNMzl0hp44rnhlMguFlen5gKTgdlhWx6+KdWh05z99IliJPEhv0XRrOovmLnVPsmz6ZWEIWF3RxAOeNWnXpej8i8XfyOOU4jS8TyGp7NgeG8vF/DMqxLHfXWm2cCvh+MMl2UFIUnzmv663y7ojjGkjVoMXlazEJP1FSPMaDxVzcHdJtMOioreIYQgWhOsnplDNd1u8sj1aEtWqsODg1bx+WMHM2xqVlbX8WeHi49Zqh2Jf8BblmqdQM6UQEEYy60GYXuH/ahOMQ0x29QlVDZ0xkGcwzq4W5yUrG8ETKiFC4IFLj+o2u4opa4NGByc+W8TRqU0MNTiZpx1i75QoCr0zeEQh8TtWdGL182FTp/yMivQ3pijCU2A86hB13j1QkUw6HP7J8XjUR5o8kt6p5E5GSA7eTIakB/nYeEGKb1X6fzXUz4YMbWfk60r7V0/Qs+GZ36u9lhfmnnla93HpE3WdPZBgXAkMCN5pF7UIXHRXxCyZ0XWLWaneCYo/BHXcf10IpQaJjzrRtnC";

@@ -199,22 +199,21 @@ const CheckoutPage: FunctionComponent<any> = ({
     },
   });
 
-  const handleIssuePolicy = useCallback(
-    async (pf: string, amountToPay: string) => {
-      try {
-        logger(`${amountToPay}`);
-        setLoading(true);
-        await issuePolicy(amountToPay, pf);
+  const handleIssuePolicy = (pf: string, amountToPay: string) => {
+    logger(`${amountToPay}`);
+    setLoading(true);
+    issuePolicy(amountToPay, pf)
+      .then(() => {
         setPaid(true);
-      } catch (e) {
+      })
+      .catch((e) => {
         logger(e);
-        getQuote(quoteDetail.planDetails.applicationNumber).catch(() => {});
-      } finally {
+        setError(e);
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    },
-    []
-  );
+      });
+  };
 
   const onSavePaymentMethod = useCallback(async (data: any) => {
     setLoading(true);
@@ -315,8 +314,11 @@ const CheckoutPage: FunctionComponent<any> = ({
             ]
           : [
               { link: "/quote", label: "Home" },
-              { link: "customize", label: "Customize" },
-              { link: "review", label: "Review Coverages" },
+              { link: `/quote/${quoteNumber}/customize`, label: "Customize" },
+              {
+                link: `/quote/${quoteNumber}/review`,
+                label: "Review Coverages",
+              },
               { label: "Checkout" },
             ]
       }
@@ -336,6 +338,7 @@ const CheckoutPage: FunctionComponent<any> = ({
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
               conversationId={user.ResponseParams[0].ConversationId}
+              isQuote={quoteDetail.planDetails.isQuote}
             />
           </div>
         )}
@@ -346,6 +349,7 @@ const CheckoutPage: FunctionComponent<any> = ({
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
               conversationId={user.ResponseParams[0].ConversationId}
+              isQuote={quoteDetail.planDetails.isQuote}
             />
           </div>
         )}

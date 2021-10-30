@@ -361,6 +361,7 @@ const CustomizePage: FunctionComponent<any> = ({
                   conversationId={user.ResponseParams[0].ConversationId}
                   data={quoteDetail.validationError}
                   systemId={quoteDetail.systemId}
+                  isQuote={quoteDetail.planDetails.isQuote}
                   actions={[
                     {
                       //Rated mileage on Veh
@@ -398,6 +399,7 @@ const CustomizePage: FunctionComponent<any> = ({
                       cp={true}
                       data={quoteDetail.validationError}
                       systemId={quoteDetail.systemId}
+                      isQuote={quoteDetail.planDetails.isQuote}
                       actions={[
                         {
                           //Rated mileage on Veh

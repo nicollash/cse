@@ -11,6 +11,7 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { config } from "~/config";
 import { formatErrorMessage } from "~/frontend/utils";
 import { SerializedStyles } from "@emotion/utils";
+import { decrypt } from "~/lib/encryption";
 
 interface ErrorProps {
   data: Array<ValidationError>;
@@ -19,6 +20,7 @@ interface ErrorProps {
   systemId: string;
   conversationId: string;
   css?: SerializedStyles | SerializedStyles[];
+  isQuote: boolean;
 }
 
 export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
@@ -90,20 +92,22 @@ export const ErrorBox: FunctionComponent<ErrorProps> = ({ css, ...props }) => {
                           - View
                         </a>
                       )}
-                    {error.TypeCd && error.TypeCd == "Non-bound" && (
-                      <Button
-                        css={[styles.goToSpBtn, utils.ml(2)]}
-                        type="button"
-                        onClick={() => {
-                          window.open(
-                            `${config.spinnURL}?rq=UWApplicationUpdateCloseout&SystemId=${props.systemId}&CodeRefOptionsKey=application-product&SecurityId=${props.conversationId}`,
-                            "_blank"
-                          );
-                        }}
-                      >
-                        {"Go To SPInn"}
-                      </Button>
-                    )}
+                    {error.TypeCd &&
+                      error.TypeCd == "Non-bound" &&
+                      !props.isQuote && (
+                        <Button
+                          css={[styles.goToSpBtn, utils.ml(2)]}
+                          type="button"
+                          onClick={() => {
+                            window.open(
+                              `${config.spinnURL}?rq=UWApplicationUpdateCloseout&SystemId=${props.systemId}&CodeRefOptionsKey=application-product&SecurityId=${props.conversationId}`,
+                              "_blank"
+                            );
+                          }}
+                        >
+                          {"Go To SPInn"}
+                        </Button>
+                      )}
                   </Text>
                 ) : (
                   ""

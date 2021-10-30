@@ -135,8 +135,7 @@ function QuotePage({ user, lastError, ...props }) {
 
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Quote Page View");
-
-    if (Object.keys(initials).length > 0) {
+    if (Object.keys(initials).filter((key) => !!initials[key]).length > 0) {
       formik.submitForm();
     }
   }, []);

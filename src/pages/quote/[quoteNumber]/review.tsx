@@ -194,7 +194,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
       greyBackground
       breadCrumb={[
         { link: "/quote", label: "Home" },
-        { link: "customize", label: "Customize" },
+        { link: `/quote/${quoteNumber}/customize`, label: "Customize" },
         { label: "Review Coverages" },
       ]}
       loading={isLoading}
@@ -263,6 +263,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
             ]}
           >
             <ErrorBox
+              isQuote={quoteDetail.planDetails.isQuote}
               data={quoteDetail.validationError}
               systemId={quoteDetail.systemId}
               conversationId={user.ResponseParams[0].ConversationId}
@@ -283,6 +284,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
           css={[utils.fullWidth, utils.hideOnMobile, utils.my(3)]}
         >
           <ErrorBox
+            isQuote={quoteDetail.planDetails.isQuote}
             data={quoteDetail.validationError}
             systemId={quoteDetail.systemId}
             conversationId={user.ResponseParams[0].ConversationId}
