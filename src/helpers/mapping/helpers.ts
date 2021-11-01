@@ -5,7 +5,7 @@ export const convertStringToDate = (d: string | null) => {
 };
 
 export const convertDateToString = (d: Date | null) => {
-  return d ? d.toISOString().substr(0, 10).split("-").join("") : null;
+  return d ? new Date(d).toISOString().substr(0, 10).split("-").join("") : null;
 };
 
 export const calculateLicenseDt = (

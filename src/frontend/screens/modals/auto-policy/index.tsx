@@ -21,7 +21,8 @@ import {
 import { utils, theme } from "~/frontend/styles";
 import { useLocale } from "~/frontend/hooks";
 import { CarCoverageOptions } from "~/options";
-import { hasSameValue, logger } from "~/frontend/utils";
+import { hasSameValue } from "~/frontend/utils";
+import { logger } from "~/helpers";
 import { CarCoverageInfo, PlanInfo } from "~/types";
 
 import { CarCoverage } from "./car-coverage";

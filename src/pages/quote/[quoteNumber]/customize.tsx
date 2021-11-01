@@ -521,13 +521,16 @@ const CustomizePage: FunctionComponent<any> = ({
                     }}
                     changeEffectiveDate={(e) => {
                       setLoading(true);
-                      updateQuote({
-                        ...quoteDetail,
-                        planDetails: {
-                          ...quoteDetail.planDetails,
-                          effectiveDate: e,
+                      updateQuote(
+                        {
+                          ...quoteDetail,
+                          planDetails: {
+                            ...quoteDetail.planDetails,
+                            effectiveDate: e,
+                          },
                         },
-                      });
+                        `/quote/${quoteNumber}/customize`
+                      );
                     }}
                   />
                 </Col>
@@ -650,13 +653,16 @@ const CustomizePage: FunctionComponent<any> = ({
                         }}
                         changeEffectiveDate={(e) => {
                           setLoading(true);
-                          updateQuote({
-                            ...quoteDetail,
-                            planDetails: {
-                              ...quoteDetail.planDetails,
-                              effectiveDate: e,
+                          updateQuote(
+                            {
+                              ...quoteDetail,
+                              planDetails: {
+                                ...quoteDetail.planDetails,
+                                effectiveDate: e,
+                              },
                             },
-                          });
+                            `/quote/${quoteNumber}/customize`
+                          );
                         }}
                       />
                     </Col>
@@ -838,12 +844,15 @@ const CustomizePage: FunctionComponent<any> = ({
             }}
             onUpdate={(updatedValue) => {
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                vehicles: quoteDetail.vehicles.map((v, i) =>
-                  i === editCarIndex ? updatedValue : v
-                ),
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  vehicles: quoteDetail.vehicles.map((v, i) =>
+                    i === editCarIndex ? updatedValue : v
+                  ),
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
           />
           <DeleteVehicleModal
@@ -853,12 +862,15 @@ const CustomizePage: FunctionComponent<any> = ({
             onDeleteVehicle={() => {
               setEditCarIndex(null);
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                vehicles: quoteDetail.vehicles.map((v, i) =>
-                  i === deleteCarIndex ? { ...v, status: "Deleted" } : v
-                ),
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  vehicles: quoteDetail.vehicles.map((v, i) =>
+                    i === deleteCarIndex ? { ...v, status: "Deleted" } : v
+                  ),
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
           />
           <EditDriverModal
@@ -903,12 +915,15 @@ const CustomizePage: FunctionComponent<any> = ({
                 });
               } else {
                 setLoading(true);
-                updateQuote({
-                  ...quoteDetail,
-                  drivers: quoteDetail.drivers.map((v, i) =>
-                    i === editDriverIndex ? updatedValue : v
-                  ),
-                });
+                updateQuote(
+                  {
+                    ...quoteDetail,
+                    drivers: quoteDetail.drivers.map((v, i) =>
+                      i === editDriverIndex ? updatedValue : v
+                    ),
+                  },
+                  `/quote/${quoteNumber}/customize`
+                );
               }
             }}
             onUpdateDriverPoints={(
@@ -931,12 +946,15 @@ const CustomizePage: FunctionComponent<any> = ({
             onDeleteDriver={() => {
               setEditDriverIndex(null);
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                drivers: quoteDetail.drivers.map((v, i) =>
-                  i === deleteDriverIndex ? { ...v, status: "Deleted" } : v
-                ),
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  drivers: quoteDetail.drivers.map((v, i) =>
+                    i === deleteDriverIndex ? { ...v, status: "Deleted" } : v
+                  ),
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
           />
 
@@ -947,11 +965,14 @@ const CustomizePage: FunctionComponent<any> = ({
             onCloseModal={() => setDiscountsModalVisible(false)}
             onUpdate={(updatedLine, updatedBasicPolicy) => {
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                lineInfo: updatedLine,
-                basicPolicyInfo: updatedBasicPolicy,
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  lineInfo: updatedLine,
+                  basicPolicyInfo: updatedBasicPolicy,
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
           />
           <RequiredInformationModal
@@ -965,7 +986,7 @@ const CustomizePage: FunctionComponent<any> = ({
             }
             onUpdate={(v) => {
               setLoading(true);
-              updateQuote(v);
+              updateQuote(v, `/quote/${quoteNumber}/customize`);
               // .then(() => {
               //   if (requiredInformationModalVisible.from === "checkout") {
               //     if (calcRequiredItemsLabel(v).length > 0) {
@@ -989,10 +1010,13 @@ const CustomizePage: FunctionComponent<any> = ({
             defaultValue={quoteDetail.planDetails}
             onUpdatePlanInfo={(updatedPlanInfo) => {
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                planDetails: updatedPlanInfo,
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  planDetails: updatedPlanInfo,
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
             onCloseModal={() => setAutoPolicyModalVisible(false)}
           />
@@ -1006,10 +1030,13 @@ const CustomizePage: FunctionComponent<any> = ({
               additionalInterestInfo: Array<AdditionalInterestInfo>
             ) => {
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                additionalInterest: additionalInterestInfo,
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  additionalInterest: additionalInterestInfo,
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
           />
 
@@ -1020,10 +1047,13 @@ const CustomizePage: FunctionComponent<any> = ({
             lossHistory={quoteDetail.lossHistory}
             onUpdate={(lhInfo: Array<LossHistoryInfo>) => {
               setLoading(true);
-              updateQuote({
-                ...quoteDetail,
-                lossHistory: lhInfo,
-              });
+              updateQuote(
+                {
+                  ...quoteDetail,
+                  lossHistory: lhInfo,
+                },
+                `/quote/${quoteNumber}/customize`
+              );
             }}
             onAppCloseOut={(lhInfo: Array<LossHistoryInfo>) => {
               processExternalApplicationCloseOut({

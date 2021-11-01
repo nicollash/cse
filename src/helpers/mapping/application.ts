@@ -22,7 +22,7 @@ import {
   parseAdditionalInterestAItoDTO,
   parseAdditionalInterestDTOtoAI,
 } from "./additional-interest";
-import { ElectronicPaymentSource } from "../../../types/DTO/common";
+import { ElectronicPaymentSource } from "~/types/DTO/common";
 import {
   parseDTOtoLossHistorySingleQuote,
   parseLossHistorytoDTO,
@@ -365,7 +365,7 @@ export const getUpdatedDTOApplication = (
       if (party.PartyTypeCd === "DriverParty") {
         const age =
           new Date().getFullYear() -
-          quoteDetail.drivers[driverIndex].birthDate.getFullYear();
+          new Date(quoteDetail.drivers[driverIndex].birthDate).getFullYear();
         const newData = {
           ...party,
           NameInfo: [

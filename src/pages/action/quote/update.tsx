@@ -27,23 +27,23 @@ export async function getServerSideProps({ req, res }) {
 
       session.lastError = null;
 
-      if (redirectURL === "customize") {
+      if (redirectURL) {
         return {
           redirect: {
-            destination: `/quote/${result.DTOApplication[0].ApplicationNumber}/customize`,
-          },
-        };
-      } else {
-        return {
-          redirect: {
-            destination: `/quote`,
+            destination: redirectURL,
           },
         };
       }
+      return {
+        redirect: {
+          destination: `/quote/${result.DTOApplication[0].ApplicationNumber}/customize`,
+        },
+      };
     } catch (error) {
       session.lastError = error;
     }
   }
+
   return {
     redirect: {
       destination: "/quote",
