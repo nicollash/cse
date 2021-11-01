@@ -1,42 +1,51 @@
 import { DTOApplication, DTOLossHistory, LossHistoryInfo } from "~/types";
-import { maskLicenseNumber } from "../helpers";
+import { maskLicenseNumber } from "./helpers";
 import { convertStringToDate } from "./helpers";
 
-export const parseLossHistorytoDTO = (lhI: Array<LossHistoryInfo>): Array<DTOLossHistory> => {
-  return lhI.map(lh => {
-
+export const parseLossHistorytoDTO = (
+  lhI: Array<LossHistoryInfo>
+): Array<DTOLossHistory> => {
+  return lhI.map((lh) => {
     const lhDTO = {
       //id: lh.id,
       LossHistoryNumber: lh.LossHistoryNumber,
       LossDt: parseDate(lh.LossDt),
       LossCauseCd: lh.LossCauseCd,
-      ClaimNumber: lh.ClaimNumber ? lh.ClaimNumber : '',
-      ClaimStatusCd: lh.ClaimStatusCd ? lh.ClaimStatusCd : '',
-      CatastropheNumber: lh.CatastropheNumber ? lh.CatastropheNumber : '',
-      CarrierName: lh.CarrierName ? lh.CarrierName : '',
+      ClaimNumber: lh.ClaimNumber ? lh.ClaimNumber : "",
+      ClaimStatusCd: lh.ClaimStatusCd ? lh.ClaimStatusCd : "",
+      CatastropheNumber: lh.CatastropheNumber ? lh.CatastropheNumber : "",
+      CarrierName: lh.CarrierName ? lh.CarrierName : "",
       //TypeCd: lh.TypeCd ? lh.TypeCd : '',
-      TypeCd: 'Vehicle',
-      PolicyNumber: lh.PolicyNumber ? lh.PolicyNumber : '',
-      LossAmt: lh.LossAmt ? lh.LossAmt : '',
-      PaidAmt: lh.PaidAmt ? lh.PaidAmt : '',
-      VehIdentificationNumber: lh.VehIdentificationNumber ? lh.VehIdentificationNumber : '',
+      TypeCd: "Vehicle",
+      PolicyNumber: lh.PolicyNumber ? lh.PolicyNumber : "",
+      LossAmt: lh.LossAmt ? lh.LossAmt : "",
+      PaidAmt: lh.PaidAmt ? lh.PaidAmt : "",
+      VehIdentificationNumber: lh.VehIdentificationNumber
+        ? lh.VehIdentificationNumber
+        : "",
       AtFaultCd: lh.AtFaultCd,
-      DriverName: lh.DriverName ? lh.DriverName : '',
-      DriverLicensedStateProvCd: lh.DriverLicensedStateProvCd ? lh.DriverLicensedStateProvCd : '',
-      DriverLicenseNumber: lh.DriverLicenseNumber && !lh.DriverLicenseNumber.includes('*') ? lh.DriverLicenseNumber : lh.OriginalDriverLicenseNumber,
-      Comment: lh.Comment ? lh.Comment : '',
-      LossDesc: lh.LossDesc ? lh.LossDesc : '',
-      StatusCd: lh.StatusCd ? lh.StatusCd : 'Active',
-      SourceCd: lh.SourceCd ? lh.SourceCd : 'Application'
-    }
+      DriverName: lh.DriverName ? lh.DriverName : "",
+      DriverLicensedStateProvCd: lh.DriverLicensedStateProvCd
+        ? lh.DriverLicensedStateProvCd
+        : "",
+      DriverLicenseNumber:
+        lh.DriverLicenseNumber && !lh.DriverLicenseNumber.includes("*")
+          ? lh.DriverLicenseNumber
+          : lh.OriginalDriverLicenseNumber,
+      Comment: lh.Comment ? lh.Comment : "",
+      LossDesc: lh.LossDesc ? lh.LossDesc : "",
+      StatusCd: lh.StatusCd ? lh.StatusCd : "Active",
+      SourceCd: lh.SourceCd ? lh.SourceCd : "Application",
+    };
 
-    return lh.id ? { id: lh.id, ...lhDTO } : lhDTO
-  })
-}
+    return lh.id ? { id: lh.id, ...lhDTO } : lhDTO;
+  });
+};
 
-
-export const parseDTOtoLossHistory = (dtoApp: Array<DTOApplication>): Array<LossHistoryInfo> => {
-  const appIndex = dtoApp.findIndex(app => app.DTOLossHistory)
+export const parseDTOtoLossHistory = (
+  dtoApp: Array<DTOApplication>
+): Array<LossHistoryInfo> => {
+  const appIndex = dtoApp.findIndex((app) => app.DTOLossHistory);
 
   if (appIndex != -1) {
     return dtoApp[appIndex].DTOLossHistory.map((dtoLh) => ({
@@ -61,14 +70,16 @@ export const parseDTOtoLossHistory = (dtoApp: Array<DTOApplication>): Array<Loss
       id: dtoLh.id,
       StatusCd: dtoLh.StatusCd,
       SourceCd: dtoLh.SourceCd,
-      PolicyTypeCd: dtoLh.PolicyTypeCd
-    }))
+      PolicyTypeCd: dtoLh.PolicyTypeCd,
+    }));
   }
-  return []
-}
+  return [];
+};
 
-export const parseDTOtoLossHistorySingleQuote = (dtoApp: DTOLossHistory): LossHistoryInfo => {
-  return ({
+export const parseDTOtoLossHistorySingleQuote = (
+  dtoApp: DTOLossHistory
+): LossHistoryInfo => {
+  return {
     LossHistoryNumber: dtoApp.LossHistoryNumber,
     LossDt: convertStringToDate(dtoApp.LossDt),
     LossCauseCd: dtoApp.LossCauseCd,
@@ -84,27 +95,29 @@ export const parseDTOtoLossHistorySingleQuote = (dtoApp: DTOLossHistory): LossHi
     AtFaultCd: dtoApp.AtFaultCd,
     DriverName: dtoApp.DriverName,
     DriverLicensedStateProvCd: dtoApp.DriverLicensedStateProvCd,
-    DriverLicenseNumber: dtoApp.DriverLicenseNumber ? maskLicenseNumber(dtoApp.DriverLicenseNumber, 4) : '',
+    DriverLicenseNumber: dtoApp.DriverLicenseNumber
+      ? maskLicenseNumber(dtoApp.DriverLicenseNumber, 4)
+      : "",
     OriginalDriverLicenseNumber: dtoApp.DriverLicenseNumber,
     Comment: dtoApp.Comment,
     LossDesc: dtoApp.LossDesc,
     id: dtoApp.id,
     StatusCd: dtoApp.StatusCd,
     SourceCd: dtoApp.SourceCd,
-    PolicyTypeCd: dtoApp.PolicyTypeCd
-  })
-}
+    PolicyTypeCd: dtoApp.PolicyTypeCd,
+  };
+};
 
 function parseDate(LossDt: any): string {
+  if (typeof LossDt === "object") {
+    const date = `${LossDt.getFullYear()}${
+      LossDt.getMonth() > 8
+        ? LossDt.getMonth() + 1
+        : "0" + (LossDt.getMonth() + 1)
+    }${LossDt.getDate() > 9 ? LossDt.getDate() : "0" + LossDt.getDate()}`;
 
-  if (typeof LossDt === 'object') {
-
-    const date = `${LossDt.getFullYear()}${((LossDt.getMonth() > 8) ? (LossDt.getMonth() + 1) :
-      ('0' + (LossDt.getMonth() + 1)))}${((LossDt.getDate() > 9) ?
-        LossDt.getDate() : ('0' + LossDt.getDate()))}`
-
-    return date
+    return date;
   }
 
-  return LossDt
+  return LossDt;
 }
