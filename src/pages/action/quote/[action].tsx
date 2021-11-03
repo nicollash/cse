@@ -197,7 +197,7 @@ export async function getServerSideProps({ req, res, query }) {
       }
 
       case "convertToApplication": {
-        const { quoteResponse, quoteDetail } = form;
+        const { quoteResponse, quoteDetail, redirectURL } = form;
 
         try {
           const newDTOApplications = getUpdatedDTOApplication(
@@ -209,7 +209,7 @@ export async function getServerSideProps({ req, res, query }) {
           if (quoteDetail.planDetails.isQuote) {
             const result = await QuoteService.convertQuoteToApplication(
               session.user,
-              quoteDetail.planDetails.applicationNumber
+              handleSSN(quoteResponse.DTOApplication)
             );
             session.lastError = null;
 
@@ -218,16 +218,37 @@ export async function getServerSideProps({ req, res, query }) {
                 destination: `/quote/${result.DTOApplication[0].ApplicationNumber}/review`,
               },
             };
-          } else {
-            return {
-              redirect: {
-                destination: `/quote/${quoteResponse.DTOApplication[0].ApplicationNumber}/review`,
-              },
-            };
           }
         } catch (err) {
+          console.log("error: ", err);
           session.lastError = err;
         }
+
+        return {
+          redirect: {
+            destination: redirectURL,
+          },
+        };
+      }
+
+      case "share": {
+        const { applicationRef, emailId, redirectURL } = form;
+
+        try {
+          const res = await QuoteService.shareQuote(
+            applicationRef,
+            emailId,
+            session.user
+          );
+        } catch (err) {
+          console.log("error: ", err);
+          session.lastError = err;
+        }
+        return {
+          redirect: {
+            destination: redirectURL,
+          },
+        };
       }
     }
   }

@@ -116,10 +116,11 @@ const CustomizePage: FunctionComponent<any> = ({
   }, []);
 
   const convertToApplication = useCallback((quoteData) => {
-    formRedirect("action/quote/convertToApplication", {
+    formRedirect("/action/quote/convertToApplication", {
       form: JSON.stringify({
         quoteResponse,
         quoteDetail: quoteData,
+        redirectURL: `/quote/${quoteNumber}/review`,
       }),
     });
   }, []);
@@ -184,7 +185,7 @@ const CustomizePage: FunctionComponent<any> = ({
         setUserInfoVisible(true);
       }
     } else {
-      router.push(`/quote/${quoteNumber}/review`);
+      formRedirect(`/quote/${quoteNumber}/review`);
     }
   }, [quoteDetail]);
 
@@ -209,11 +210,11 @@ const CustomizePage: FunctionComponent<any> = ({
   );
 
   const processExternalApplicationCloseOut = useCallback(
-    (updatedQuote: QuoteDetail) => {
+    (newQuote: QuoteDetail) => {
       setLoading(true);
       formRedirect("/action/quote/ExternalApplicationCloseOut", {
         form: JSON.stringify({
-          updatedQuote,
+          newQuote,
           quoteResponse,
           redirectURL: `/quote/${quoteNumber}/customize`,
         }),

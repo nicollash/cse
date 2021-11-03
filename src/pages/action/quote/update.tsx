@@ -40,6 +40,7 @@ export async function getServerSideProps({ req, res }) {
         },
       };
     } catch (error) {
+      console.log("updating error: ", error);
       session.lastError = error;
     }
   }

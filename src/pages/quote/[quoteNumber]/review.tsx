@@ -24,7 +24,7 @@ import {
   PriorIncidentsModal,
 } from "~/frontend/screens/modals";
 import { utils, theme } from "~/frontend/styles";
-import { useLocale, useQuote, useError } from "~/frontend/hooks";
+import { useLocale, useError } from "~/frontend/hooks";
 import {
   AdditionalInterestInfo,
   CustomError,
@@ -41,20 +41,22 @@ import {
 } from "~/frontend/screens/pages/customize/components";
 import { styles } from "~/frontend/screens/pages/customize/styles";
 import { AdditionalInterestModal } from "~/frontend/screens/modals/additional-interest";
-import { LossHistoryModal } from "~/frontend/screens/modals/loss-history/single-quote";
+import { LossHistoryModal } from "~/frontend/screens/modals/loss-history";
 import { ErrorBox } from "~/frontend/components/error-box";
 import { questions } from "~/frontend/utils/configuration/questions";
 import { FormikProvider, useFormik } from "formik";
 
 import * as Yup from "yup";
 import { useRouter } from "next/router";
-import { parseQuoteResponse } from "~/frontend/utils";
-import { getQuote } from "~/lib/quote";
-import { getSession } from "~/lib/get-session";
+import { parseQuoteResponse } from "~/helpers";
+import { getSession } from "~/backend/lib";
+import { QuoteService } from "~/backend/services";
+import { formRedirect } from "~/frontend/utils";
 
 const ReviewCoveragesPage: FunctionComponent<any> = ({
   user,
   quoteDetail,
+  quoteResponse,
   error,
 }) => {
   const router = useRouter();
@@ -94,10 +96,13 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
     },
     onSubmit: (value) => {
       setLoading(true);
-      shareQuote(quoteDetail.systemId, value.email)
-        .then((result) => {})
-        .catch((e) => {})
-        .finally(() => setLoading(false));
+      formRedirect("/action/quote/share", {
+        form: JSON.stringify({
+          applicationRef: quoteDetail.systemId,
+          emailId: value.email,
+          redirectURL: `/quote/${quoteNumber}/review`,
+        }),
+      });
     },
   });
 
@@ -128,14 +133,14 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
     ];
   }, [quoteDetail]);
 
-  const processUpdateQuote = useCallback((updatedQuote: QuoteDetail) => {
-    setLoading(true);
-    updateQuote(updatedQuote)
-      .then(() => {})
-      .catch((e) => {
-        setError(e);
-      })
-      .finally(() => setLoading(false));
+  const updateQuote = useCallback((quoteData, redirectURL?) => {
+    formRedirect("/action/quote/update", {
+      form: JSON.stringify({
+        quoteResponse,
+        quoteDetail: quoteData,
+        redirectURL,
+      }),
+    });
   }, []);
 
   const onContinueToCheckout = useCallback(
@@ -148,29 +153,25 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
         });
       } else {
         setLoading(true);
-        externalApplicationCloseOut(quoteDetail)
-          .then(() => {
-            setLoading(false);
-            router.push(`/quote/${quoteNumber}/checkout`);
-          })
-          .catch((e) => {
-            setError(e);
-          });
+        processExternalApplicationCloseOut(
+          quoteDetail,
+          `/quote/${quoteNumber}/checkout`
+        );
       }
     },
     [quoteDetail]
   );
 
   const processExternalApplicationCloseOut = useCallback(
-    (updatedQuote: QuoteDetail) => {
+    (newQuote: QuoteDetail, redirectURL: string) => {
       setLoading(true);
-      externalApplicationCloseOut(updatedQuote)
-        .then(() => {
-          setLoading(false);
-        })
-        .catch((e) => {
-          setError(e);
-        });
+      formRedirect("/action/quote/ExternalApplicationCloseOut", {
+        form: JSON.stringify({
+          newQuote,
+          quoteResponse,
+          redirectURL,
+        }),
+      });
     },
     []
   );
@@ -451,7 +452,8 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
                     );
                     if (quoteDetail.uwQuestions[i].Value != answer) {
                       quoteDetail.uwQuestions[i].Value = answer;
-                      processUpdateQuote(quoteDetail);
+                      setLoading(true);
+                      updateQuote(quoteDetail, `/quote/${quoteNumber}/review`);
                     }
                   }}
                 />
@@ -469,7 +471,8 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
                     );
                     if (quoteDetail.uwQuestions[i].Value != answer) {
                       quoteDetail.uwQuestions[i].Value = answer;
-                      processUpdateQuote(quoteDetail);
+                      setLoading(true);
+                      updateQuote(quoteDetail, `/quote/${quoteNumber}/review`);
                     }
                   }}
                 />
@@ -821,13 +824,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
           setLoading(true);
           setProceedToCheckout(2);
 
-          updateQuote(v)
-            .then(() => {
-              setLoading(false);
-            })
-            .catch((e) => {
-              setError(e);
-            });
+          updateQuote(v, `/quote/${quoteNumber}/review`);
         }}
       />
 
@@ -836,7 +833,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
         onCloseModal={() => setPriorIncidentsVisible(false)}
         onConfirm={() => {
           setPriorIncidentsVisible(false);
-          router.push(`/quote/${quoteNumber}/checkout`);
+          formRedirect(`/quote/${quoteNumber}/checkout`);
         }}
       />
 
@@ -848,28 +845,40 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
         isOpen={additionalInterestRequired}
         onCloseModal={() => setAdditionalInterestVisible(false)}
         onUpdate={(additionalInterestInfo: Array<AdditionalInterestInfo>) => {
-          processUpdateQuote({
-            ...quoteDetail,
-            additionalInterest: additionalInterestInfo,
-          });
+          setLoading(true);
+          updateQuote(
+            {
+              ...quoteDetail,
+              additionalInterest: additionalInterestInfo,
+            },
+            `/quote/${quoteNumber}/review`
+          );
         }}
       />
 
       <LossHistoryModal
         isOpen={lossHistoryRequired}
         onCloseModal={() => setLossHistoryVisible(false)}
+        quoteDetail={quoteDetail}
         lossHistory={quoteDetail.lossHistory}
         onUpdate={(lhInfo: Array<LossHistoryInfo>) => {
-          processUpdateQuote({
-            ...quoteDetail,
-            lossHistory: lhInfo,
-          });
+          setLoading(true);
+          updateQuote(
+            {
+              ...quoteDetail,
+              lossHistory: lhInfo,
+            },
+            `/quote/${quoteNumber}/review`
+          );
         }}
         onAppCloseOut={(lhInfo: Array<LossHistoryInfo>) => {
-          processExternalApplicationCloseOut({
-            ...quoteDetail,
-            lossHistory: lhInfo,
-          });
+          processExternalApplicationCloseOut(
+            {
+              ...quoteDetail,
+              lossHistory: lhInfo,
+            },
+            `/quote/${quoteNumber}/review`
+          );
         }}
       />
     </Screen>
@@ -885,11 +894,7 @@ export async function getServerSideProps({ req, res, query }) {
     let error = null;
     let quoteDetail = null;
 
-    const res = await getQuote(
-      quoteNumber,
-      session.user.LoginId,
-      session.user.LoginToken
-    )
+    const res = await QuoteService.getQuote(session.user, quoteNumber)
       .then((res) => {
         quoteDetail = parseQuoteResponse(res);
         return res;

@@ -136,16 +136,30 @@ class QuoteService {
   }
 
   static async convertQuoteToApplication(
-    LoginId: string,
+    user: any,
     DTOApplication: DTOApplication[]
   ) {
     return HttpService.request<QuoteResponse>(
       `${config.apiBaseURL}/ConvertQuickQuoteToApplicationRq/json`,
       "POST",
       {
-        LoginId,
+        LoginId: user.LoginId,
         DTOApplication,
-      }
+      },
+      user.LoginToken
+    );
+  }
+
+  static async shareQuote(ApplicationRef: string, EmailId: string, user: any) {
+    return HttpService.request(
+      `${config.apiBaseURL}/QQSendQuoteInfoEmailRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        EmailId,
+        ApplicationRef,
+      },
+      user.LoginToken
     );
   }
 }
