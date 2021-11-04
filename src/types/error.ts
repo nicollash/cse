@@ -3,7 +3,7 @@ export class CustomError extends Error {
   errorData: any
 
   constructor(errorType: CustomErrorType, errorData?: any, message?: string) {
-    super('Custom Error:' + (message || ''))
+    super(message || '')
 
     this.errorType = errorType
     this.errorData = errorData

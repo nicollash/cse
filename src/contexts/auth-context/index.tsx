@@ -284,6 +284,7 @@ export const AuthProvider: FunctionComponent<AuthProviderProps> = ({
       })
       .catch((e) => {
         logger(e)
+        throw (e)
       });
   }, []);
 

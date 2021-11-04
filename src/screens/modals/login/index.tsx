@@ -9,6 +9,7 @@ import { utils } from '~/styles'
 import { useAuth, useLocale } from '~/hooks'
 
 import { styles } from './styles'
+import { CustomError } from '~/types'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -31,6 +32,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
 }) => {
   const { locale, messages } = useLocale()
   const { login } = useAuth()
+  const [localErrorMessage, setLocalErrorMessage] = useState('')
 
   const [isLoading, setLoading] = useState(false)
 
@@ -57,7 +59,23 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
     },
     onSubmit: (value) => {
       setLoading(true)
+      setLocalErrorMessage('')
       login(value.userId, value.password).finally(() => setLoading(false))
+        .catch((e: Array<CustomError>) => {
+          try {
+            const errorText = e.reduce((previousError, currentError) => {
+              let currrentText = currentError.message
+              if (currentError.message.includes('401')) {
+                currrentText = 'Invalid account or password'
+              }
+              return previousError.concat(currrentText)
+            }, '')
+            setLocalErrorMessage(errorText)
+          } catch (error) {
+            setLocalErrorMessage('Login Error')
+            console.log(e)
+          }
+        })
     },
   })
 
@@ -68,9 +86,10 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
       title={messages.Login.Heading}
       width="580px"
       data-testid="login-modal"
-      additionalInfo={fromLogout}
-      additionalInfoMessage={fromLogoutMessage}
+      additionalInfo={fromLogout || (localErrorMessage && localErrorMessage != '')}
+      additionalInfoMessage={(!localErrorMessage || localErrorMessage == '') ? fromLogoutMessage : localErrorMessage}
     >
+
       <FormikProvider value={formik}>
         <form
           css={styles.form}
