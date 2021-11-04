@@ -158,7 +158,7 @@ export const parseQuoteResponse = (quoteResponse: QuoteResponse): QuoteDetail =>
         parseRisk(risk),
       ),
 
-      drivers: quoteResponse.DTOApplication[0].PartyInfo.filter(
+      drivers: !quoteResponse.DTOApplication[0].PartyInfo ? [] : quoteResponse.DTOApplication[0].PartyInfo.filter(
         (party) => party.PartyTypeCd === 'DriverParty',
       ).map((party) => ({
         id: party.id,
