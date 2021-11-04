@@ -172,7 +172,7 @@ export const AuthProvider: FunctionComponent<AuthProviderProps> = ({
                 handleLogoutSimple();
               }
             })
-            .catch(() => {});
+            .catch(() => { });
         } else {
           clearInterval(verifyLoginToken);
           handleLogoutSimple();
@@ -283,7 +283,7 @@ export const AuthProvider: FunctionComponent<AuthProviderProps> = ({
         });
       })
       .catch((e) => {
-        logger("LOGIN ERROR SPEC PENDING");
+        logger(e)
       });
   }, []);
 
