@@ -68,7 +68,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
               if (currentError.message.includes('401')) {
                 currrentText = 'Invalid account or password'
               }
-              return previousError.concat(currrentText)
+              return previousError.concat(currrentText + '\n')
             }, '')
             setLocalErrorMessage(errorText)
           } catch (error) {
