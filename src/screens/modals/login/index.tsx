@@ -73,6 +73,14 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
                 currrentText = 'Invalid account or password'
               }
 
+              /*else if (currentError.message.includes('404') && currrentText.includes('Service error')) {
+                currrentText = 'Exceeded Daily Limit for Quotes.'
+              }*/
+
+              else if (currentError.message.includes('500')) {
+                currrentText = 'Invalid account or password'
+              }
+
               return previousError.concat(currrentText + '\n')
             }, '')
             setLocalErrorMessage(errorText)
