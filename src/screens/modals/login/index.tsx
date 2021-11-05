@@ -1,6 +1,6 @@
 
 import { jsx } from '@emotion/react'
-import { FunctionComponent, useMemo, useState } from 'react'
+import { FunctionComponent, useEffect, useMemo, useState } from 'react'
 import { useFormik, FormikProvider } from 'formik'
 import * as Yup from 'yup'
 
@@ -10,6 +10,7 @@ import { useAuth, useLocale } from '~/hooks'
 
 import { styles } from './styles'
 import { CustomError } from '~/types'
+import { logger } from '~/utils'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -33,7 +34,6 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
   const { locale, messages } = useLocale()
   const { login } = useAuth()
   const [localErrorMessage, setLocalErrorMessage] = useState('')
-  const [allowMessageFromLogout, setAllowMessageFromLogout] = useState(true)
 
   const [isLoading, setLoading] = useState(false)
 
@@ -59,13 +59,10 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
       password: (defaultValue && defaultValue.password) || '',
     },
     onSubmit: (value) => {
-      setLocalErrorMessage('')
-      setAllowMessageFromLogout(false)
+      setLocalErrorMessage(null)
       setLoading(true)
       login(value.userId, value.password).finally(() => setLoading(false))
         .catch((e: Array<CustomError>) => {
-          setAllowMessageFromLogout(true)
-          console.log(e)
           try {
             const errorText = e.reduce((previousError, currentError) => {
               let currrentText = currentError.errorData?.Name ? currentError.errorData?.Name : currentError.message
@@ -85,7 +82,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
             }, '')
             setLocalErrorMessage(errorText)
           } catch (error) {
-            setLocalErrorMessage('Login Error')
+            setLocalErrorMessage('Invalid account or password')
             console.log(e)
           }
         })
@@ -100,7 +97,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
       width="580px"
       data-testid="login-modal"
       additionalInfo={fromLogout || (localErrorMessage && localErrorMessage != '')}
-      additionalInfoMessage={(!localErrorMessage || localErrorMessage == '') ? (allowMessageFromLogout ? fromLogoutMessage : '') : localErrorMessage}
+      additionalInfoMessage={!localErrorMessage ? fromLogoutMessage : localErrorMessage}
     >
 
       <FormikProvider value={formik}>

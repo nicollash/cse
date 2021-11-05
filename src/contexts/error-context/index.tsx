@@ -73,6 +73,7 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
         (er) => er.errorType === CustomErrorType.SESSION_EXPIRED || er.errorType === CustomErrorType.QUOTE_LIMIT_EXCEEDED
       )
     ) {
+      logger('Exceeded Daily Limit for Quotes.')
       logoutSimple('Exceeded Daily Limit for Quotes.')
     } else {
       if (state.error) {

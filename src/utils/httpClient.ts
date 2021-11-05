@@ -58,16 +58,21 @@ export function httpClient<T extends any>(
         }
       } else {
         logger(res)
+        let result = null;
+
         try {
-          const result =
+          result =
             res.status === 401
               ? { Name: 'Service error', Message: `${res.status} ${res.statusText}` }
               : JSON.parse(decrypt((await res.json()).data));
-          throw { httpRes: res, data: result };
+
         } catch (error) {
           logger(error)
+          throw { httpRes: res, data: [{ Name: 'Service error', Message: `${res.status} ${res.statusText}` }] }
         }
-        throw { httpRes: res, data: { Name: 'Service error', Message: `${res.status} ${res.statusText}` } };
+
+        throw { httpRes: res, data: result };
+
       }
     })
     .catch((e) => {
@@ -80,8 +85,9 @@ export function httpClient<T extends any>(
           ),
         ];
       } else {
-        if (e.data.Error) {
-          throw e.data.Error.map(
+        if (e.data) {
+          console.log(e.data)
+          throw e.data.map(
             (err: any) =>
               new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
           )
