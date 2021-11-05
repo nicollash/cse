@@ -86,8 +86,10 @@ export function httpClient<T extends any>(
         ];
       } else {
         if (e.data) {
-          console.log(e.data)
-          throw e.data.map(
+
+          const errArray = e.data?.Error ? e.data.Error : e.data
+
+          throw errArray.map(
             (err: any) =>
               new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
           )
