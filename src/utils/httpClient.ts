@@ -58,11 +58,16 @@ export function httpClient<T extends any>(
         }
       } else {
         logger(res)
-        const result =
-          res.status === 401
-            ? { Message: ` ${res.status} ${res.statusText}` }
-            : JSON.parse(decrypt((await res.json()).data));
-        throw { httpRes: res, data: result };
+        try {
+          const result =
+            res.status === 401
+              ? { Name: 'Service error', Message: `${res.status} ${res.statusText}` }
+              : JSON.parse(decrypt((await res.json()).data));
+          throw { httpRes: res, data: result };
+        } catch (error) {
+          logger(error)
+        }
+        throw { httpRes: res, data: { Name: 'Service error', Message: `${res.status} ${res.statusText}` } };
       }
     })
     .catch((e) => {
@@ -79,8 +84,8 @@ export function httpClient<T extends any>(
           throw e.data.Error.map(
             (err: any) =>
               new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
-          );
-        } else if (e.data?.DTOApplication[0]?.ValidationError) {
+          )
+        } else if (e.data && e.data.DTOApplication && e.data.DTOApplication[0].ValidationError) {
           throw e.data.DTOApplication[0].ValidationError.map(
             (err: any) =>
               new CustomError(
@@ -94,7 +99,7 @@ export function httpClient<T extends any>(
               )
           );
         } else {
-          throw [new CustomError(CustomErrorType.SERVICE_NOT_AVAILABLE)];
+          throw [new CustomError(CustomErrorType.SERVICE_NOT_AVAILABLE, e.data, e.data.Message)];
         }
       }
     });

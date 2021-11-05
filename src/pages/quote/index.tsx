@@ -6,7 +6,7 @@ import * as Yup from "yup";
 
 import { useError, useLocale, useQuote } from "~/hooks";
 import { AuthGuard } from "~/screens/guards";
-import { EAddressObjectStatus, UserAddressInput } from "~/types";
+import { CustomError, CustomErrorType, EAddressObjectStatus, UserAddressInput } from "~/types";
 import { placeAPI } from "~/utils";
 import { isAKnownError } from "~/contexts";
 import { QuoteErrorModal } from "~/screens/modals";
@@ -119,13 +119,14 @@ function QuotePage() {
                 `/quote/${res.DTOApplication[0].ApplicationNumber}/customize`
               );
             })
-            .catch((e) => {
-              // AS IS:
-              //if (isAKnownError(e)) {
+            .catch((e: Array<CustomError>) => {
+              e = e.map(er => {
+                if (er.message.includes('403')) {
+                  er.errorType = CustomErrorType.QUOTE_LIMIT_EXCEEDED
+                }
+                return er
+              })
               setError(e);
-              //} else {
-              //setQuoteError(true)
-              //}
             });
         })
         .catch((err) => {
@@ -184,7 +185,8 @@ function QuotePage() {
                 if (isAKnownError(e)) {
                   //setError(e)
                 } else {
-                  setQuoteError(true);
+                  //setQuoteError(true);
+                  console.log('e', e)
                 }
               });
           })

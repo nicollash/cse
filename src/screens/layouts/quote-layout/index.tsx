@@ -15,7 +15,7 @@ export const QuoteLayout: FunctionComponent<any> = ({ children }) => {
   const [isInitialized, setInitialize] = useState(false);
   const router = useRouter();
   const quoteNumber = router.query.quoteNumber as string;
-  const { setError } = useError();  
+  const { setError } = useError();
 
   useEffect(() => {
     setInitialize(false);
@@ -45,7 +45,7 @@ export const QuoteLayout: FunctionComponent<any> = ({ children }) => {
                   );
                   if (matched) {
                     switch (
-                      matched.DTOApplicationInfo[0].IterationDescription
+                    matched.DTOApplicationInfo[0].IterationDescription
                     ) {
                       case "BASIC":
                         setSelectedPlan("Basic");
