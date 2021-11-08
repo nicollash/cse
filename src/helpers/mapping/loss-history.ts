@@ -1,6 +1,9 @@
 import { DTOApplication, DTOLossHistory, LossHistoryInfo } from "~/types";
-import { maskLicenseNumber } from "./helpers";
-import { convertStringToDate } from "./helpers";
+import {
+  convertDateToString,
+  maskLicenseNumber,
+  convertStringToDate,
+} from "./helpers";
 
 export const parseLossHistorytoDTO = (
   lhI: Array<LossHistoryInfo>
@@ -9,7 +12,7 @@ export const parseLossHistorytoDTO = (
     const lhDTO = {
       //id: lh.id,
       LossHistoryNumber: lh.LossHistoryNumber,
-      LossDt: parseDate(lh.LossDt),
+      LossDt: convertDateToString(lh.LossDt),
       LossCauseCd: lh.LossCauseCd,
       ClaimNumber: lh.ClaimNumber ? lh.ClaimNumber : "",
       ClaimStatusCd: lh.ClaimStatusCd ? lh.ClaimStatusCd : "",

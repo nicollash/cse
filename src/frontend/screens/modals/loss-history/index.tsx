@@ -512,6 +512,7 @@ export const LossHistoryModal: FunctionComponent<Props> = ({
                     key={`${index}.lhI`}
                     item={li}
                     index={index}
+                    quoteDetail={quoteDetail}
                     onDelete={() => {
                       setDeletingItem(index);
                     }}
