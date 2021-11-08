@@ -1,6 +1,6 @@
 
 import { jsx } from '@emotion/react'
-import { FunctionComponent, useMemo, useState } from 'react'
+import { FunctionComponent, useEffect, useMemo, useState } from 'react'
 import { useFormik, FormikProvider } from 'formik'
 import * as Yup from 'yup'
 
@@ -10,6 +10,7 @@ import { useAuth, useLocale } from '~/hooks'
 
 import { styles } from './styles'
 import { CustomError } from '~/types'
+import { logger } from '~/utils'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -58,21 +59,30 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
       password: (defaultValue && defaultValue.password) || '',
     },
     onSubmit: (value) => {
+      setLocalErrorMessage(null)
       setLoading(true)
-      setLocalErrorMessage('')
       login(value.userId, value.password).finally(() => setLoading(false))
         .catch((e: Array<CustomError>) => {
           try {
             const errorText = e.reduce((previousError, currentError) => {
-              let currrentText = currentError.message
+              let currrentText = currentError.errorData?.Name ? currentError.errorData?.Name : currentError.message
               if (currentError.message.includes('401')) {
                 currrentText = 'Invalid account or password'
               }
+
+              /*else if (currentError.message.includes('404') && currrentText.includes('Service error')) {
+                currrentText = 'Exceeded Daily Limit for Quotes.'
+              }*/
+
+              else if (currentError.message.includes('500')) {
+                currrentText = 'Invalid account or password'
+              }
+
               return previousError.concat(currrentText + '\n')
             }, '')
             setLocalErrorMessage(errorText)
           } catch (error) {
-            setLocalErrorMessage('Login Error')
+            setLocalErrorMessage('Invalid account or password')
             console.log(e)
           }
         })
@@ -87,7 +97,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
       width="580px"
       data-testid="login-modal"
       additionalInfo={fromLogout || (localErrorMessage && localErrorMessage != '')}
-      additionalInfoMessage={(!localErrorMessage || localErrorMessage == '') ? fromLogoutMessage : localErrorMessage}
+      additionalInfoMessage={!localErrorMessage ? fromLogoutMessage : localErrorMessage}
     >
 
       <FormikProvider value={formik}>

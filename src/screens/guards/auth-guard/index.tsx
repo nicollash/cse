@@ -10,12 +10,11 @@ import { Loading } from '~/components'
 export const AuthGuard: FunctionComponent<{
   shouldRedirect?: boolean
 }> = ({ shouldRedirect = true, children }) => {
-  const { isInitialized, isAuthenticated, lastAttemptCredentials, previousLogout} = useAuth()
+  const { isInitialized, isAuthenticated, lastAttemptCredentials, previousLogout, logoutMessage } = useAuth()
   const router = useRouter()
-  let logoutMessage = 'You have logged out of this session';
   let localPreviousLogout = previousLogout;
 
-  useEffect(() => {  
+  useEffect(() => {
     if (isInitialized && !isAuthenticated && shouldRedirect) {
       router.push('/quote')
     }

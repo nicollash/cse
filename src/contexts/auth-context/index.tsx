@@ -19,6 +19,7 @@ import { decrypt, encrypt } from "~/lib/encryption";
 interface AuthState {
   isInitialized: boolean;
   isAuthenticated: boolean;
+  logoutMessage: string;
   user: UserInfo | null;
   previousLogout: boolean;
   lastAttemptCredentials: {
@@ -31,6 +32,7 @@ const initialAuthState: AuthState = {
   isInitialized: false,
   isAuthenticated: false,
   previousLogout: false,
+  logoutMessage: null,
   user: null,
   lastAttemptCredentials: {
     userName: "",
@@ -41,7 +43,7 @@ const initialAuthState: AuthState = {
 interface AuthContextValue extends AuthState {
   login: (loginId: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  logoutSimple: () => Promise<void>;
+  logoutSimple: (message: string) => Promise<void>;
 }
 
 // action types and reducers
@@ -75,6 +77,9 @@ type LogoutAction = {
 
 type LogoutSimpleAction = {
   type: "LogoutSimple";
+  payload: {
+    message: string;
+  }
 };
 
 type Action =
@@ -129,10 +134,12 @@ const reducer = (state: AuthState, action: Action): AuthState => {
     }
 
     case "LogoutSimple": {
+      const { message } = action.payload;
       return {
         ...state,
         isAuthenticated: false,
         previousLogout: true,
+        logoutMessage: message,
         user: null,
       };
     }
@@ -169,13 +176,13 @@ export const AuthProvider: FunctionComponent<AuthProviderProps> = ({
               if (response.tokenStatus === "Invalid") {
                 //For testing
                 clearInterval(verifyLoginToken);
-                handleLogoutSimple();
+                handleLogoutSimple('You have logged out of this session');
               }
             })
             .catch(() => { });
         } else {
           clearInterval(verifyLoginToken);
-          handleLogoutSimple();
+          handleLogoutSimple('You have logged out of this session');
         }
       }
       firstTime = false;
@@ -299,25 +306,30 @@ export const AuthProvider: FunctionComponent<AuthProviderProps> = ({
 
     clearInterval(verifyLoginToken);
 
-    location.reload();
+    //location.reload();
 
     dispatch({
       type: "Logout",
     });
   }, []);
 
-  const handleLogoutSimple = useCallback(async () => {
+  const handleLogoutSimple = useCallback(async (message: string) => {
     localStorage.removeItem("cse_token");
     localStorage.removeItem("cse_loginId");
+
+    localStorage.clear();
 
     removeCookie("cse_cookie_consent");
 
     removeChat();
 
-    location.reload();
+    //location.reload();
 
     dispatch({
       type: "LogoutSimple",
+      payload: {
+        message: message
+      }
     });
   }, []);
 

@@ -58,11 +58,21 @@ export function httpClient<T extends any>(
         }
       } else {
         logger(res)
-        const result =
-          res.status === 401
-            ? { Message: ` ${res.status} ${res.statusText}` }
-            : JSON.parse(decrypt((await res.json()).data));
+        let result = null;
+
+        try {
+          result =
+            res.status === 401
+              ? { Name: 'Service error', Message: `${res.status} ${res.statusText}` }
+              : JSON.parse(decrypt((await res.json()).data));
+
+        } catch (error) {
+          logger(error)
+          throw { httpRes: res, data: [{ Name: 'Service error', Message: `${res.status} ${res.statusText}` }] }
+        }
+
         throw { httpRes: res, data: result };
+
       }
     })
     .catch((e) => {
@@ -75,12 +85,15 @@ export function httpClient<T extends any>(
           ),
         ];
       } else {
-        if (e.data.Error) {
-          throw e.data.Error.map(
+        if (e.data) {
+
+          const errArray = e.data?.Error ? e.data.Error : e.data
+
+          throw errArray.map(
             (err: any) =>
               new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
-          );
-        } else if (e.data?.DTOApplication[0]?.ValidationError) {
+          )
+        } else if (e.data && e.data.DTOApplication && e.data.DTOApplication[0].ValidationError) {
           throw e.data.DTOApplication[0].ValidationError.map(
             (err: any) =>
               new CustomError(
@@ -94,7 +107,7 @@ export function httpClient<T extends any>(
               )
           );
         } else {
-          throw [new CustomError(CustomErrorType.SERVICE_NOT_AVAILABLE)];
+          throw [new CustomError(CustomErrorType.SERVICE_NOT_AVAILABLE, e.data, e.data.Message)];
         }
       }
     });

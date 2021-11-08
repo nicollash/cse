@@ -54,7 +54,7 @@ interface ErrorProviderProps {
 
 const ErrorContext = createContext<ErrorContextValue>({
   ...initialErrorState,
-  setError: () => {},
+  setError: () => { },
 });
 
 export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
@@ -70,10 +70,11 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
       state &&
       state.error != null &&
       (Array.isArray(state.error) ? state.error : [state.error]).some(
-        (er) => er.errorType === CustomErrorType.SESSION_EXPIRED
+        (er) => er.errorType === CustomErrorType.SESSION_EXPIRED || er.errorType === CustomErrorType.QUOTE_LIMIT_EXCEEDED
       )
     ) {
-      logoutSimple();
+      logger('Exceeded Daily Limit for Quotes.')
+      logoutSimple('Exceeded Daily Limit for Quotes.')
     } else {
       if (state.error) {
         setShowErrorModal(true);
