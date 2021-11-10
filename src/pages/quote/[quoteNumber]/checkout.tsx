@@ -29,7 +29,6 @@ import {
 } from "~/frontend/components";
 import {
   UserAddressInput,
-  TAddressObject,
   EAddressObjectStatus,
   CustomError,
   CommunicationInfo,
@@ -37,42 +36,61 @@ import {
   CustomErrorType,
 } from "~/types";
 import { theme, utils } from "~/frontend/styles";
-import { loadScript, logger, parseQuoteResponse } from "~/frontend/utils";
+import { formRedirect, loadScript } from "~/frontend/utils";
+import { parseQuoteResponse, logger } from "~/helpers";
 import { placeAPI } from "~/frontend/utils";
 import { PaymentOptions } from "~/options";
-import { useError, useLocale, useQuote } from "~/frontend/hooks";
+import { useError, useLocale } from "~/frontend/hooks";
 
 import { styles } from "~/frontend/screens/pages/checkout/styles";
-import { oneIncInvokePortal } from "~/backend/services";
+import { QuoteService } from "~/backend/services";
 import { UserInfoModal } from "~/frontend/screens/modals/user-info";
 import { config } from "~/config";
 import { ErrorBox } from "~/frontend/components/error-box";
 import { useRouter } from "next/router";
-import { getQuote } from "~/lib/quote";
-import { getSession } from "~/lib/get-session";
+import { getSession } from "~/backend/lib";
 
 const CheckoutPage: FunctionComponent<any> = ({
   quoteDetail,
+  oneIncData,
+  issuePolicyData,
+  quoteResponse,
+  savePaymentRequestData,
+  paymentErrors,
   insurer,
   policy,
   error,
   user,
 }) => {
+  console.log("oneIncData: ", oneIncData);
+  console.log("issuePolicyData: ", issuePolicyData);
+  console.log("savePaymentRequestData: ", savePaymentRequestData);
+  console.log("paymentErrors: ", paymentErrors);
   const router = useRouter();
   const { locale, messages } = useLocale();
   const quoteNumber = router.query.quoteNumber as string;
   const { setError } = useError();
 
   const [paymentFrequency, setPaymentFrequency] = useState("full");
-  const [isPaid, setPaid] = useState(false);
+  const [isPaid, setPaid] = useState(!!issuePolicyData);
   const [canIssuePolicy, setIssuePolicy] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [userInfoVisible, setUserInfoVisible] = useState(false);
-  const [reducedPaymentMethodInfo, setReducedPaymentMethodInfo] =
-    useState(null);
+  const [reducedPaymentMethodInfo, setReducedPaymentMethodInfo] = useState(
+    savePaymentRequestData
+  );
   const [oneIncScriptLoaded, setOneIncScriptLoaded] = useState(null);
   const [amountToPay, setAmountToPay] = useState("$");
-  const [paymentMethodErrors, setPaymentMethodErrors] = useState([]);
+  const [paymentMethodErrors, setPaymentMethodErrors] = useState(
+    paymentErrors
+      ? [
+          ...paymentErrors.map((error) => ({
+            TypeCd: error.errorData.Type,
+            Msg: error.errorData.Message,
+          })),
+        ]
+      : []
+  );
 
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Checkout Page View");
@@ -83,18 +101,15 @@ const CheckoutPage: FunctionComponent<any> = ({
   }, []);
 
   const processExternalApplicationCloseOut = useCallback(
-    (updatedQuote: QuoteDetail) => {
+    (newQuote: QuoteDetail) => {
       setLoading(true);
-      externalApplicationCloseOut(updatedQuote)
-        .then(() => {
-          formik.values.communicationInformation =
-            updatedQuote.communicationInfo;
-          setUserInfoVisible(false);
-        })
-        .catch((e) => {
-          setError(e);
-        })
-        .finally(() => setLoading(false));
+      formRedirect("/action/quote/ExternalApplicationCloseOut", {
+        form: JSON.stringify({
+          newQuote,
+          quoteResponse,
+          redirectURL: `/quote/${quoteNumber}/checkout`,
+        }),
+      });
     },
     []
   );
@@ -133,6 +148,25 @@ const CheckoutPage: FunctionComponent<any> = ({
     }
   }, [paymentFrequency]);
 
+  useEffect(() => {
+    if (oneIncData) {
+      openOneInc(
+        "savePaymentMethod",
+        oneIncData.ModalJSONRequest,
+        (data: any) => {
+          onSavePaymentMethod(data);
+        }
+      );
+    }
+  }, [oneIncData]);
+
+  useEffect(() => {
+    if (savePaymentRequestData) {
+      setIssuePolicy(true);
+      setPaymentMethodErrors([]);
+    }
+  }, [savePaymentRequestData]);
+
   const schema = useMemo(() => getSchema(messages), [locale]);
 
   const formik = useFormik<UserInput>({
@@ -160,23 +194,16 @@ const CheckoutPage: FunctionComponent<any> = ({
         )
         .then(
           async () => {
-            try {
-              const data = await oneIncInvokePortal({
-                OperationType: "savePaymentMethod",
-                PaymentMethodCd: "UserSelect",
-                ApplicationRef: quoteDetail.planDetails.systemId,
-              });
-
-              openOneInc(
-                "savePaymentMethod",
-                data.ModalJSONRequest,
-                (data: any) => {
-                  onSavePaymentMethod(data);
-                }
-              );
-            } catch (e) {
-              setError(e);
-            }
+            formRedirect("/action/payment/oneIncInvokePortal", {
+              form: JSON.stringify({
+                req: {
+                  OperationType: "savePaymentMethod",
+                  PaymentMethodCd: "UserSelect",
+                  ApplicationRef: quoteDetail.planDetails.systemId,
+                },
+                redirectURL: `/quote/${quoteNumber}/checkout`,
+              }),
+            });
           },
           (res) => {
             formik.handleChange({
@@ -202,38 +229,28 @@ const CheckoutPage: FunctionComponent<any> = ({
   const handleIssuePolicy = (pf: string, amountToPay: string) => {
     logger(`${amountToPay}`);
     setLoading(true);
-    issuePolicy(amountToPay, pf)
-      .then(() => {
-        setPaid(true);
-      })
-      .catch((e) => {
-        logger(e);
-        setError(e);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+
+    formRedirect("/action/payment/issuePolicy", {
+      form: JSON.stringify({
+        amountToPay,
+        pf,
+        quoteResponse,
+        quoteDetail,
+        redirectURL: `/quote/${quoteNumber}/checkout`,
+      }),
+    });
   };
 
   const onSavePaymentMethod = useCallback(async (data: any) => {
     setLoading(true);
-    await updateDownPaymentDetailsPostOneIncSave(data)
-      .then(() => {
-        setReducedPaymentMethodInfo(data); //For payment method label
-        setIssuePolicy(true);
-        setPaymentMethodErrors([]);
-      })
-      .catch((e: any) => {
-        setPaymentMethodErrors([
-          ...e.map((error) => ({
-            TypeCd: error.errorData.Type,
-            Msg: error.errorData.Message,
-          })),
-        ]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+
+    formRedirect("/action/quote/updateDownPaymentDetailsPostOneIncSave", {
+      form: JSON.stringify({
+        paymentData: data,
+        quoteResponse,
+        redirectURL: `/quote/${quoteNumber}/checkout`,
+      }),
+    });
   }, []);
 
   const openOneInc = (
@@ -241,7 +258,9 @@ const CheckoutPage: FunctionComponent<any> = ({
     jsonRequest: any,
     callback: any
   ) => {
+    console.log("hererer 1");
     if (!oneIncScriptLoaded) {
+      console.log("hererer");
       loadScript("oneIncPaymentScriptLoader", config.oneIncPaymentLib, () => {
         const oneInc = (window as any).$("#portalOneContainer");
         oneInc.portalOne();
@@ -257,6 +276,7 @@ const CheckoutPage: FunctionComponent<any> = ({
         });
       });
     } else {
+      console.log("hererer 2");
       const oneInc = (window as any).$("#portalOneContainer");
       oneInc.portalOne();
 
@@ -295,6 +315,7 @@ const CheckoutPage: FunctionComponent<any> = ({
     );
   };
 
+  console.log("error: ", error, quoteDetail);
   if (error || !quoteDetail) {
     return <Loading />;
   }
@@ -750,11 +771,7 @@ export async function getServerSideProps({ req, res, query }) {
     let error = null;
     let quoteDetail = null;
 
-    const res = await getQuote(
-      quoteNumber,
-      session.user.LoginId,
-      session.user.LoginToken
-    )
+    const res = await QuoteService.getQuote(session.user, quoteNumber)
       .then((res) => {
         quoteDetail = parseQuoteResponse(res);
         return res;
@@ -798,10 +815,16 @@ export async function getServerSideProps({ req, res, query }) {
         },
       };
     } else {
+      const oneIncData = session.oneIncData;
+      session.oneIncData = null;
       return {
         props: {
           user: session.user,
           quoteResponse: res,
+          oneIncData,
+          savePaymentRequestData: session.savePaymentRequestData,
+          issuePolicyData: session.issuePolicyData,
+          paymentErrors: session.paymentErrors,
           policy: {},
           quoteDetail,
           insurer: {

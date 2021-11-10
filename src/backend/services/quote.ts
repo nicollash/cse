@@ -162,22 +162,26 @@ class QuoteService {
       user.LoginToken
     );
   }
+
+  static async updateDownPaymentDetailsPostOneIncSave(
+    DTOApplication: DTOApplication[],
+    SavePaymentRequest: SavePaymentRequestInfo,
+    user: any
+  ) {
+    return HttpService.request(
+      `${config.apiBaseURL}/QQUpdateDownPaymentDetailsRq/json`,
+      "POST",
+      {
+        LoginId: user.LoginId,
+        DTOApplication,
+        SavePaymentRequest: JSON.stringify(SavePaymentRequest),
+      },
+      user.LoginToken
+    );
+  }
 }
 
 export default QuoteService;
-
-// export const externalApplicationCloseOut = (
-//   LoginId: string,
-//   DTOApplication: DTOApplication
-// ) =>
-//   httpClient<QuoteResponse>(
-//     `${config.apiBaseURL}/QQExternalApplicationCloseOutRq/json`,
-//     "POST",
-//     {
-//       LoginId,
-//       DTOApplication,
-//     }
-//   );
 
 // export const updateDownPaymentDetailsPostOneIncSave = (
 //   LoginId: string,

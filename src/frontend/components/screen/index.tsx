@@ -83,6 +83,8 @@ export const Screen: FunctionComponent<ScreenProps> = ({
       <Head>
         {title && <title>{title}</title>}
         {link && <link rel="canonical" href={link} />}
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
       </Head>
 
       {greyBackground && (

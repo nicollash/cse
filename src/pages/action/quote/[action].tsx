@@ -250,6 +250,27 @@ export async function getServerSideProps({ req, res, query }) {
           },
         };
       }
+
+      case "updateDownPaymentDetailsPostOneIncSave": {
+        const { paymentData, quoteResponse, redirectURL } = form;
+
+        try {
+          await QuoteService.updateDownPaymentDetailsPostOneIncSave(
+            handleSSN(quoteResponse.DTOApplication),
+            paymentData,
+            session.user
+          );
+          session.savePaymentRequestData = paymentData;
+        } catch (e) {
+          session.paymentErrors = e;
+        }
+
+        return {
+          redirect: {
+            destination: redirectURL,
+          },
+        };
+      }
     }
   }
 
