@@ -63,12 +63,17 @@ export function httpClient<T extends any>(
           ),
         ];
       } else {
-        if (e.data.Error) {
-          throw e.data.Error.map(
+        if (e.data) {
+          const errArray = e.data?.Error ? e.data.Error : e.data;
+
+          throw errArray.map(
             (err: any) =>
               new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
           );
-        } else if (e.data?.DTOApplication && e.data.DTOApplication[0]?.ValidationError) {
+        } else if (
+          e.data?.DTOApplication &&
+          e.data.DTOApplication[0]?.ValidationError
+        ) {
           throw e.data.DTOApplication[0].ValidationError.map(
             (err: any) =>
               new CustomError(
@@ -82,7 +87,13 @@ export function httpClient<T extends any>(
               )
           );
         } else {
-          throw [new CustomError(CustomErrorType.SERVICE_NOT_AVAILABLE)];
+          throw [
+            new CustomError(
+              CustomErrorType.SERVICE_NOT_AVAILABLE,
+              e.data,
+              e.data.Message
+            ),
+          ];
         }
       }
     });
