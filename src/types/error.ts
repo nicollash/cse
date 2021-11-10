@@ -1,12 +1,12 @@
 export class CustomError extends Error {
-  errorType: CustomErrorType
-  errorData: any
+  errorType: CustomErrorType;
+  errorData: any;
 
   constructor(errorType: CustomErrorType, errorData?: any, message?: string) {
-    super('Custom Error:' + (message || ''))
+    super(message || "");
 
-    this.errorType = errorType
-    this.errorData = errorData
+    this.errorType = errorType;
+    this.errorData = errorData;
   }
 }
 
@@ -17,5 +17,6 @@ export enum CustomErrorType {
   PARSE_QUOTE_FAIL,
   ZERO_PREMIUM,
   PAYMENT_ERROR,
-  SESSION_EXPIRED
+  SESSION_EXPIRED,
+  QUOTE_LIMIT_EXCEEDED,
 }

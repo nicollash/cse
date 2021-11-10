@@ -1,4 +1,6 @@
 import fetch from "node-fetch";
+import { logger } from "~/helpers";
+import { decrypt } from "~/lib/encryption";
 import { CustomError, CustomErrorType } from "~/types";
 
 type THttpMethod = "GET" | "POST" | "PUT" | "DELETE";
@@ -45,10 +47,30 @@ class HttpService {
             return result;
           }
         } else {
-          const result =
-            res.status === 401
-              ? { Message: "Login Token Error" }
-              : await res.json();
+          logger(res);
+          let result = null;
+
+          try {
+            result =
+              res.status === 401
+                ? {
+                    Name: "Service error",
+                    Message: `${res.status} ${res.statusText}`,
+                  }
+                : JSON.parse(decrypt((await res.json()).data));
+          } catch (error) {
+            logger(error);
+            throw {
+              httpRes: res,
+              data: [
+                {
+                  Name: "Service error",
+                  Message: `${res.status} ${res.statusText}`,
+                },
+              ],
+            };
+          }
+
           throw { httpRes: res, data: result };
         }
       })
@@ -62,14 +84,17 @@ class HttpService {
             ),
           ];
         } else {
-          if (e.data.Error) {
-            throw e.data.Error.map(
+          if (e.data) {
+            const errArray = e.data?.Error ? e.data.Error : e.data;
+
+            throw errArray.map(
               (err: any) =>
                 new CustomError(CustomErrorType.SERVICE_ERROR, err, err.Message)
             );
           } else if (
-            e.data?.DTOApplication &&
-            e.data?.DTOApplication[0]?.ValidationError
+            e.data &&
+            e.data.DTOApplication &&
+            e.data.DTOApplication[0].ValidationError
           ) {
             throw e.data.DTOApplication[0].ValidationError.map(
               (err: any) =>
@@ -84,7 +109,13 @@ class HttpService {
                 )
             );
           } else {
-            throw [new CustomError(CustomErrorType.SERVICE_NOT_AVAILABLE)];
+            throw [
+              new CustomError(
+                CustomErrorType.SERVICE_NOT_AVAILABLE,
+                e.data,
+                e.data.Message
+              ),
+            ];
           }
         }
       });

@@ -2,8 +2,8 @@ import { FunctionComponent, useState, useEffect } from "react";
 
 import { Screen, Container, Text } from "~/frontend/components";
 import { theme, utils } from "~/frontend/styles";
-import { useError, useLocale, useQuote } from "~/frontend/hooks";
-import { CustomError, QuickQuoteInfo } from "~/types";
+import { useLocale } from "~/frontend/hooks";
+import { QuickQuoteInfo } from "~/types";
 
 import {
   Pagination,

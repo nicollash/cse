@@ -9,7 +9,6 @@ import {
   Button,
   FormikAddressInput,
   Loading,
-  Heading,
   Text,
 } from "~/frontend/components";
 import { utils } from "~/frontend/styles";
@@ -20,8 +19,8 @@ import {
 } from "~/types";
 
 import { styles } from "./styles";
-import { placeAPI } from "~/frontend/utils";
-import { useError, useLocale, useMountedRef, useQuote } from "~/frontend/hooks";
+import { formRedirect, placeAPI } from "~/frontend/utils";
+import { useError, useLocale, useMountedRef } from "~/frontend/hooks";
 import { useRouter } from "next/router";
 import { isAKnownError } from "~/frontend/contexts/error-context";
 
@@ -41,7 +40,6 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
   ...props
 }) => {
   const { locale, messages } = useLocale();
-  const { generateQuote } = useQuote();
   const router = useRouter();
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -73,20 +71,13 @@ export const QuoteErrorModal: FunctionComponent<QuoteErrorModalProps> = ({
       placeAPI
         .checkAddress(value.address.address, value.address.unitNumber)
         .then(() => {
-          generateQuote({
-            firstName: value.firstName,
-            lastName: value.lastName,
-            address: value.address,
-          })
-            .then((res) => {
-              setLoading(false);
-              router.push(
-                `/quote/${res.DTOApplication[0].ApplicationNumber}/customize`
-              );
-            })
-            .catch(() => {
-              setLoading(false);
-            });
+          formRedirect("/action/quote/generate", {
+            form: JSON.stringify({
+              firstName: value.firstName,
+              lastName: value.lastName,
+              address: value.address,
+            }),
+          });
         })
         .catch((err) => {
           if (isAKnownError(err)) {

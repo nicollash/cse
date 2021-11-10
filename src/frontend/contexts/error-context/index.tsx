@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import { ErrorModal } from "~/frontend/screens/modals";
 import { CustomError, CustomErrorType } from "~/types";
 import { formRedirect } from "~/frontend/utils";
+import { logger } from "~/helpers";
 
 // states and initial values
 
@@ -67,9 +68,12 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
       state &&
       state.error != null &&
       (Array.isArray(state.error) ? state.error : [state.error]).some(
-        (er) => er.errorType === CustomErrorType.SESSION_EXPIRED
+        (er) =>
+          er.errorType === CustomErrorType.SESSION_EXPIRED ||
+          er.errorType === CustomErrorType.QUOTE_LIMIT_EXCEEDED
       )
     ) {
+      logger("Exceeded Daily Limit for Quotes.");
       formRedirect("/action/auth/logout");
     } else {
       if (state.error) {

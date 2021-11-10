@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import parse from "urlencoded-body-parser";
 import { getSession } from "~/backend/lib";
 import { QuoteService } from "~/backend/services";
+import { CustomErrorType } from "~/types";
 
 const GenerateQuotePage: NextPage = (props) => {
   return <div />;
@@ -40,6 +41,12 @@ export async function getServerSideProps({ req, res }) {
         },
       };
     } catch (error) {
+      error = error.map((er) => {
+        if (er.message.includes("403")) {
+          er.errorType = CustomErrorType.QUOTE_LIMIT_EXCEEDED;
+        }
+        return er;
+      });
       session.lastError = error;
     }
   }

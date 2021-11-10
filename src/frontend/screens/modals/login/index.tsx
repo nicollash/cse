@@ -1,5 +1,5 @@
 import { jsx } from "@emotion/react";
-import { FunctionComponent, useMemo, useState } from "react";
+import { FunctionComponent, useMemo, useEffect, useState } from "react";
 import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 
@@ -8,6 +8,7 @@ import { utils } from "~/frontend/styles";
 import { useLocale } from "~/frontend/hooks";
 
 import { styles } from "./styles";
+import { CustomError } from "~/types";
 import { formRedirect } from "~/frontend/utils";
 
 interface LoginModalProps {
@@ -15,6 +16,7 @@ interface LoginModalProps {
   fromLogout?: boolean;
   fromLogoutMessage?: string;
   defaultValue?: any;
+  loginError?: Array<CustomError>;
 }
 
 interface UserLoginInput {
@@ -27,11 +29,37 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
   isOpen,
   fromLogout,
   fromLogoutMessage,
+  loginError,
   ...props
 }) => {
   const { locale, messages } = useLocale();
+  const [localErrorMessage, setLocalErrorMessage] = useState("");
 
   const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    try {
+      const errorText = loginError.reduce((previousError, currentError) => {
+        let currrentText = currentError.errorData?.Name
+          ? currentError.errorData?.Name
+          : currentError.message;
+        if (currentError.message.includes("401")) {
+          currrentText = "Invalid account or password";
+        } else if (currentError.message.includes("500")) {
+          /*else if (currentError.message.includes('404') && currrentText.includes('Service error')) {
+          currrentText = 'Exceeded Daily Limit for Quotes.'
+        }*/
+          currrentText = "Invalid account or password";
+        }
+
+        return previousError.concat(currrentText + "\n");
+      }, "");
+      setLocalErrorMessage(errorText);
+    } catch (error) {
+      setLocalErrorMessage("Invalid account or password");
+      console.log(loginError);
+    }
+  }, [loginError]);
 
   const schema = useMemo(
     () =>
@@ -56,6 +84,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
     },
     onSubmit: (value) => {
       setLoading(true);
+      setLocalErrorMessage(null);
       formRedirect("/action/auth/login", value);
     },
   });
@@ -67,8 +96,12 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
       title={messages.Login.Heading}
       width="580px"
       data-testid="login-modal"
-      additionalInfo={fromLogout}
-      additionalInfoMessage={fromLogoutMessage}
+      additionalInfo={
+        fromLogout || (localErrorMessage && localErrorMessage != "")
+      }
+      additionalInfoMessage={
+        !localErrorMessage ? fromLogoutMessage : localErrorMessage
+      }
     >
       <FormikProvider value={formik}>
         <form

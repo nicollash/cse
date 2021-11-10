@@ -197,63 +197,68 @@ export const parseQuoteResponse = (
               parseRisk(risk)
             ),
 
-      drivers: quoteResponse.DTOApplication[0].PartyInfo.filter(
-        (party) => party.PartyTypeCd === "DriverParty"
-      ).map((party) => ({
-        id: party.id,
-        firstName: party.NameInfo[0].GivenName,
-        lastName: party.NameInfo[0].Surname,
-        birthDate: convertStringToDate(party.PersonInfo[0].BirthDt),
-        age: +party.PersonInfo[0].Age,
-        gender: party.PersonInfo[0].GenderCd,
-        maritalStatus: party.PersonInfo[0].MaritalStatusCd,
-        occupation: party.PersonInfo[0].OccupationClassCd,
-        licenseState: party.DriverInfo[0].LicensedStateProvCd,
-        licenseNumber: party.DriverInfo[0].LicenseNumber || "",
-        licenseDt: party.DriverInfo[0].LicenseDt || "",
-        ageFirstLicensed: +party.DriverInfo[0].AgeFirstLicensed,
-        status: party.Status,
-        matureDriverInd:
-          party.DriverInfo[0].MatureDriverInd &&
-          party.DriverInfo[0].MatureDriverInd == "Yes"
-            ? true
-            : false,
-        matureCertificationDt: party.DriverInfo[0].MatureCertificationDt
-          ? convertStringToDate(party.DriverInfo[0].MatureCertificationDt)
-          : null,
-        scholasticDiscountInd:
-          party.DriverInfo[0].ScholasticDiscountInd &&
-          party.DriverInfo[0].ScholasticDiscountInd == "Yes"
-            ? true
-            : false,
-        scholasticCertificationDt: party.DriverInfo[0].ScholasticCertificationDt
-          ? convertStringToDate(party.DriverInfo[0].ScholasticCertificationDt)
-          : null,
-        driverPoints: party.DriverInfo[0].DriverPoints
-          ? party.DriverInfo[0].DriverPoints.map((dP) => ({
-              id: dP.id,
-              status: dP.Status,
-              driverPointsNumber: dP.DriverPointsNumber,
-              sourceCd: dP.SourceCd,
-              infractionCd: dP.InfractionCd,
-              infractionDt: dP.InfractionDt
-                ? convertStringToDate(dP.InfractionDt)
-                : undefined,
-              pointsChargeable: dP.PointsChargeable,
-              pointsCharged: dP.PointsCharged,
-              expirationDt: dP.ExpirationDt
-                ? convertStringToDate(dP.ExpirationDt)
-                : undefined,
-              comments: dP.Comments,
-              convictionDt: dP.ConvictionDt
-                ? convertStringToDate(dP.ConvictionDt)
-                : undefined,
-              typeCd: dP.TypeCd,
-              addedByUserId: dP.AddedByUserId,
-              goodDriverPoints: dP.GoodDriverPoints,
-            }))
-          : [],
-      })),
+      drivers: !quoteResponse.DTOApplication[0].PartyInfo
+        ? []
+        : quoteResponse.DTOApplication[0].PartyInfo.filter(
+            (party) => party.PartyTypeCd === "DriverParty"
+          ).map((party) => ({
+            id: party.id,
+            firstName: party.NameInfo[0].GivenName,
+            lastName: party.NameInfo[0].Surname,
+            birthDate: convertStringToDate(party.PersonInfo[0].BirthDt),
+            age: +party.PersonInfo[0].Age,
+            gender: party.PersonInfo[0].GenderCd,
+            maritalStatus: party.PersonInfo[0].MaritalStatusCd,
+            occupation: party.PersonInfo[0].OccupationClassCd,
+            licenseState: party.DriverInfo[0].LicensedStateProvCd,
+            licenseNumber: party.DriverInfo[0].LicenseNumber || "",
+            licenseDt: party.DriverInfo[0].LicenseDt || "",
+            ageFirstLicensed: +party.DriverInfo[0].AgeFirstLicensed,
+            status: party.Status,
+            matureDriverInd:
+              party.DriverInfo[0].MatureDriverInd &&
+              party.DriverInfo[0].MatureDriverInd == "Yes"
+                ? true
+                : false,
+            matureCertificationDt: party.DriverInfo[0].MatureCertificationDt
+              ? convertStringToDate(party.DriverInfo[0].MatureCertificationDt)
+              : null,
+            scholasticDiscountInd:
+              party.DriverInfo[0].ScholasticDiscountInd &&
+              party.DriverInfo[0].ScholasticDiscountInd == "Yes"
+                ? true
+                : false,
+            scholasticCertificationDt: party.DriverInfo[0]
+              .ScholasticCertificationDt
+              ? convertStringToDate(
+                  party.DriverInfo[0].ScholasticCertificationDt
+                )
+              : null,
+            driverPoints: party.DriverInfo[0].DriverPoints
+              ? party.DriverInfo[0].DriverPoints.map((dP) => ({
+                  id: dP.id,
+                  status: dP.Status,
+                  driverPointsNumber: dP.DriverPointsNumber,
+                  sourceCd: dP.SourceCd,
+                  infractionCd: dP.InfractionCd,
+                  infractionDt: dP.InfractionDt
+                    ? convertStringToDate(dP.InfractionDt)
+                    : undefined,
+                  pointsChargeable: dP.PointsChargeable,
+                  pointsCharged: dP.PointsCharged,
+                  expirationDt: dP.ExpirationDt
+                    ? convertStringToDate(dP.ExpirationDt)
+                    : undefined,
+                  comments: dP.Comments,
+                  convictionDt: dP.ConvictionDt
+                    ? convertStringToDate(dP.ConvictionDt)
+                    : undefined,
+                  typeCd: dP.TypeCd,
+                  addedByUserId: dP.AddedByUserId,
+                  goodDriverPoints: dP.GoodDriverPoints,
+                }))
+              : [],
+          })),
 
       discounts: quoteResponse.DTOApplication[0].DTOLine[0].Discount
         ? quoteResponse.DTOApplication[0].DTOLine[0].Discount.map(
