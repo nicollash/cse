@@ -476,7 +476,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                   {messages.Checkout.Congratulations}
                 </Text>
                 <Text bold>{messages.Checkout.PolicyIssued}</Text>
-                {/* <Text
+                <Text
                   css={[
                     utils.fullWidth,
                     utils.my(5),
@@ -487,8 +487,8 @@ const CheckoutPage: FunctionComponent<any> = ({
                   size="2em"
                   bold
                 >
-                  {policy?.BasicPolicy[0].PolicyNumber}
-                </Text> */}
+                  {policy ? policy[0].BasicPolicy[0].PolicyNumber : ""}
+                </Text>
                 <Text
                   css={[utils.fullWidth, utils.mb(5)]}
                   textAlign="center"
