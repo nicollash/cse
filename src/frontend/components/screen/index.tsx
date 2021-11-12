@@ -85,6 +85,10 @@ export const Screen: FunctionComponent<ScreenProps> = ({
         {link && <link rel="canonical" href={link} />}
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script
+          type="text/javascript"
+          src="https://home-c30.incontact.com/inContact/ChatClient/js/embed.min.js"
+        ></script>
       </Head>
 
       {greyBackground && (
