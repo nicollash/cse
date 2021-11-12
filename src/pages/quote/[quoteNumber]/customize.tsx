@@ -247,6 +247,7 @@ const CustomizePage: FunctionComponent<any> = ({
       css={[utils.flex(1), utils.flexDirection("column")]}
       loading={isLoading}
       quoteNumber={quoteNumber}
+      conversationId={user.ResponseParams[0].ConversationId}
       systemId={quoteDetail?.systemId}
       user={user}
       lastError={lastError && JSON.parse(lastError)}
@@ -1084,6 +1085,7 @@ const CustomizePage: FunctionComponent<any> = ({
 
 export async function getServerSideProps({ req, res, query }) {
   const session = await getSession(req, res);
+  console.log("session: ", session);
   const quoteNumber = query.quoteNumber as string;
 
   if (session.user && quoteNumber) {
