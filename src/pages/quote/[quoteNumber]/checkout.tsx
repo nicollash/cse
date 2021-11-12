@@ -53,7 +53,6 @@ import { getSession } from "~/backend/lib";
 const CheckoutPage: FunctionComponent<any> = ({
   quoteDetail,
   oneIncData,
-  issuePolicyData,
   quoteResponse,
   savePaymentRequestData,
   paymentErrors,
@@ -62,17 +61,13 @@ const CheckoutPage: FunctionComponent<any> = ({
   error,
   user,
 }) => {
-  console.log("oneIncData: ", oneIncData);
-  console.log("issuePolicyData: ", issuePolicyData);
-  console.log("savePaymentRequestData: ", savePaymentRequestData);
-  console.log("paymentErrors: ", paymentErrors);
   const router = useRouter();
   const { locale, messages } = useLocale();
   const quoteNumber = router.query.quoteNumber as string;
   const { setError } = useError();
 
   const [paymentFrequency, setPaymentFrequency] = useState("full");
-  const [isPaid, setPaid] = useState(!!issuePolicyData);
+  const [isPaid, setPaid] = useState(!!policy);
   const [canIssuePolicy, setIssuePolicy] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [userInfoVisible, setUserInfoVisible] = useState(false);
@@ -125,7 +120,7 @@ const CheckoutPage: FunctionComponent<any> = ({
   }, [reducedPaymentMethodInfo]);
 
   useEffect(() => {
-    setPaymentFrequency(quoteDetail.planDetails.paymentPlan);
+    setPaymentFrequency(quoteDetail?.planDetails.paymentPlan);
   }, []);
 
   useEffect(() => {
@@ -176,11 +171,11 @@ const CheckoutPage: FunctionComponent<any> = ({
     validateOnBlur: false,
     initialValues: {
       billingInformation: {
-        firstName: insurer.firstName,
-        lastName: insurer.lastName,
-        address: insurer.address,
+        firstName: insurer?.firstName,
+        lastName: insurer?.lastName,
+        address: insurer?.address,
       },
-      communicationInformation: quoteDetail.communicationInfo,
+      communicationInformation: quoteDetail?.communicationInfo,
       paymentFrequency: "",
       paymentMethod: "",
     },
@@ -258,9 +253,7 @@ const CheckoutPage: FunctionComponent<any> = ({
     jsonRequest: any,
     callback: any
   ) => {
-    console.log("hererer 1");
     if (!oneIncScriptLoaded) {
-      console.log("hererer");
       loadScript("oneIncPaymentScriptLoader", config.oneIncPaymentLib, () => {
         const oneInc = (window as any).$("#portalOneContainer");
         oneInc.portalOne();
@@ -276,7 +269,6 @@ const CheckoutPage: FunctionComponent<any> = ({
         });
       });
     } else {
-      console.log("hererer 2");
       const oneInc = (window as any).$("#portalOneContainer");
       oneInc.portalOne();
 
@@ -315,7 +307,6 @@ const CheckoutPage: FunctionComponent<any> = ({
     );
   };
 
-  console.log("error: ", error, quoteDetail);
   if (error || !quoteDetail) {
     return <Loading />;
   }
@@ -346,6 +337,7 @@ const CheckoutPage: FunctionComponent<any> = ({
       loading={isLoading}
       css={[utils.flex(1), utils.flexDirection("column")]}
       quoteNumber={quoteNumber}
+      lastError={error}
       systemId={quoteDetail.systemId}
     >
       <Container wide css={[utils.fullWidth, utils.px(0)]}>
@@ -484,7 +476,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                   {messages.Checkout.Congratulations}
                 </Text>
                 <Text bold>{messages.Checkout.PolicyIssued}</Text>
-                <Text
+                {/* <Text
                   css={[
                     utils.fullWidth,
                     utils.my(5),
@@ -496,7 +488,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                   bold
                 >
                   {policy?.BasicPolicy[0].PolicyNumber}
-                </Text>
+                </Text> */}
                 <Text
                   css={[utils.fullWidth, utils.mb(5)]}
                   textAlign="center"
@@ -771,21 +763,10 @@ export async function getServerSideProps({ req, res, query }) {
     let error = null;
     let quoteDetail = null;
 
-    const res = await QuoteService.getQuote(session.user, quoteNumber)
-      .then((res) => {
-        quoteDetail = parseQuoteResponse(res);
-        return res;
-      })
-      .catch((e: Array<CustomError>) => {
-        if (Array.isArray(e)) {
-          e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
-        }
-        error = e;
-        return null;
-      });
+    const { finalQuoteDetail, finalQuoteResponse } = session;
 
-    if (res) {
-      const matched = res.DTOApplication.find(
+    if (finalQuoteDetail && finalQuoteResponse) {
+      const matched = finalQuoteResponse.DTOApplication.find(
         (application) =>
           application.ApplicationNumber === quoteNumber ||
           application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
@@ -801,44 +782,103 @@ export async function getServerSideProps({ req, res, query }) {
           selectedPlan = "Premium";
           break;
       }
-    } else {
-      error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
-        quoteNumber,
-      });
-    }
-
-    if (error) {
-      return {
-        props: {
-          user: session.user,
-          error,
-        },
-      };
-    } else {
       const oneIncData = session.oneIncData;
-      session.oneIncData = null;
-      return {
+      const result = {
         props: {
           user: session.user,
-          quoteResponse: res,
+          quoteResponse: finalQuoteResponse,
           oneIncData,
           savePaymentRequestData: session.savePaymentRequestData,
-          issuePolicyData: session.issuePolicyData,
           paymentErrors: session.paymentErrors,
-          policy: {},
-          quoteDetail,
+          policy: session.issuePolicyData,
+          quoteDetail: finalQuoteDetail,
           insurer: {
-            firstName: quoteDetail.insurerFirstName,
-            lastName: quoteDetail.insurerLastName,
+            firstName: finalQuoteDetail.insurerFirstName,
+            lastName: finalQuoteDetail.insurerLastName,
             address: {
-              address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
-              unitNumber: quoteDetail.insuredAddress.Addr2,
+              address: `${finalQuoteDetail.insuredAddress.Addr1}, ${finalQuoteDetail.insuredAddress.City}, ${finalQuoteDetail.insuredAddress.StateProvCd}`,
+              unitNumber: finalQuoteDetail.insuredAddress.Addr2,
               requiredUnitNumber: false,
               status: EAddressObjectStatus.success,
             },
           },
         },
       };
+
+      session.finalQuoteDetail = null;
+      session.oneIncData = null;
+      session.finalQuoteResponse = null;
+
+      return result;
+    } else {
+      const res = await QuoteService.getQuote(session.user, quoteNumber)
+        .then((res) => {
+          quoteDetail = parseQuoteResponse(res);
+          return res;
+        })
+        .catch((e: Array<CustomError>) => {
+          if (Array.isArray(e)) {
+            e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
+          }
+          error = e;
+          return null;
+        });
+
+      if (res) {
+        const matched = res.DTOApplication.find(
+          (application) =>
+            application.ApplicationNumber === quoteNumber ||
+            application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
+        );
+        switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
+          case "BASIC":
+            selectedPlan = "Basic";
+            break;
+          case "STANDARD":
+            selectedPlan = "Standard";
+            break;
+          case "PREMIUM":
+            selectedPlan = "Premium";
+            break;
+        }
+      } else {
+        error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+          quoteNumber,
+        });
+      }
+
+      if (error) {
+        return {
+          props: {
+            user: session.user,
+            error,
+          },
+        };
+      } else {
+        const oneIncData = session.oneIncData;
+        session.oneIncData = null;
+        return {
+          props: {
+            user: session.user,
+            quoteResponse: res,
+            oneIncData,
+            savePaymentRequestData: session.savePaymentRequestData,
+            paymentErrors: session.paymentErrors,
+            policy: session.issuePolicyData,
+            quoteDetail,
+            insurer: {
+              firstName: quoteDetail.insurerFirstName,
+              lastName: quoteDetail.insurerLastName,
+              address: {
+                address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
+                unitNumber: quoteDetail.insuredAddress.Addr2,
+                requiredUnitNumber: false,
+                status: EAddressObjectStatus.success,
+              },
+            },
+          },
+        };
+      }
     }
   }
 

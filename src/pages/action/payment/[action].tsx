@@ -67,7 +67,9 @@ export async function getServerSideProps({ req, res, query }) {
             })),
             session.user
           );
-          session.issuePolicyData = data;
+          session.issuePolicyData = data.Policy;
+          session.finalQuoteResponse = quoteResponse;
+          session.finalQuoteDetail = quoteDetail;
         } catch (e) {
           session.lastError = e;
         }

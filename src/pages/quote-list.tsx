@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/router";
 import { getSession } from "~/backend/lib";
 import { QuoteService } from "~/backend/services";
+import { formRedirect } from "~/frontend/utils";
 
 const QuoteListPage: FunctionComponent<any> = ({
   user,
@@ -111,7 +112,7 @@ const QuoteListPage: FunctionComponent<any> = ({
                   data-testid={`result-${index}`}
                   key={index}
                   onClick={() => {
-                    router.push(`/quote/${quote["QuoteNumber"]}/customize`);
+                    formRedirect(`/quote/${quote["QuoteNumber"]}/customize`);
                   }}
                 >
                   <td data-testid="insured-name">{quote.InsuredName}</td>
