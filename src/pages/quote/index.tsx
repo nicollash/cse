@@ -21,7 +21,13 @@ import { styles } from "~/frontend/screens/pages/quote/styles";
 import { utils } from "~/frontend/styles";
 import { getSession } from "~/backend/lib";
 
-function QuotePage({ user, lastError, loginError, ...props }) {
+function QuotePage({
+  user,
+  lastError,
+  loginError,
+  fromLogoutMessage,
+  ...props
+}) {
   const router = useRouter();
   const { locale, messages } = useLocale();
 
@@ -245,7 +251,11 @@ function QuotePage({ user, lastError, loginError, ...props }) {
           </FormikProvider>
         </Container>
       </Screen>
-      <LoginModal isOpen={!user} loginError={loginError} />
+      <LoginModal
+        isOpen={!user}
+        loginError={loginError}
+        fromLogoutMessage={fromLogoutMessage}
+      />
     </Fragment>
   );
 }
@@ -253,13 +263,14 @@ function QuotePage({ user, lastError, loginError, ...props }) {
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
 
-  const { lastError, loginError } = session;
+  const { lastError, loginError, fromLogoutMessage } = session;
 
   return {
     props: {
       user: session.user,
       lastError,
       loginError,
+      fromLogoutMessage,
     },
   };
 }

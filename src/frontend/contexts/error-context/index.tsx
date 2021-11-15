@@ -74,7 +74,9 @@ export const ErrorProvider: FunctionComponent<ErrorProviderProps> = ({
       )
     ) {
       logger("Exceeded Daily Limit for Quotes.");
-      formRedirect("/action/auth/logout");
+      formRedirect("/action/auth/logout", {
+        fromLogoutMessage: "Exceeded Daily Limit for Quotes.",
+      });
     } else {
       if (state.error) {
         setShowErrorModal(true);

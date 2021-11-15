@@ -547,8 +547,8 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
               >
                 <Text color={theme.color.primary} bold css={utils.my(3)}>
                   {user &&
-                    user.DTOProvider.Contact &&
-                    user.DTOProvider.Contact[0].PartyInfo[0].NameInfo[0]
+                    user.DTOProvider[0].Contact &&
+                    user.DTOProvider[0].Contact[0].PartyInfo[0].NameInfo[0]
                       .CommercialName}
                 </Text>
 
@@ -556,8 +556,8 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
                   <Text bold>{messages.Common.Agent}</Text>
                   <Text>
                     {user &&
-                      user.DTOProvider.Contact &&
-                      user.DTOProvider.Contact[0].PartyInfo[0].PersonInfo[0]
+                      user.DTOProvider[0].Contact &&
+                      user.DTOProvider[0].Contact[0].PartyInfo[0].PersonInfo[0]
                         .PositionTitle}
                   </Text>
                 </div>
@@ -565,8 +565,8 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
                   <Text bold>{messages.Common.Phone}</Text>
                   <Text>
                     {user &&
-                      user.DTOProvider.Contact &&
-                      user.DTOProvider.Contact[0].PartyInfo[0].PhoneInfo.find(
+                      user.DTOProvider[0].Contact &&
+                      user.DTOProvider[0].Contact[0].PartyInfo[0].PhoneInfo.find(
                         (phoneInfo) => phoneInfo.PhoneName === "Business"
                       )?.PhoneNumber}
                   </Text>
@@ -575,8 +575,8 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
                   <Text bold>{messages.Common.Email}</Text>
                   <Text>
                     {user &&
-                      user.DTOProvider.Contact &&
-                      user.DTOProvider.Contact[0].PartyInfo[0].EmailInfo[0]
+                      user.DTOProvider[0].Contact &&
+                      user.DTOProvider[0].Contact[0].PartyInfo[0].EmailInfo[0]
                         .EmailAddr}
                   </Text>
                 </div>

@@ -16,6 +16,7 @@ import {
   getCorrectVinNumber,
   convertStringToDate,
   convertDateToString,
+  maskLicenseNumber,
 } from "./helpers";
 import { logger } from "../logger";
 import {
@@ -206,12 +207,15 @@ export const parseQuoteResponse = (
             firstName: party.NameInfo[0].GivenName,
             lastName: party.NameInfo[0].Surname,
             birthDate: convertStringToDate(party.PersonInfo[0].BirthDt),
+            originalBirthDate: convertStringToDate(party.PersonInfo[0].BirthDt),
             age: +party.PersonInfo[0].Age,
             gender: party.PersonInfo[0].GenderCd,
             maritalStatus: party.PersonInfo[0].MaritalStatusCd,
             occupation: party.PersonInfo[0].OccupationClassCd,
             licenseState: party.DriverInfo[0].LicensedStateProvCd,
-            licenseNumber: party.DriverInfo[0].LicenseNumber || "",
+            licenseNumber: party.DriverInfo[0].LicenseNumber
+              ? maskLicenseNumber(party.DriverInfo[0].LicenseNumber, 4)
+              : "",
             licenseDt: party.DriverInfo[0].LicenseDt || "",
             ageFirstLicensed: +party.DriverInfo[0].AgeFirstLicensed,
             status: party.Status,

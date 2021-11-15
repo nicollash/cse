@@ -56,7 +56,9 @@ export const Screen: FunctionComponent<ScreenProps> = ({
         httpClient("/api/auth/check").then((res: any) => {
           if (!res.success || !res.isLoggedIn) {
             clearInterval(timer);
-            formRedirect("/action/auth/logout");
+            formRedirect("/action/auth/logout", {
+              fromLogoutMessage: "You have logged out of this session",
+            });
           }
         });
       }, 20 * 1000);

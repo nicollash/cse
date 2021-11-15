@@ -38,26 +38,28 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    try {
-      const errorText = loginError.reduce((previousError, currentError) => {
-        let currrentText = currentError.errorData?.Name
-          ? currentError.errorData?.Name
-          : currentError.message;
-        if (currentError.message.includes("401")) {
-          currrentText = "Invalid account or password";
-        } else if (currentError.message.includes("500")) {
-          /*else if (currentError.message.includes('404') && currrentText.includes('Service error')) {
-          currrentText = 'Exceeded Daily Limit for Quotes.'
-        }*/
-          currrentText = "Invalid account or password";
-        }
+    if (loginError) {
+      try {
+        const errorText = loginError.reduce((previousError, currentError) => {
+          let currrentText = currentError.errorData?.Name
+            ? currentError.errorData?.Name
+            : currentError.message;
+          if (currentError.message.includes("401")) {
+            currrentText = "Invalid account or password";
+          } else if (currentError.message.includes("500")) {
+            /*else if (currentError.message.includes('404') && currrentText.includes('Service error')) {
+            currrentText = 'Exceeded Daily Limit for Quotes.'
+          }*/
+            currrentText = "Invalid account or password";
+          }
 
-        return previousError.concat(currrentText + "\n");
-      }, "");
-      setLocalErrorMessage(errorText);
-    } catch (error) {
-      setLocalErrorMessage("Invalid account or password");
-      console.log(loginError);
+          return previousError.concat(currrentText + "\n");
+        }, "");
+        setLocalErrorMessage(errorText);
+      } catch (error) {
+        setLocalErrorMessage("Invalid account or password");
+        console.log(loginError);
+      }
     }
   }, [loginError]);
 

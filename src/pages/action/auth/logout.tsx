@@ -1,4 +1,5 @@
 import type { NextPage } from "next";
+import parse from "urlencoded-body-parser";
 import { getSession } from "~/backend/lib";
 import { AuthService } from "~/backend/services";
 
@@ -8,8 +9,11 @@ const Logout: NextPage = () => {
 
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
+  const { fromLogoutMessage } = await parse(req);
 
   await AuthService.logout(session);
+
+  session.fromLogoutMessage = fromLogoutMessage;
 
   return {
     redirect: {
