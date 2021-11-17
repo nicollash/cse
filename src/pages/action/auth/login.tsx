@@ -16,6 +16,7 @@ export async function getServerSideProps({ req, res }) {
 
   if (loginResult.success) {
     session.loginError = null;
+    session.lastError = null;
   } else {
     session.loginError = loginResult.error;
   }
