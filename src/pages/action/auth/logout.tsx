@@ -13,7 +13,11 @@ export async function getServerSideProps({ req, res }) {
 
   await AuthService.logout(session);
 
-  session.fromLogoutMessage = fromLogoutMessage;
+  if (fromLogoutMessage) {
+    session.fromLogoutMessage = fromLogoutMessage;
+  } else {
+    session.fromLogoutMessage = null;
+  }
 
   console.log("server sesion: ", session);
   return {

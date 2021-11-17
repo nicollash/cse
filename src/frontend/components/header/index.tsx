@@ -130,7 +130,9 @@ export const Header: FunctionComponent = () => {
               styles.headerItem,
             ]}
             onClick={() => {
-              formRedirect("/action/auth/logout");
+              formRedirect("/action/auth/logout", {
+                fromLogoutMessage: "",
+              });
             }}
           >
             <span>{messages.Header.Logout}</span>

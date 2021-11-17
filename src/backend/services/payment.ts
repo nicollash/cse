@@ -19,7 +19,6 @@ class PaymentService {
   }
 
   static async issuePolicy(DTOApplication: DTOApplication[], user: any) {
-    console.log("server debugging DTO 2: ", DTOApplication);
     return HttpService.request<any>(
       `${config.apiBaseURL}/IssueQuickQuoteIntoPolicyRq/json`,
       "POST",

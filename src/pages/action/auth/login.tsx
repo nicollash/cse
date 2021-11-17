@@ -19,6 +19,7 @@ export async function getServerSideProps({ req, res }) {
   } else {
     session.loginError = loginResult.error;
   }
+  session.fromLogoutMessage = null;
 
   return {
     redirect: {
