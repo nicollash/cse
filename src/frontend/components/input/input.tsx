@@ -1,27 +1,35 @@
-import { jsx, css } from '@emotion/react'
-import styled from '@emotion/styled'
-import { FunctionComponent, InputHTMLAttributes, useState } from 'react'
+import { jsx, css } from "@emotion/react";
+import styled from "@emotion/styled";
+import {
+  FunctionComponent,
+  InputHTMLAttributes,
+  useState,
+  useEffect,
+} from "react";
 
-import { utils, theme } from '~/frontend/styles'
-import { Text } from '..'
+import { utils, theme } from "~/frontend/styles";
+import { maskLicenseNumber } from "~/helpers/mapping/helpers";
+import { Text } from "..";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  width?: string
-  hasError?: boolean
-  helperText?: string
-  disablePlaceholderPopup?: boolean
-  'data-testid'?: string
+  width?: string;
+  hasError?: boolean;
+  helperText?: string;
+  isMask?: boolean;
+  disablePlaceholderPopup?: boolean;
+  "data-testid"?: string;
 }
 
 const InputWrapper = styled.div<{ width?: string; hasError?: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
-  width: ${({ width }) => (width ? width : 'auto')};
+  width: ${({ width }) => (width ? width : "auto")};
   margin: 0;
   padding: 0;
 
-  color: ${({ hasError }) => (hasError ? theme.color.error : theme.color.default)};
+  color: ${({ hasError }) =>
+    hasError ? theme.color.error : theme.color.default};
 
   input:-internal-autofill-selected ~ label {
     transform: translate3d(0, 0.75em, 0);
@@ -34,7 +42,7 @@ const InputWrapper = styled.div<{ width?: string; hasError?: boolean }>`
       }
     }
   }
-`
+`;
 
 const FieldWrapper = styled.fieldset<{ hasError?: boolean }>`
   position: relative;
@@ -53,7 +61,7 @@ const FieldWrapper = styled.fieldset<{ hasError?: boolean }>`
   border-radius: 5px;
 
   pointer-events: none;
-`
+`;
 
 const Legend = styled.legend<{ visible?: boolean }>`
   display: block;
@@ -62,14 +70,14 @@ const Legend = styled.legend<{ visible?: boolean }>`
   overflow: hidden;
   height: 0;
 
-  max-width: ${({ visible }) => (visible ? '1000px' : '0px')};
+  max-width: ${({ visible }) => (visible ? "1000px" : "0px")};
   visibility: hidden;
   transition: max-width 50ms cubic-bezier(0, 0, 0.2, 1) 0ms;
 
   > span {
     padding: 0 0.5em;
   }
-`
+`;
 
 const InputControl = styled.input<InputProps>`
   font-size: 1em;
@@ -79,7 +87,8 @@ const InputControl = styled.input<InputProps>`
   padding: 1em;
   border: none;
 
-  color: ${({ hasError }) => (hasError ? theme.color.error : theme.color.default)};
+  color: ${({ hasError }) =>
+    hasError ? theme.color.error : theme.color.default};
   border: 1px solid transparent;
   border-radius: 5px;
 
@@ -87,7 +96,26 @@ const InputControl = styled.input<InputProps>`
   &:focus {
     outline: none;
   }
-`
+`;
+
+const InputControlPlaceholder = styled.span<InputProps>`
+  font-size: 1em;
+  width: 100%;
+
+  margin: 0;
+  padding: 1em;
+  border: none;
+
+  color: ${({ hasError }) =>
+    hasError ? theme.color.error : theme.color.default};
+  border: 1px solid transparent;
+  border-radius: 5px;
+
+  &:active,
+  &:focus {
+    outline: none;
+  }
+`;
 
 export const Input: FunctionComponent<InputProps> = ({
   width,
@@ -95,14 +123,34 @@ export const Input: FunctionComponent<InputProps> = ({
   helperText,
   className,
   placeholder,
+  value,
+  isMask,
   disablePlaceholderPopup = false,
   onFocus,
   onBlur,
-  'data-testid': dataTestId,
+  onChange,
+  "data-testid": dataTestId,
   ...props
 }) => {
-  const [focused, setFocused] = useState<boolean>(false)
-  const transform = focused || props.value !== '' ? 'up' : 'down'
+  const [isEditing, setEditing] = useState<boolean>(false);
+  const [focused, setFocused] = useState<boolean>(false);
+  const [originValue, setOriginValue] = useState(value);
+  const transform = focused || props.value !== "" ? "up" : "down";
+
+  useEffect(() => {
+    setOriginValue(value);
+  }, [value]);
+
+  const handleChange = (e) => {
+    if (isMask) {
+      if (!e.target.value.includes("*")) {
+        setOriginValue(e.target.value);
+        onChange(e);
+      }
+    } else {
+      onChange(e);
+    }
+  };
 
   return (
     <InputWrapper
@@ -111,23 +159,37 @@ export const Input: FunctionComponent<InputProps> = ({
       className={className}
       data-testid={dataTestId}
     >
-      <InputControl
-        data-testid="control-input"
-        hasError={hasError}
-        placeholder={disablePlaceholderPopup ? placeholder : ''}
-        onFocus={(e) => {
-          setFocused(true)
-          onFocus && onFocus(e)
-        }}
-        onBlur={(e) => {
-          setFocused(false)
-          onBlur && onBlur(e)
-        }}
-        {...props}
-      />
+      {!isEditing && isMask ? (
+        <InputControlPlaceholder onClick={() => setEditing(true)}>
+          {isMask && originValue
+            ? maskLicenseNumber(originValue.toString(), 4)
+            : originValue}
+        </InputControlPlaceholder>
+      ) : (
+        <InputControl
+          data-testid="control-input"
+          hasError={hasError}
+          placeholder={disablePlaceholderPopup ? placeholder : ""}
+          value={isMask ? originValue : value}
+          onFocus={(e) => {
+            setFocused(true);
+            onFocus && onFocus(e);
+          }}
+          onChange={handleChange}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlur && onBlur(e);
+            setEditing(false);
+          }}
+          {...props}
+        />
+      )}
       {!disablePlaceholderPopup && (
         <label
-          css={[styles.label.container, styles.label.transform.container[transform]]}
+          css={[
+            styles.label.container,
+            styles.label.transform.container[transform],
+          ]}
         >
           <span data-content={placeholder} css={[styles.label.content]}>
             {placeholder}
@@ -136,7 +198,7 @@ export const Input: FunctionComponent<InputProps> = ({
       )}
       <FieldWrapper hasError={hasError}>
         {placeholder && (
-          <Legend visible={transform === 'up'}>
+          <Legend visible={transform === "up"}>
             <span>{placeholder}</span>
           </Legend>
         )}
@@ -151,8 +213,8 @@ export const Input: FunctionComponent<InputProps> = ({
         </Text>
       )}
     </InputWrapper>
-  )
-}
+  );
+};
 
 const styles = {
   label: {
@@ -195,4 +257,4 @@ const styles = {
       },
     },
   },
-}
+};

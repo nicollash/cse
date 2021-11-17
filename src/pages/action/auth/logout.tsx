@@ -15,6 +15,7 @@ export async function getServerSideProps({ req, res }) {
 
   session.fromLogoutMessage = fromLogoutMessage;
 
+  console.log("server sesion: ", session);
   return {
     redirect: {
       destination: "/quote",

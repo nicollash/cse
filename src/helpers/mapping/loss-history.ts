@@ -98,9 +98,7 @@ export const parseDTOtoLossHistorySingleQuote = (
     AtFaultCd: dtoApp.AtFaultCd,
     DriverName: dtoApp.DriverName,
     DriverLicensedStateProvCd: dtoApp.DriverLicensedStateProvCd,
-    DriverLicenseNumber: dtoApp.DriverLicenseNumber
-      ? maskLicenseNumber(dtoApp.DriverLicenseNumber, 4)
-      : "",
+    DriverLicenseNumber: dtoApp.DriverLicenseNumber,
     OriginalDriverLicenseNumber: dtoApp.DriverLicenseNumber,
     Comment: dtoApp.Comment,
     LossDesc: dtoApp.LossDesc,

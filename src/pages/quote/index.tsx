@@ -254,6 +254,7 @@ function QuotePage({
       <LoginModal
         isOpen={!user}
         loginError={loginError}
+        fromLogout={!!fromLogoutMessage}
         fromLogoutMessage={fromLogoutMessage}
       />
     </Fragment>
@@ -265,6 +266,7 @@ export async function getServerSideProps({ req, res }) {
 
   const { lastError, loginError, fromLogoutMessage } = session;
 
+  console.log("session: ", session);
   return {
     props: {
       user: session.user,
