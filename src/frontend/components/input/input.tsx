@@ -120,10 +120,6 @@ export const Input: FunctionComponent<InputProps> = ({
   );
   const transform = focused || props.value !== "" ? "up" : "down";
 
-  useEffect(() => {
-    setOriginValue(value);
-  }, [value]);
-
   const handleChange = (e) => {
     if (isMask) {
       let newVal = "";
@@ -146,6 +142,7 @@ export const Input: FunctionComponent<InputProps> = ({
         ...e,
         target: {
           ...e.target,
+          name: e.target.name,
           value: newVal,
         },
       });
