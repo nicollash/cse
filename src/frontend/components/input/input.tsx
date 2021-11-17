@@ -123,6 +123,9 @@ export const Input: FunctionComponent<InputProps> = ({
   const handleChange = (e) => {
     if (isMask) {
       let newVal = "";
+      console.log("input value: ", e.target.value);
+      console.log("original value: ", originValue);
+      console.log("currentValue: ", currentValue);
       if (!originValue) {
         newVal = e.target.value;
       } else {
@@ -131,13 +134,16 @@ export const Input: FunctionComponent<InputProps> = ({
           if (originValue[index]) {
             if (char === "*") {
               newVal += originValue[index];
-            } else if (index < 4 && char !== "*") {
+            } else {
               newVal += char;
             }
+          } else {
+            newVal += char;
           }
         });
       }
       setCurrentValue(e.target.value);
+      console.log("newVal: ", newVal);
       onChange({
         ...e,
         target: {
