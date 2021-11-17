@@ -29,7 +29,6 @@ class AuthService {
           session.user.LoginToken
         );
         session.user = null;
-        session.destroy();
       }
       return { success: true };
     } catch (error) {
