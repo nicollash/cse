@@ -98,25 +98,6 @@ const InputControl = styled.input<InputProps>`
   }
 `;
 
-const InputControlPlaceholder = styled.span<InputProps>`
-  font-size: 1em;
-  width: 100%;
-
-  margin: 0;
-  padding: 1em;
-  border: none;
-
-  color: ${({ hasError }) =>
-    hasError ? theme.color.error : theme.color.default};
-  border: 1px solid transparent;
-  border-radius: 5px;
-
-  &:active,
-  &:focus {
-    outline: none;
-  }
-`;
-
 export const Input: FunctionComponent<InputProps> = ({
   width,
   hasError,
@@ -132,9 +113,11 @@ export const Input: FunctionComponent<InputProps> = ({
   "data-testid": dataTestId,
   ...props
 }) => {
-  const [isEditing, setEditing] = useState<boolean>(false);
   const [focused, setFocused] = useState<boolean>(false);
   const [originValue, setOriginValue] = useState(value);
+  const [currentValue, setCurrentValue] = useState(
+    isMask ? maskLicenseNumber(value.toString(), 4) : value
+  );
   const transform = focused || props.value !== "" ? "up" : "down";
 
   useEffect(() => {
@@ -143,11 +126,31 @@ export const Input: FunctionComponent<InputProps> = ({
 
   const handleChange = (e) => {
     if (isMask) {
-      if (!e.target.value.includes("*")) {
-        setOriginValue(e.target.value);
-        onChange(e);
+      let newVal = "";
+      if (!originValue) {
+        newVal = e.target.value;
+      } else {
+        const currentValChars = (e.target.value as string).split("");
+        currentValChars.forEach((char, index) => {
+          if (originValue[index]) {
+            if (char === "*") {
+              newVal += originValue[index];
+            } else if (index < 4 && char !== "*") {
+              newVal += char;
+            }
+          }
+        });
       }
+      setCurrentValue(e.target.value);
+      onChange({
+        ...e,
+        target: {
+          ...e.target,
+          value: newVal,
+        },
+      });
     } else {
+      setCurrentValue(e.target.value);
       onChange(e);
     }
   };
@@ -159,31 +162,22 @@ export const Input: FunctionComponent<InputProps> = ({
       className={className}
       data-testid={dataTestId}
     >
-      {!isEditing && isMask ? (
-        <InputControlPlaceholder onClick={() => setEditing(true)}>
-          {isMask && originValue
-            ? maskLicenseNumber(originValue.toString(), 4)
-            : originValue}
-        </InputControlPlaceholder>
-      ) : (
-        <InputControl
-          data-testid="control-input"
-          hasError={hasError}
-          placeholder={disablePlaceholderPopup ? placeholder : ""}
-          value={isMask ? originValue : value}
-          onFocus={(e) => {
-            setFocused(true);
-            onFocus && onFocus(e);
-          }}
-          onChange={handleChange}
-          onBlur={(e) => {
-            setFocused(false);
-            onBlur && onBlur(e);
-            setEditing(false);
-          }}
-          {...props}
-        />
-      )}
+      <InputControl
+        data-testid="control-input"
+        hasError={hasError}
+        placeholder={disablePlaceholderPopup ? placeholder : ""}
+        value={currentValue}
+        onFocus={(e) => {
+          setFocused(true);
+          onFocus && onFocus(e);
+        }}
+        onChange={handleChange}
+        onBlur={(e) => {
+          setFocused(false);
+          onBlur && onBlur(e);
+        }}
+        {...props}
+      />
       {!disablePlaceholderPopup && (
         <label
           css={[
