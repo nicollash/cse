@@ -123,9 +123,6 @@ export const Input: FunctionComponent<InputProps> = ({
   const handleChange = (e) => {
     if (isMask) {
       let newVal = "";
-      console.log("input value: ", e.target.value);
-      console.log("original value: ", originValue);
-      console.log("currentValue: ", currentValue);
       if (!originValue) {
         newVal = e.target.value;
       } else {
@@ -143,7 +140,6 @@ export const Input: FunctionComponent<InputProps> = ({
         });
       }
       setCurrentValue(e.target.value);
-      console.log("newVal: ", newVal);
       onChange({
         ...e,
         target: {
