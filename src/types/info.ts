@@ -74,6 +74,9 @@ export type DriverInfo = {
   matureCertificationDt?: Date
   scholasticDiscountInd?: boolean
   scholasticCertificationDt?:Date
+  partyTypeCd?: string
+  driverTypeCd?: string
+  relationshipToInsuredCd?: string
 }
 
 export type DriverPointsInfo = {
@@ -212,9 +215,10 @@ export const DefaultDriverInfo = {
   firstName: '',
   lastName: '',
   birthDate: null,
-  gender: 'MALE',
+  gender: 'Male',
   maritalStatus: 'Single',
   occupation: 'Non-Civil Servant',
+  driverTypeCd: 'Excluded',
   licenseState: '',
   licenseNumber: '',
   ageFirstLicensed: 16,
