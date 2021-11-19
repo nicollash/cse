@@ -11,6 +11,7 @@ export const getNewDriverParam = (driverData: DriverInfo) => ({
   Occupation: driverData.occupation,
   LicenseState: driverData.licenseState,
   LicenseNumber: driverData.licenseNumber || '',
+  PartyTypeCd: driverData.partyTypeCd || 'DriverParty',
   AgeFirstLicensed:
     driverData.ageFirstLicensed
 })
