@@ -47,7 +47,6 @@ class HttpService {
             return result;
           }
         } else {
-          logger(res);
           let result = null;
 
           try {
@@ -57,7 +56,7 @@ class HttpService {
                     Name: "Service error",
                     Message: `${res.status} ${res.statusText}`,
                   }
-                : JSON.parse(decrypt((await res.json()).data));
+                : await res.json();
           } catch (error) {
             logger(error);
             throw {

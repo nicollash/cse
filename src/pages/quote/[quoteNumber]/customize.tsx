@@ -100,6 +100,10 @@ const CustomizePage: FunctionComponent<any> = ({
 
   const [userInfoRequired, setUserInfoVisible] = useState(false);
 
+  if (lastError && lastError !== "null") {
+    setError(lastError);
+  }
+
   const updateQuoteDetail = useCallback(
     (newData) => setQuoteDetail((qD) => ({ ...qD, ...newData })),
     []
@@ -1095,8 +1099,16 @@ export async function getServerSideProps({ req, res, query }) {
 
     const quoteResponse = await QuoteService.getQuote(session.user, quoteNumber)
       .then((res) => {
-        quoteDetail = parseQuoteResponse(res);
-        return res;
+        try {
+          quoteDetail = parseQuoteResponse(res);
+          return res;
+        } catch (e) {
+          if (Array.isArray(e)) {
+            e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
+          }
+          error = e;
+          return null;
+        }
       })
       .catch((e: Array<CustomError>) => {
         if (Array.isArray(e)) {
@@ -1106,26 +1118,27 @@ export async function getServerSideProps({ req, res, query }) {
         return null;
       });
 
-    const matched =
-      quoteResponse &&
-      quoteResponse.DTOApplication.find(
+    if (quoteResponse && quoteDetail) {
+      const matched = quoteResponse.DTOApplication.find(
         (application) =>
           application.ApplicationNumber === quoteNumber ||
           application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
       );
 
-    if (matched) {
-      infractionList = await QuoteService.getInfractionList(
-        session.user,
-        quoteResponse.DTOApplication.filter(
-          (app) =>
-            app.ApplicationNumber === quoteDetail.planDetails.applicationNumber
-        )
-      );
-    } else {
-      error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
-        quoteNumber,
-      });
+      if (matched) {
+        infractionList = await QuoteService.getInfractionList(
+          session.user,
+          quoteResponse.DTOApplication.filter(
+            (app) =>
+              app.ApplicationNumber ===
+              quoteDetail.planDetails.applicationNumber
+          )
+        );
+      } else {
+        error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+          quoteNumber,
+        });
+      }
     }
 
     const newRisk = session.newRisk;
@@ -1139,16 +1152,18 @@ export async function getServerSideProps({ req, res, query }) {
         quoteResponse: quoteResponse,
         quoteDetail,
         newRisk,
-        insurer: {
-          firstName: quoteDetail.insurerFirstName,
-          lastName: quoteDetail.insurerLastName,
-          address: {
-            address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
-            unitNumber: quoteDetail.insuredAddress.Addr2,
-            requiredUnitNumber: false,
-            status: EAddressObjectStatus.success,
-          },
-        },
+        insurer: quoteDetail
+          ? {
+              firstName: quoteDetail.insurerFirstName,
+              lastName: quoteDetail.insurerLastName,
+              address: {
+                address: `${quoteDetail.insuredAddress.Addr1}, ${quoteDetail.insuredAddress.City}, ${quoteDetail.insuredAddress.StateProvCd}`,
+                unitNumber: quoteDetail.insuredAddress.Addr2,
+                requiredUnitNumber: false,
+                status: EAddressObjectStatus.success,
+              },
+            }
+          : null,
       },
     };
   }
