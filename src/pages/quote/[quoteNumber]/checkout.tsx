@@ -87,12 +87,12 @@ const CheckoutPage: FunctionComponent<any> = ({
       : []
   );
 
+  if (error && error !== "null") {
+    setError(JSON.parse(error));
+  }
+
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Checkout Page View");
-
-    if (error) {
-      setError(error);
-    }
   }, []);
 
   const processExternalApplicationCloseOut = useCallback(
@@ -111,6 +111,7 @@ const CheckoutPage: FunctionComponent<any> = ({
 
   useEffect(() => {
     if (
+      quoteDetail &&
       quoteDetail.planDetails.paymentMethod != null &&
       quoteDetail.planDetails.paymentMethod.oneIncPaymentToken != undefined
     ) {
@@ -124,22 +125,24 @@ const CheckoutPage: FunctionComponent<any> = ({
   }, []);
 
   useEffect(() => {
-    if (paymentFrequency === "full") {
-      setAmountToPay(
-        (
-          parseFloat(quoteDetail.planDetails.fullPrice) +
-          parseFloat(quoteDetail.planDetails.writtenFeeAmt)
-        )
-          .toFixed(2)
-          .toString()
-      );
-    } else {
-      setAmountToPay(
-        quoteDetail.planDetails.paymentSchedule
-          .map((x) => parseFloat(x.BillAmt))
-          .reduce((a, b) => a + b)
-          .toFixed(2)
-      );
+    if (quoteDetail) {
+      if (paymentFrequency === "full") {
+        setAmountToPay(
+          (
+            parseFloat(quoteDetail.planDetails.fullPrice) +
+            parseFloat(quoteDetail.planDetails.writtenFeeAmt)
+          )
+            .toFixed(2)
+            .toString()
+        );
+      } else {
+        setAmountToPay(
+          quoteDetail.planDetails.paymentSchedule
+            .map((x) => parseFloat(x.BillAmt))
+            .reduce((a, b) => a + b)
+            .toFixed(2)
+        );
+      }
     }
   }, [paymentFrequency]);
 
@@ -194,7 +197,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                 req: {
                   OperationType: "savePaymentMethod",
                   PaymentMethodCd: "UserSelect",
-                  ApplicationRef: quoteDetail.planDetails.systemId,
+                  ApplicationRef: quoteDetail?.planDetails.systemId,
                 },
                 redirectURL: `/quote/${quoteNumber}/checkout`,
               }),
@@ -338,7 +341,7 @@ const CheckoutPage: FunctionComponent<any> = ({
       css={[utils.flex(1), utils.flexDirection("column")]}
       quoteNumber={quoteNumber}
       conversationId={user.ResponseParams[0].ConversationId}
-      lastError={error}
+      lastError={error && JSON.parse(error)}
       systemId={quoteDetail.systemId}
     >
       <Container wide css={[utils.fullWidth, utils.px(0)]}>
@@ -352,7 +355,7 @@ const CheckoutPage: FunctionComponent<any> = ({
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
               conversationId={user.ResponseParams[0].ConversationId}
-              isQuote={quoteDetail.planDetails.isQuote}
+              isQuote={quoteDetail?.planDetails.isQuote}
             />
           </div>
         )}
@@ -363,7 +366,7 @@ const CheckoutPage: FunctionComponent<any> = ({
               data={[...quoteDetail.validationError, ...paymentMethodErrors]}
               systemId={quoteDetail.systemId}
               conversationId={user.ResponseParams[0].ConversationId}
-              isQuote={quoteDetail.planDetails.isQuote}
+              isQuote={quoteDetail?.planDetails.isQuote}
             />
           </div>
         )}
@@ -452,7 +455,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                   color={theme.color.primary}
                   css={utils.mr(3)}
                 >
-                  {quoteDetail.planDetails.planType} {messages.Common.Plan}
+                  {quoteDetail?.planDetails.planType} {messages.Common.Plan}
                 </Text>
                 <Text size="1.2em" bold>
                   {`$${amountToPay}`}
@@ -529,8 +532,8 @@ const CheckoutPage: FunctionComponent<any> = ({
                           <Text color={theme.color.primary}>
                             $
                             {(
-                              parseFloat(quoteDetail.planDetails.fullPrice) +
-                              parseFloat(quoteDetail.planDetails.writtenFeeAmt)
+                              parseFloat(quoteDetail?.planDetails.fullPrice) +
+                              parseFloat(quoteDetail?.planDetails.writtenFeeAmt)
                             ).toFixed(2)}
                           </Text>
                           <Text css={utils.ml(3)}>
@@ -539,7 +542,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                         </div>
                         <div css={[utils.mb(4), utils.textAlign("right")]}>
                           <Text size="0.9em" bold>
-                            {`Includes a $${quoteDetail.planDetails.writtenFeeAmt} of policy fee`}
+                            {`Includes a $${quoteDetail?.planDetails.writtenFeeAmt} of policy fee`}
                           </Text>
                         </div>
                       </div>
@@ -550,7 +553,7 @@ const CheckoutPage: FunctionComponent<any> = ({
                         <div css={utils.mb(4)}>
                           <Text
                             color={theme.color.primary}
-                          >{`$${quoteDetail.planDetails.downPayment}`}</Text>
+                          >{`$${quoteDetail?.planDetails.downPayment}`}</Text>
                           <Text css={utils.ml(3)}>
                             {messages.Checkout.Today}
                           </Text>
@@ -562,16 +565,16 @@ const CheckoutPage: FunctionComponent<any> = ({
                         <div css={[utils.mb(4), utils.textAlign("right")]}>
                           <Text size="0.9em">
                             {messages.Checkout.MonthlyDescription(
-                              quoteDetail.planDetails.paymentSchedule.length -
+                              quoteDetail?.planDetails.paymentSchedule.length -
                                 1,
-                              quoteDetail.planDetails.paymentSchedule[1]
+                              quoteDetail?.planDetails.paymentSchedule[1]
                                 .BillAmt,
                               amountToPay
                             )}
                           </Text>
                           <Text size="0.9em" bold>
                             {messages.Checkout.InstallmentFee(
-                              quoteDetail.planDetails.installmentFee
+                              quoteDetail?.planDetails.installmentFee
                             )}
                           </Text>
                         </div>
@@ -825,34 +828,40 @@ export async function getServerSideProps({ req, res, query }) {
           return null;
         });
 
-      if (res) {
+      if (res && quoteDetail) {
         const matched = res.DTOApplication.find(
           (application) =>
             application.ApplicationNumber === quoteNumber ||
             application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
         );
-        switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
-          case "BASIC":
-            selectedPlan = "Basic";
-            break;
-          case "STANDARD":
-            selectedPlan = "Standard";
-            break;
-          case "PREMIUM":
-            selectedPlan = "Premium";
-            break;
+
+        if (matched) {
+          switch (
+            matched &&
+            matched.DTOApplicationInfo[0].IterationDescription
+          ) {
+            case "BASIC":
+              selectedPlan = "Basic";
+              break;
+            case "STANDARD":
+              selectedPlan = "Standard";
+              break;
+            case "PREMIUM":
+              selectedPlan = "Premium";
+              break;
+          }
+        } else {
+          error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+            quoteNumber,
+          });
         }
-      } else {
-        error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
-          quoteNumber,
-        });
       }
 
       if (error) {
         return {
           props: {
             user: session.user,
-            error,
+            error: JSON.stringify(error || session.lastError),
           },
         };
       } else {

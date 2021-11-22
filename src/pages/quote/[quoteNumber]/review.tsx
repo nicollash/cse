@@ -79,6 +79,10 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
     useState(false);
   const [lossHistoryRequired, setLossHistoryVisible] = useState(false);
 
+  if (error && error !== "null") {
+    setError(JSON.parse(error));
+  }
+
   const schema = () =>
     Yup.object<any>().shape({
       email: Yup.string()
@@ -92,7 +96,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
     validateOnChange: true,
     validateOnBlur: false,
     initialValues: {
-      email: quoteDetail.communicationInfo.email,
+      email: quoteDetail?.communicationInfo.email,
     },
     onSubmit: (value) => {
       setLoading(true);
@@ -107,30 +111,36 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
   });
 
   const requiredItemsLabel = useMemo(() => {
-    return [
-      ...quoteDetail.vehicles
-        .filter(
-          (v) =>
-            v.status === "Active" &&
-            (v.vinNumber === undefined ||
-              v.odometerReading === undefined ||
-              v.readingDate === undefined)
-        )
-        .map(
-          (info) =>
-            `${[
-              info.vinNumber ? undefined : "Vin Number",
-              info.odometerReading && info.readingDate ? undefined : "Odometer",
-            ]
-              .filter((v) => !!v)
-              .join(",")} - ${info.model}`
-        ),
-      ...quoteDetail.drivers
-        .filter((v) => v.status === "Active" && v.licenseNumber === "")
-        .map(
-          (info) => `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
-        ),
-    ];
+    if (quoteDetail) {
+      return [
+        ...quoteDetail.vehicles
+          .filter(
+            (v) =>
+              v.status === "Active" &&
+              (v.vinNumber === undefined ||
+                v.odometerReading === undefined ||
+                v.readingDate === undefined)
+          )
+          .map(
+            (info) =>
+              `${[
+                info.vinNumber ? undefined : "Vin Number",
+                info.odometerReading && info.readingDate
+                  ? undefined
+                  : "Odometer",
+              ]
+                .filter((v) => !!v)
+                .join(",")} - ${info.model}`
+          ),
+        ...quoteDetail.drivers
+          .filter((v) => v.status === "Active" && v.licenseNumber === "")
+          .map(
+            (info) =>
+              `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
+          ),
+      ];
+    }
+    return [];
   }, [quoteDetail]);
 
   const updateQuote = useCallback((quoteData, redirectURL?) => {
@@ -178,10 +188,6 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
 
   useEffect(() => {
     (window as any).ga && (window as any).ga("send", "Review Page View");
-
-    if (error) {
-      setError(error);
-    }
   }, []);
 
   if (error || !quoteDetail) {
@@ -203,6 +209,7 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
       quoteNumber={quoteNumber}
       conversationId={user.ResponseParams[0].ConversationId}
       systemId={quoteDetail.systemId}
+      lastError={error && JSON.parse(error)}
     >
       {/* Mobile Tabs */}
       <Container
@@ -897,8 +904,16 @@ export async function getServerSideProps({ req, res, query }) {
 
     const res = await QuoteService.getQuote(session.user, quoteNumber)
       .then((res) => {
-        quoteDetail = parseQuoteResponse(res);
-        return res;
+        try {
+          quoteDetail = parseQuoteResponse(res);
+          return res;
+        } catch (e) {
+          if (Array.isArray(e)) {
+            e.forEach((err) => (err.errorData.quoteNumber = quoteNumber));
+          }
+          error = e;
+          return null;
+        }
       })
       .catch((e: Array<CustomError>) => {
         if (Array.isArray(e)) {
@@ -908,34 +923,37 @@ export async function getServerSideProps({ req, res, query }) {
         return null;
       });
 
-    if (res) {
+    if (res && quoteDetail) {
       const matched = res.DTOApplication.find(
         (application) =>
           application.ApplicationNumber === quoteNumber ||
           application.DTOBasicPolicy[0].QuoteNumber === quoteNumber
       );
-      switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
-        case "BASIC":
-          selectedPlan = "Basic";
-          break;
-        case "STANDARD":
-          selectedPlan = "Standard";
-          break;
-        case "PREMIUM":
-          selectedPlan = "Premium";
-          break;
+
+      if (matched) {
+        switch (matched && matched.DTOApplicationInfo[0].IterationDescription) {
+          case "BASIC":
+            selectedPlan = "Basic";
+            break;
+          case "STANDARD":
+            selectedPlan = "Standard";
+            break;
+          case "PREMIUM":
+            selectedPlan = "Premium";
+            break;
+        }
+      } else {
+        error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
+          quoteNumber,
+        });
       }
-    } else {
-      error = new CustomError(CustomErrorType.PARSE_QUOTE_FAIL, {
-        quoteNumber,
-      });
     }
 
     if (error) {
       return {
         props: {
           user: session.user,
-          error,
+          error: JSON.stringify(error || session.lastError),
         },
       };
     } else {

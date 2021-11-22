@@ -1089,7 +1089,6 @@ const CustomizePage: FunctionComponent<any> = ({
 
 export async function getServerSideProps({ req, res, query }) {
   const session = await getSession(req, res);
-  console.log("session: ", session);
   const quoteNumber = query.quoteNumber as string;
 
   if (session.user && quoteNumber) {
