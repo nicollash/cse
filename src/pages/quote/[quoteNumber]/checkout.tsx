@@ -762,6 +762,14 @@ export async function getServerSideProps({ req, res, query }) {
   const session = await getSession(req, res);
   const quoteNumber = query.quoteNumber as string;
 
+  if (!quoteNumber.startsWith("AP")) {
+    return {
+      redirect: {
+        destination: `/quote/${quoteNumber}/review`,
+      },
+    };
+  }
+
   if (session.user && quoteNumber) {
     let selectedPlan = null;
     let error = null;
