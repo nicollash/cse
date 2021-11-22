@@ -765,7 +765,7 @@ export async function getServerSideProps({ req, res, query }) {
   if (!quoteNumber.startsWith("AP")) {
     return {
       redirect: {
-        destination: `/quote/${quoteNumber}/review`,
+        destination: `/quote/${quoteNumber}/customize`,
       },
     };
   }
