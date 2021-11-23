@@ -1,2 +1,18 @@
 export const config =
-  "U2FsdGVkX1/qp5Jhd9o2E/z52X04gQ9lawdBqBxAF+BN6OBBnx+li1UwS+drrpsr2+LitICWxTJsYDZpPhx179dN8Zt+RznJBYDyzOZp0u/MmeYCG1hwbeV9CYooGAcR99sMVngyHuWIZJ3pMqEQ7OFD6+Yu7NFLrbfA4k1OFs+q4hT0fJb7cgb1SgaRrVYB92OeaWwQhDBn8NxDbNBvbCph+q1AfNtF4/VZaiZk8Q+605SG5piRI6AKPer/BJpuUZ5qEY4AEXV9MKHs6E+Xw289GCAI3hJ76MAzOuE9IBYRY7Cx3mw8+bQTNkRVBRME578jWILFfQT+K6bKRKVvMC0Y8FtjpA7Tmog87zF3pWBp1Be245hPWNwMW30wMX7YnvwP0v70CfC+PffUymD1iwQfeRzscUhsNpV2Sz265m3FcUCNRTjdRihgwJJIkl3bqSnMVOACdq3YOf+7KjJlJmFpQDdCABfr9EwOF1Bve5Vzg71asGG3LF4jyql/qClA8jZf4DRjnhN6GWHeGnMiHN2RhOjAM3CYip9TSQkitzKiat1vDo8gHLQKmamMQJV15hr3NLDKwOGAUFMKDCufhlUfR5kVVd7F04TuSlwoTtjLKUHAZdx5QV4LcwlqJNa+0Ey01efW3G/msViZc4hmfozD0BawSXvkRV4VVAVxB5M0FPyLVpZNGOqFL0Kr5zZ5prPPy3e7Fv4+FCwr7oLbohh0KspJ6bQbvPb19KTa8UQ=";
+{
+  "googleAPIKey": "AIzaSyDtxdIcnXhGqTu0yv1oM9cImBUG0pbF2PA",
+  "mockApiBaseURL": "/api",
+  "apiBaseURL": "https://spinn.csespi.com/msg",
+  "supportURL": "https://agentsupport.cseinsurance.com/support/home",
+  "spinnURL": "https://spinn.csespi.com/innovation",
+  "incontact": {
+      "serverHost": "https://home-c30.incontact.com",
+      "bus_no": 4597033,
+      "poc": "1ed88c06-51d9-410b-a2cc-1d4b15ff6d28"
+  },
+  "constants": {
+      "phoneNumber": "1-800-282-6848"
+  },
+  "oneIncPaymentLib": "https://portalone.processonepayments.com/Api/Api/Cdn/GenericModalV2/assets/js/PortalOne.js",
+  "secretKey": "secret"
+};
