@@ -61,7 +61,7 @@ export const Checkbox: FunctionComponent<Props> = ({
 }) => {
   return (
     <CheckboxWrapper width={width} className={className}>
-      <div css={[utils.centerAlign]}>
+      <div css={[utils.display('flex'), utils.alignItems('center')]}>
         <CheckboxControlWrapper
           onClick={() => {
             if (isNullable) {

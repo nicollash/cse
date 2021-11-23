@@ -32,10 +32,24 @@ export const VehicleOptions = {
 
 export const DriverOptions = {
   Gender: [
-    { label: 'Male', value: 'MALE' },
-    { label: 'Female', value: 'FEMALE' },
+    { label: 'Male', value: 'Male' },
+    { label: 'Female', value: 'Female' },
   ],
   MaritalStatus: ['Single', 'Married'],
+  DriverTypeCd: [
+    {
+      label: 'Excluded',
+      value: 'Excluded',
+    },
+    {
+      label: 'Underage',
+      value: 'UnderAged',
+    },
+    {
+      label: 'Non-operator',
+      value: 'NonOperator',
+    },
+  ],
   Occupation: [
     {
       label: 'Public Employee',
@@ -59,7 +73,7 @@ export const DriverOptions = {
     },
     {
       label: 'Non Public Employee',
-      value: 'Non Public Employee',
+      value: 'Non-Civil Servant',
     },
   ],
   DriverStatus: [

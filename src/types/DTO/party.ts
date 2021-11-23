@@ -64,6 +64,7 @@ type DriverInfo = {
   DriverStatusCd?: string
   LicenseNumber?: string
   LicenseDt?: string
+  DriverTypeCd?: string
   AgeFirstLicensed?: number
   LicensedStateProvCd?: string
   RelationshipToInsuredCd?: string

@@ -86,10 +86,40 @@ export const EditDriverModal: FunctionComponent<Props> = ({
           .required(messages.DriverModal.Errors.RequiredBirthDate),
         licenseState: Yup.string()
           .label(messages.DriverModal.LicenseState)
-          .required(messages.DriverModal.Errors.RequiredLicenseState),
+          .when("partyTypeCd", {
+            is: "NonDriverParty",
+            then: Yup.string().notRequired(),
+            otherwise: Yup.string().required(
+              messages.DriverModal.Errors.RequiredLicenseState
+            ),
+          }),
         licenseNumber: Yup.string()
           .label(messages.DriverModal.LicenseNumber)
-          .required(messages.DriverModal.Errors.LicenseNumber),
+          .when("partyTypeCd", {
+            is: "NonDriverParty",
+            then: Yup.string().notRequired(),
+            otherwise: Yup.string().required(
+              messages.DriverModal.Errors.LicenseNumber
+            ),
+          }),
+        driverTypeCd: Yup.string()
+          .label(messages.DriverModal.NonDriverType)
+          .when("partyTypeCd", {
+            is: "NonDriverParty",
+            then: Yup.string().required(
+              messages.DriverModal.Errors.RequiredNonDriverType
+            ),
+            otherwise: Yup.string().notRequired(),
+          }),
+        occupation: Yup.string()
+          .label(messages.DriverModal.Occupation)
+          .when("partyTypeCd", {
+            is: "NonDriverParty",
+            then: Yup.string().notRequired(),
+            otherwise: Yup.string().required(
+              messages.DriverModal.Errors.RequiredOccupation
+            ),
+          }),
         driverPoints: Yup.array().of(
           Yup.object().shape({
             typeCd: Yup.string().required("Type is required"),
@@ -179,6 +209,32 @@ export const EditDriverModal: FunctionComponent<Props> = ({
           {...props}
         >
           <div css={styles.row}>
+            <div
+              css={[
+                utils.fullWidth,
+                utils.mx("50px"),
+                utils.mb(1),
+                utils.display("flex"),
+                utils.justifyContent("right"),
+              ]}
+            >
+              <FormikCheckbox
+                key={`check-PartyTypeCd`}
+                name={`partyTypeCd`}
+                label={`Excluded Driver`}
+                value={
+                  formik.values.partyTypeCd === "NonDriverParty" ? true : false
+                }
+                onChange={(e) => {
+                  formik.handleChange({
+                    target: {
+                      name: `partyTypeCd`,
+                      value: e ? "NonDriverParty" : "DriverParty",
+                    },
+                  });
+                }}
+              />
+            </div>
             <FormGroup
               label={messages.DriverModal.FirstName}
               css={styles.formGroup}
@@ -199,6 +255,27 @@ export const EditDriverModal: FunctionComponent<Props> = ({
                 onChange={(e) => formik.handleChange(e)}
               />
             </FormGroup>
+            {formik.values.partyTypeCd === "NonDriverParty" && (
+              <FormGroup
+                label={messages.DriverModal.NonDriverType}
+                description={messages.DriverModal.NonDriverTypeDesciption}
+                css={styles.formGroup}
+              >
+                <FormikSelect
+                  name="driverTypeCd"
+                  css={[utils.mb(3), utils.fullWidth]}
+                  options={DriverOptions.DriverTypeCd}
+                  onChange={(e) => {
+                    formik.handleChange({
+                      target: {
+                        name: "driverTypeCd",
+                        value: e.value,
+                      },
+                    });
+                  }}
+                />
+              </FormGroup>
+            )}
             <FormGroup
               label={messages.DriverModal.BirthDate}
               description={messages.DriverModal.BirthDateDescription}
@@ -270,77 +347,84 @@ export const EditDriverModal: FunctionComponent<Props> = ({
                 }}
               />
             </FormGroup>
-            <FormGroup
-              label={messages.DriverModal.Occupation}
-              description={messages.DriverModal.OccupationDescription}
-              css={styles.formGroup}
-            >
-              <FormikSelect
-                name="occupation"
-                css={[utils.mb(3), utils.fullWidth]}
-                options={DriverOptions.Occupation}
-                onChange={(e) => {
-                  formik.handleChange({
-                    target: {
-                      name: "occupation",
-                      value: e.value,
-                    },
-                  });
-                }}
-              />
-            </FormGroup>
-            <FormGroup
-              label={messages.DriverModal.LicenseState}
-              description={messages.DriverModal.LicenseStateDescription}
-              css={styles.formGroup}
-            >
-              <FormikSelect
-                name="licenseState"
-                options={DriverOptions.LicenseState}
-                css={[utils.mb(3), utils.fullWidth]}
-                onChange={(e) => {
-                  formik.handleChange({
-                    target: {
-                      name: "licenseState",
-                      value: e.value,
-                    },
-                  });
-                }}
-              />
-            </FormGroup>
-            <FormGroup
-              label={messages.DriverModal.LicenseNumber}
-              description={messages.DriverModal.LicenseNumberDescription}
-              css={styles.formGroup}
-            >
-              <FormikInput
-                name="licenseNumber"
-                isMask
-                css={[utils.mb(3), utils.fullWidth]}
-                onChange={(e) => formik.handleChange(e)}
-              />
-            </FormGroup>
-            <FormGroup
-              label={messages.DriverModal.AgeFirstLicensed}
-              description={messages.DriverModal.AgeFirstLicensedLicensed}
-              css={styles.formGroup}
-            >
-              <FormikSpinner
-                name="ageFirstLicensed"
-                css={[utils.mb(3), utils.fullWidth]}
-                onChange={(e) => {
-                  formik.handleChange({
-                    target: {
-                      name: "ageFirstLicensed",
-                      value: e,
-                    },
-                  });
-                }}
-              />
-            </FormGroup>
+            {formik.values.partyTypeCd !== "NonDriverParty" && (
+              <FormGroup
+                label={messages.DriverModal.Occupation}
+                description={messages.DriverModal.OccupationDescription}
+                css={styles.formGroup}
+              >
+                <FormikSelect
+                  name="occupation"
+                  css={[utils.mb(3), utils.fullWidth]}
+                  options={DriverOptions.Occupation}
+                  onChange={(e) => {
+                    formik.handleChange({
+                      target: {
+                        name: "occupation",
+                        value: e.value,
+                      },
+                    });
+                  }}
+                />
+              </FormGroup>
+            )}
+            {formik.values.partyTypeCd !== "NonDriverParty" && (
+              <FormGroup
+                label={messages.DriverModal.LicenseState}
+                description={messages.DriverModal.LicenseStateDescription}
+                css={styles.formGroup}
+              >
+                <FormikSelect
+                  name="licenseState"
+                  options={DriverOptions.LicenseState}
+                  css={[utils.mb(3), utils.fullWidth]}
+                  onChange={(e) => {
+                    formik.handleChange({
+                      target: {
+                        name: "licenseState",
+                        value: e.value,
+                      },
+                    });
+                  }}
+                />
+              </FormGroup>
+            )}
+            {formik.values.partyTypeCd !== "NonDriverParty" && (
+              <FormGroup
+                label={messages.DriverModal.LicenseNumber}
+                description={messages.DriverModal.LicenseNumberDescription}
+                css={styles.formGroup}
+              >
+                <FormikInput
+                  name="licenseNumber"
+                  css={[utils.mb(3), utils.fullWidth]}
+                  onChange={(e) => formik.handleChange(e)}
+                />
+              </FormGroup>
+            )}
+            {formik.values.partyTypeCd !== "NonDriverParty" && (
+              <FormGroup
+                label={messages.DriverModal.AgeFirstLicensed}
+                description={messages.DriverModal.AgeFirstLicensedLicensed}
+                css={styles.formGroup}
+              >
+                <FormikSpinner
+                  name="ageFirstLicensed"
+                  css={[utils.mb(3), utils.fullWidth]}
+                  onChange={(e) => {
+                    formik.handleChange({
+                      target: {
+                        name: "ageFirstLicensed",
+                        value: e,
+                      },
+                    });
+                  }}
+                />
+              </FormGroup>
+            )}
           </div>
 
-          {defaultValue?.id && (
+          {defaultValue?.id && formik.values.partyTypeCd !== "NonDriverParty" && (
             <div>
               <Hr />
               <Row>
@@ -393,140 +477,137 @@ export const EditDriverModal: FunctionComponent<Props> = ({
           {defaultValue?.id &&
           formik.values.driverPoints &&
           formik.values.driverPoints.length
-            ? formik.values.driverPoints
-                //.reverse()
-                //.filter(dP => dP.status === 'Active')
-                .map((dP, index) => {
-                  return dP.status === "Active" || dP.status === "New" ? (
-                    <AddDriverPointsItem
-                      key={`${index}.lhI`}
-                      item={dP}
-                      index={index}
-                      formik={formik}
-                      options={infractionListInfo}
-                      onDelete={() => {
-                        formik.handleChange({
-                          target: {
-                            name: `driverPoints.${index}.status`,
-                            value: "Deleted",
-                          },
-                        });
-                      }}
-                      onEdit={() => {
-                        setAddingItem(false);
-                        onUpdateDriverPoints(
-                          "update",
-                          `${driverIndex + 1}`,
-                          dP
-                        );
-                      }}
-                      onCancelCreate={() => {
-                        setAddingItem(false);
-                        formik.values.driverPoints.pop();
-                      }}
-                      onCreate={() => {
-                        setAddingItem(false);
-                        onUpdateDriverPoints("add", `${driverIndex + 1}`, dP);
-                      }}
-                    />
-                  ) : (
-                    ""
-                  );
-                })
+            ? formik.values.driverPoints.map((dP, index) => {
+                return dP.status === "Active" || dP.status === "New" ? (
+                  <AddDriverPointsItem
+                    key={`${index}.lhI`}
+                    item={dP}
+                    index={index}
+                    formik={formik}
+                    options={infractionListInfo}
+                    onDelete={() => {
+                      formik.handleChange({
+                        target: {
+                          name: `driverPoints.${index}.status`,
+                          value: "Deleted",
+                        },
+                      });
+                    }}
+                    onEdit={() => {
+                      setAddingItem(false);
+                      onUpdateDriverPoints("update", `${driverIndex + 1}`, dP);
+                    }}
+                    onCancelCreate={() => {
+                      setAddingItem(false);
+                      formik.values.driverPoints.pop();
+                    }}
+                    onCreate={() => {
+                      setAddingItem(false);
+                      onUpdateDriverPoints("add", `${driverIndex + 1}`, dP);
+                    }}
+                  />
+                ) : (
+                  ""
+                );
+              })
             : ""}
 
           <Hr />
-          <div css={utils.mt(2)}>
-            <Text css={utils.fullWidth} bold>
-              {"Discounts"}
-            </Text>
+          {formik.values.partyTypeCd !== "NonDriverParty" && (
+            <div>
+              <div css={utils.mt(2)}>
+                <Text css={utils.fullWidth} bold>
+                  {"Discounts"}
+                </Text>
 
-            <Row css={utils.mb(2)}>
-              <Col md={12} lg={3.5}>
-                <FormikCheckbox
-                  key={`check-MatureDriverInd`}
-                  name={`matureDriverInd`}
-                  label={`Defensive Driver Discount`}
-                  onChange={(e) => {
-                    formik.handleChange({
-                      target: {
-                        name: `matureDriverInd`,
-                        value: e,
-                      },
-                    });
-                  }}
-                />
-              </Col>
-              <Col md={12} lg={5}>
-                {formik.values.matureDriverInd && (
-                  <FormGroup
-                    label={"Date Verified"}
-                    description={
-                      "A Defensive Driver Discount is available to a driver who is at least 55 years of age and has completed California State approved Defensive Driver Improvement Course within the past 3 years of the inception date of the policy."
-                    }
-                    css={styles.formGroup}
-                  >
-                    <FormikDatePicker
-                      name={`matureCertificationDt`}
-                      css={[utils.mb(3), utils.fullWidth]}
-                      maxDate={new Date()}
+                <Row css={utils.mb(2)}>
+                  <Col md={12} lg={3.5}>
+                    <FormikCheckbox
+                      key={`check-MatureDriverInd`}
+                      name={`matureDriverInd`}
+                      label={`Defensive Driver Discount`}
                       onChange={(e) => {
                         formik.handleChange({
                           target: {
-                            name: `matureCertificationDt`,
+                            name: `matureDriverInd`,
                             value: e,
                           },
                         });
                       }}
                     />
-                  </FormGroup>
-                )}
-              </Col>
-            </Row>
+                  </Col>
+                  <Col md={12} lg={5}>
+                    {formik.values.matureDriverInd && (
+                      <FormGroup
+                        label={"Date Verified"}
+                        description={
+                          "A Defensive Driver Discount is available to a driver who is at least 55 years of age and has completed California State approved Defensive Driver Improvement Course within the past 3 years of the inception date of the policy."
+                        }
+                        css={styles.formGroup}
+                      >
+                        <FormikDatePicker
+                          name={`matureCertificationDt`}
+                          css={[utils.mb(3), utils.fullWidth]}
+                          maxDate={new Date()}
+                          onChange={(e) => {
+                            formik.handleChange({
+                              target: {
+                                name: `matureCertificationDt`,
+                                value: e,
+                              },
+                            });
+                          }}
+                        />
+                      </FormGroup>
+                    )}
+                  </Col>
+                </Row>
 
-            <Row>
-              <Col md={12} lg={3.5}>
-                <FormikCheckbox
-                  key={`check-ScholasticDiscountInd`}
-                  name={`scholasticDiscountInd`}
-                  label={`Good Student Discount`}
-                  onChange={(e) => {
-                    formik.handleChange({
-                      target: {
-                        name: `scholasticDiscountInd`,
-                        value: e,
-                      },
-                    });
-                  }}
-                />
-              </Col>
-              <Col md={12} lg={5}>
-                {formik.values.scholasticDiscountInd && (
-                  <FormGroup
-                    label={"Date Verified"}
-                    description={
-                      "A Good Student Discount is available to a driver who is a full-time student between 16 and 24 years of age and meets certain scholastic criteria, which are described in the Underwriting Guidelines."
-                    }
-                    css={styles.formGroup}
-                  >
-                    <FormikDatePicker
-                      name="scholasticCertificationDt"
-                      css={[utils.mb(3), utils.fullWidth]}
-                      maxDate={new Date()}
+                <Row>
+                  <Col md={12} lg={3.5}>
+                    <FormikCheckbox
+                      key={`check-ScholasticDiscountInd`}
+                      name={`scholasticDiscountInd`}
+                      label={`Good Student Discount`}
                       onChange={(e) => {
                         formik.handleChange({
                           target: {
-                            name: "scholasticCertificationDt",
+                            name: `scholasticDiscountInd`,
                             value: e,
                           },
                         });
                       }}
                     />
-                  </FormGroup>
-                )}
-              </Col>
-            </Row>
-          </div>
+                  </Col>
+                  <Col md={12} lg={5}>
+                    {formik.values.scholasticDiscountInd && (
+                      <FormGroup
+                        label={"Date Verified"}
+                        description={
+                          "A Good Student Discount is available to a driver who is a full-time student between 16 and 24 years of age and meets certain scholastic criteria, which are described in the Underwriting Guidelines."
+                        }
+                        css={styles.formGroup}
+                      >
+                        <FormikDatePicker
+                          name="scholasticCertificationDt"
+                          css={[utils.mb(3), utils.fullWidth]}
+                          maxDate={new Date()}
+                          onChange={(e) => {
+                            formik.handleChange({
+                              target: {
+                                name: "scholasticCertificationDt",
+                                value: e,
+                              },
+                            });
+                          }}
+                        />
+                      </FormGroup>
+                    )}
+                  </Col>
+                </Row>
+              </div>
+            </div>
+          )}
 
           <div
             css={[

@@ -207,12 +207,15 @@ export default {
     LicenseState: 'License State',
     LicenseNumber: 'License Number',
     AgeFirstLicensed: 'Age First Licensed',
+    NonDriverType: 'Non-Driver Type',
     Errors: {
       RequiredFirstName: 'First Name is required',
       RequiredLastName: 'Last Name is required',
       RequiredBirthDate: 'Birth Date is required',
       RequiredLicenseState: 'License State is required',
       RequiredLicenseNumber: 'License Number is required',
+      RequiredOccupation: 'Occupation is required',
+      RequiredNonDriverType: 'Non-Driver Type is required',
     },
   },
   RequiredInformation: {

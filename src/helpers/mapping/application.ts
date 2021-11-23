@@ -200,7 +200,9 @@ export const parseQuoteResponse = (
       drivers: !quoteResponse.DTOApplication[0].PartyInfo
         ? []
         : quoteResponse.DTOApplication[0].PartyInfo.filter(
-            (party) => party.PartyTypeCd === "DriverParty"
+            (party) =>
+              party.PartyTypeCd === "DriverParty" ||
+              party.PartyTypeCd === "NonDriverParty"
           ).map((party) => ({
             id: party.id,
             firstName: party.NameInfo[0].GivenName,
@@ -213,9 +215,14 @@ export const parseQuoteResponse = (
             occupation: party.PersonInfo[0].OccupationClassCd,
             licenseState: party.DriverInfo[0].LicensedStateProvCd,
             licenseNumber: party.DriverInfo[0].LicenseNumber,
+            relationshipToInsuredCd:
+              party.DriverInfo[0].RelationshipToInsuredCd,
+            originalLicenseNumber: party.DriverInfo[0].LicenseNumber || "",
             licenseDt: party.DriverInfo[0].LicenseDt || "",
+            driverTypeCd: party.DriverInfo[0].DriverTypeCd,
             ageFirstLicensed: +party.DriverInfo[0].AgeFirstLicensed,
             status: party.Status,
+            partyTypeCd: party.PartyTypeCd,
             matureDriverInd:
               party.DriverInfo[0].MatureDriverInd &&
               party.DriverInfo[0].MatureDriverInd == "Yes"
@@ -368,7 +375,10 @@ export const getUpdatedDTOApplication = (
     // Update Drivers Info
     let driverIndex = 0;
     result[0].PartyInfo = result[0].PartyInfo.map((party) => {
-      if (party.PartyTypeCd === "DriverParty") {
+      if (
+        party.PartyTypeCd === "DriverParty" ||
+        party.PartyTypeCd === "NonDriverParty"
+      ) {
         const age =
           new Date().getFullYear() -
           new Date(quoteDetail.drivers[driverIndex].birthDate).getFullYear();
@@ -398,7 +408,15 @@ export const getUpdatedDTOApplication = (
               ...party.DriverInfo[0],
               LicensedStateProvCd:
                 quoteDetail.drivers[driverIndex].licenseState,
-              LicenseNumber: quoteDetail.drivers[driverIndex].licenseNumber,
+              LicenseNumber:
+                quoteDetail.drivers[driverIndex].licenseNumber &&
+                !quoteDetail.drivers[driverIndex].licenseNumber.includes("*")
+                  ? quoteDetail.drivers[driverIndex].licenseNumber
+                  : quoteDetail.drivers[driverIndex].originalLicenseNumber,
+              RelationshipToInsuredCd: quoteDetail.drivers[driverIndex]
+                .relationshipToInsuredCd
+                ? quoteDetail.drivers[driverIndex].relationshipToInsuredCd
+                : "Other",
               ScholasticDiscountInd: quoteDetail.drivers[driverIndex]
                 .scholasticDiscountInd
                 ? "Yes"
@@ -422,6 +440,9 @@ export const getUpdatedDTOApplication = (
                   : "",
               AgeFirstLicensed:
                 quoteDetail.drivers[driverIndex].ageFirstLicensed,
+              DriverTypeCd: quoteDetail.drivers[driverIndex].driverTypeCd
+                ? quoteDetail.drivers[driverIndex].driverTypeCd
+                : "",
               /*DriverPoints: quoteDetail.drivers[driverIndex].driverPoints
                 .filter(dp => dp.driverPointsNumber)
                 .map(dP => ({
@@ -443,6 +464,7 @@ export const getUpdatedDTOApplication = (
             },
           ],
           Status: quoteDetail.drivers[driverIndex].status,
+          PartyTypeCd: quoteDetail.drivers[driverIndex].partyTypeCd,
         };
         driverIndex++;
         return newData;

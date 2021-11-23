@@ -11,14 +11,16 @@ import { utils, theme } from '~/frontend/styles'
 interface Props {
   text: string
   className?: string
+  textIcon?: any
   onDelete?: () => any
   onEdit?: () => any
 }
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ leftIcon ?: any }>`
   display: flex;
   align-items: center;
   padding: 1em;
+  padding-left: ${({ leftIcon }) => (leftIcon ? 0 : '1em')};
   flex-wrap: wrap;
   border-bottom: 1px solid ${theme.borderColor};
 `
@@ -34,12 +36,18 @@ const deleteButtonStyle = css`
 export const ListItem: FunctionComponent<Props> = ({
   text,
   className,
+  textIcon,
   onDelete,
   onEdit,
   ...props
 }) => (
-  <Wrapper className={className} {...props}>
-    <span data-testid="text-name" css={[utils.flex(1)]}>
+  <Wrapper  leftIcon={textIcon} className={className} {...props}>
+    <span data-testid="text-name" css={[utils.flex(1), utils.display('flex'), utils.alignItems('center')]}>
+    {textIcon &&
+        <div css={utils.mr('1px')}>
+          {textIcon}
+        </div>
+      }
       {text}
     </span>
     {onDelete && (

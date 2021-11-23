@@ -133,7 +133,12 @@ const ReviewCoveragesPage: FunctionComponent<any> = ({
                 .join(",")} - ${info.model}`
           ),
         ...quoteDetail.drivers
-          .filter((v) => v.status === "Active" && v.licenseNumber === "")
+          .filter(
+            (v) =>
+              v.status === "Active" &&
+              v.licenseNumber === "" &&
+              v.partyTypeCd != "NonDriverParty"
+          )
           .map(
             (info) =>
               `${info.firstName} - ${messages.DriverModal.LicenseNumber}`

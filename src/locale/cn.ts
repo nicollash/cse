@@ -200,12 +200,15 @@ export default {
     LicenseState: '许可证状态',
     LicenseNumber: '许可证号',
     AgeFirstLicensed: '年龄优先许可',
+    NonDriverType: 'Non-Driver Type',
     Errors: {
       RequiredFirstName: '必须填写名字',
       RequiredLastName: '必须填写姓氏',
       RequiredBirthDate: '需要出生日期',
       RequiredLicenseState: '需要许可证状态',
       RequiredLicenseNumber: '许可证号为必填项',
+      RequiredOccupation: 'Occupation is required',
+      RequiredNonDriverType: 'Non-Driver Type is required',
     },
   },
   RequiredInformation: {

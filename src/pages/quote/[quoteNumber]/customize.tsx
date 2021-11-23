@@ -43,6 +43,7 @@ import {
 } from "~/types";
 
 import { formRedirect } from "~/frontend/utils";
+import { CI_NonDriveCar } from "public/assets/components";
 
 import {
   ItemBlock,
@@ -152,7 +153,12 @@ const CustomizePage: FunctionComponent<any> = ({
                   .join(",")} - ${info.model}`
             ),
           ...qD.drivers
-            .filter((v) => v.status === "Active" && v.licenseNumber === "")
+            .filter(
+              (v) =>
+                v.status === "Active" &&
+                v.licenseNumber === "" &&
+                v.partyTypeCd != "NonDriverParty"
+            )
             .map(
               (info) =>
                 `${info.firstName} - ${messages.DriverModal.LicenseNumber}`
@@ -429,7 +435,11 @@ const CustomizePage: FunctionComponent<any> = ({
             <Container wide css={utils.display("flex")}>
               <Row css={[utils.fullWidth, styles.row]}>
                 <Col
-                  css={[selectedTab !== 2 && utils.hideOnMobile]}
+                  css={[
+                    selectedTab !== 2 && utils.hideOnMobile,
+                    utils.display("flex"),
+                    utils.flexDirection("column"),
+                  ]}
                   xl={3}
                   lg={3}
                   md={12}
@@ -467,7 +477,11 @@ const CustomizePage: FunctionComponent<any> = ({
                 </Col>
 
                 <Col
-                  css={[selectedTab !== 3 && utils.hideOnMobile]}
+                  css={[
+                    selectedTab !== 3 && utils.hideOnMobile,
+                    utils.display("flex"),
+                    utils.flexDirection("column"),
+                  ]}
                   xl={3}
                   lg={3}
                   md={12}
@@ -486,6 +500,18 @@ const CustomizePage: FunctionComponent<any> = ({
                             key={key}
                             onEdit={() => setEditDriverIndex(key)}
                             onDelete={() => setDeleteDriverIndex(key)}
+                            textIcon={
+                              driver.partyTypeCd === "NonDriverParty" && (
+                                <CI_NonDriveCar
+                                  key={"ci-nd-2"}
+                                  cursor={"help"}
+                                  title={"Non Driver"}
+                                  titleId={"Non-Driver-ID-2"}
+                                  width={"1.3em"}
+                                  height={"1.3em"}
+                                />
+                              )
+                            }
                           />
                         )
                     )}
@@ -504,7 +530,11 @@ const CustomizePage: FunctionComponent<any> = ({
                 </Col>
 
                 <Col
-                  css={[selectedTab !== 3 && utils.hideOnMobile]}
+                  css={[
+                    selectedTab !== 3 && utils.hideOnMobile,
+                    utils.display("flex"),
+                    utils.flexDirection("column"),
+                  ]}
                   xl={3}
                   lg={3}
                   md={12}
@@ -542,7 +572,13 @@ const CustomizePage: FunctionComponent<any> = ({
                 </Col>
 
                 <Col
-                  css={[selectedTab !== 4 && utils.hideOnMobile]}
+                  css={[
+                    selectedTab !== 4 &&
+                      utils.hideOnMobile &&
+                      utils.hideOnMobile,
+                    utils.display("flex"),
+                    utils.flexDirection("column"),
+                  ]}
                   xl={3}
                   lg={3}
                   md={12}
@@ -573,6 +609,18 @@ const CustomizePage: FunctionComponent<any> = ({
                             text={`${driver.firstName} ${driver.lastName}`}
                             key={key}
                             onEdit={() => setEditDriverIndex(key)}
+                            textIcon={
+                              driver.partyTypeCd === "NonDriverParty" && (
+                                <CI_NonDriveCar
+                                  key={"ci-nd-2"}
+                                  cursor={"help"}
+                                  title={"Non Driver"}
+                                  titleId={"Non-Driver-ID-2"}
+                                  width={"1.3em"}
+                                  height={"1.3em"}
+                                />
+                              )
+                            }
                           />
                         )
                     )}
