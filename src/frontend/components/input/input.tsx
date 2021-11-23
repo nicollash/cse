@@ -118,7 +118,7 @@ export const Input: FunctionComponent<InputProps> = ({
   const [currentValue, setCurrentValue] = useState(
     isMask ? maskLicenseNumber(value.toString(), 4) : value
   );
-  const transform = focused || props.value !== "" ? "up" : "down";
+  const transform = focused || value !== "" ? "up" : "down";
 
   const handleChange = (e) => {
     if (isMask) {
