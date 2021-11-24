@@ -1,7 +1,6 @@
-
-import { jsx } from '@emotion/react'
-import { FunctionComponent, useEffect } from 'react'
-import { useFormik, FormikProvider } from 'formik'
+import { jsx } from "@emotion/react";
+import { FunctionComponent, useEffect } from "react";
+import { useFormik, FormikProvider } from "formik";
 
 import {
   Modal,
@@ -12,18 +11,18 @@ import {
   Hr,
   FormikSpinner,
   FormikDatePicker,
-} from '~/frontend/components'
-import { utils } from '~/frontend/styles'
-import { QuoteDetail, VehicleInfo } from '~/types'
+} from "~/frontend/components";
+import { utils } from "~/frontend/styles";
+import { QuoteDetail, VehicleInfo } from "~/types";
 
-import { styles } from './styles'
-import { useLocale } from '~/frontend/hooks'
+import { styles } from "./styles";
+import { useLocale } from "~/frontend/hooks";
 
 interface Props {
-  isOpen: boolean
-  defaultValue: QuoteDetail
-  onCloseModal?: () => any
-  onUpdate?: (v: QuoteDetail) => any
+  isOpen: boolean;
+  defaultValue: QuoteDetail;
+  onCloseModal?: () => any;
+  onUpdate?: (v: QuoteDetail) => any;
 }
 
 export const RequiredInformationModal: FunctionComponent<Props> = ({
@@ -32,7 +31,7 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
   onCloseModal,
   onUpdate,
 }) => {
-  const { messages } = useLocale()
+  const { messages } = useLocale();
 
   const formik = useFormik<{ info: QuoteDetail }>({
     validationSchema: null,
@@ -43,27 +42,28 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
       info: defaultValue,
     },
     onSubmit: (value) => {
-      onUpdate(value.info)
-      onCloseModal()
+      onUpdate(value.info);
+      onCloseModal();
     },
-  })
+  });
 
   useEffect(() => {
     if (isOpen) {
-      (window as any).ga && (window as any).ga('send', 'Required Information Modal View')
+      (window as any).ga &&
+        (window as any).ga("send", "Required Information Modal View");
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   useEffect(() => {
     if (defaultValue) {
       formik.setValues({
         info: defaultValue,
-      })
+      });
     }
-  }, [defaultValue])
+  }, [defaultValue]);
 
   if (!defaultValue) {
-    return <div />
+    return <div />;
   }
 
   return (
@@ -77,32 +77,38 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
       <FormikProvider value={formik}>
         <form
           onSubmit={(e) => {
-            e.preventDefault()
-            formik.handleSubmit()
+            e.preventDefault();
+            formik.handleSubmit();
           }}
           css={styles.form}
         >
           {formik.values.info.vehicles.map(
             (info, key) =>
-              info.status === 'Active' && (
+              info.status === "Active" && (
                 <div key={key}>
                   {!defaultValue.vehicles[key]?.vinNumber && (
                     <div
                       css={[
-                        utils.display('flex'),
-                        utils.alignItems('center'),
+                        utils.display("flex"),
+                        utils.alignItems("center"),
                         styles.row,
                       ]}
                     >
-                      <Text bold css={[utils.mr(5), utils.ml(2), utils.width('200px')]}>
+                      <Text
+                        bold
+                        css={[utils.mr(5), utils.ml(2), utils.width("200px")]}
+                      >
                         {info.model}
                       </Text>
-                      <FormGroup label={messages.Common.VIN} css={styles.formGroup}>
+                      <FormGroup
+                        label={messages.Common.VIN}
+                        css={styles.formGroup}
+                      >
                         <FormikInput
                           name={`info.vehicles.${key}.vinNumber`}
                           css={[utils.mb(3), utils.mx(2), utils.fullWidth]}
                           onChange={(e) => {
-                            formik.handleChange(e)
+                            formik.handleChange(e);
                           }}
                         />
                       </FormGroup>
@@ -115,7 +121,10 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
                     defaultValue.vehicles[key]?.readingDate
                   ) && (
                     <div css={[utils.mt(3), styles.row]}>
-                      <Text bold css={[utils.mr(5), utils.ml(2), utils.width('200px')]}>
+                      <Text
+                        bold
+                        css={[utils.mr(5), utils.ml(2), utils.width("200px")]}
+                      >
                         {info.model}
                       </Text>
                       <FormGroup
@@ -133,7 +142,7 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
                                 name: `info.vehicles.${key}.odometerReading`,
                                 value: e,
                               },
-                            })
+                            });
                           }}
                         />
                       </FormGroup>
@@ -150,7 +159,7 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
                                 name: `info.vehicles.${key}.readingDate`,
                                 value: e,
                               },
-                            })
+                            });
                           }}
                         />
                       </FormGroup>
@@ -158,17 +167,25 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
                     </div>
                   )}
                 </div>
-              ),
+              )
           )}
           {formik.values.info.drivers.map(
             (info, key) =>
-              info.status === 'Active' &&
-              defaultValue.drivers[key].licenseNumber === '' && (
+              info.status === "Active" &&
+              (!defaultValue.drivers[key].licenseNumber ||
+                defaultValue.drivers[key].licenseNumber === "") && (
                 <div key={key}>
                   <div
-                    css={[utils.display('flex'), utils.alignItems('center'), styles.row]}
+                    css={[
+                      utils.display("flex"),
+                      utils.alignItems("center"),
+                      styles.row,
+                    ]}
                   >
-                    <Text bold css={[utils.mr(5), utils.ml(2), utils.width('200px')]}>
+                    <Text
+                      bold
+                      css={[utils.mr(5), utils.ml(2), utils.width("200px")]}
+                    >
                       {info.firstName}
                     </Text>
                     <FormGroup
@@ -179,20 +196,20 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
                         name={`info.drivers.${key}.licenseNumber`}
                         css={[utils.mb(3), utils.mx(2), utils.fullWidth]}
                         onChange={(e) => {
-                          formik.handleChange(e)
+                          formik.handleChange(e);
                         }}
                       />
                     </FormGroup>
                     <Hr />
                   </div>
                 </div>
-              ),
+              )
           )}
           <div
             css={[
               utils.centerAlign,
               utils.fullWidth,
-              utils.position('relative'),
+              utils.position("relative"),
               utils.mt(4),
             ]}
           >
@@ -209,5 +226,5 @@ export const RequiredInformationModal: FunctionComponent<Props> = ({
         </form>
       </FormikProvider>
     </Modal>
-  )
-}
+  );
+};

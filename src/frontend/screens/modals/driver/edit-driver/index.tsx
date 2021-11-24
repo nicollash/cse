@@ -397,6 +397,7 @@ export const EditDriverModal: FunctionComponent<Props> = ({
               >
                 <FormikInput
                   name="licenseNumber"
+                  isMask
                   css={[utils.mb(3), utils.fullWidth]}
                   onChange={(e) => formik.handleChange(e)}
                 />
