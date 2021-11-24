@@ -214,7 +214,7 @@ export const parseQuoteResponse = (
             maritalStatus: party.PersonInfo[0].MaritalStatusCd,
             occupation: party.PersonInfo[0].OccupationClassCd,
             licenseState: party.DriverInfo[0].LicensedStateProvCd,
-            licenseNumber: party.DriverInfo[0].LicenseNumber,
+            licenseNumber: party.DriverInfo[0].LicenseNumber || '',
             relationshipToInsuredCd:
               party.DriverInfo[0].RelationshipToInsuredCd,
             originalLicenseNumber: party.DriverInfo[0].LicenseNumber || "",
