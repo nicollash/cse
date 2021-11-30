@@ -5,7 +5,7 @@ import RedisStoreFactory from "connect-redis";
 import redis from "redis";
 
 const RedisStore = RedisStoreFactory(expressSession);
-const redisClient = redis.createClient();
+const redisClient = redis.createClient({ url: process.env.REDIS_SERVER });
 
 const redisStore = new RedisStore({ client: redisClient });
 
