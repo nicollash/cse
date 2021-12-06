@@ -3,20 +3,20 @@ import { HttpService } from "~/backend/lib";
 
 class AuthService {
   static async login(session: any, userId: string, password: string) {
-    try {
-      const userInfo: any = await HttpService.request(
-        `${config.apiBaseURL}/ProviderLoginRq/json`,
-        "POST",
-        {
-          UserId: userId,
-          Password: password,
-        }
-      );
-      session.user = { ...userInfo, LoginId: userId };
-      return { success: true };
-    } catch (error) {
-      return { success: false, error };
-    }
+    // try {
+    //   const userInfo: any = await HttpService.request(
+    //     `${config.apiBaseURL}/ProviderLoginRq/json`,
+    //     "POST",
+    //     {
+    //       UserId: userId,
+    //       Password: password,
+    //     }
+    //   );
+    //   session.user = { ...userInfo, LoginId: userId };
+    //   return { success: true };
+    // } catch (error) {
+    return { success: false, error: null };
+    // }
   }
 
   static async logout(session: any) {

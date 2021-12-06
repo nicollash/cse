@@ -284,7 +284,7 @@ export async function getServerSideProps({ req, res }) {
   console.log("session: ", session);
   return {
     props: {
-      // user: session.user,
+      user: session.user,
       lastError: fromLogoutMessage ? null : lastError,
       loginError,
       fromLogoutMessage,
