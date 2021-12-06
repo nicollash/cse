@@ -2,7 +2,7 @@ import { config } from "~/config";
 import { HttpService } from "~/backend/lib";
 
 class AuthService {
-  static async login(session: any, userId: string, password: string) {
+  static login(session: any, userId: string, password: string) {
     // try {
     //   const userInfo: any = await HttpService.request(
     //     `${config.apiBaseURL}/ProviderLoginRq/json`,

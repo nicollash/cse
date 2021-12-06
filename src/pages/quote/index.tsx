@@ -268,7 +268,7 @@ export async function getServerSideProps({ req, res }) {
   if (req.method === "POST") {
     console.log("login processes: ");
     const { userId, password } = await parse(req);
-    // const loginResult = await AuthService.login(session, userId, password);
+    const loginResult = AuthService.login(session, userId, password);
 
     // if (loginResult.success) {
     //   session.loginError = null;
