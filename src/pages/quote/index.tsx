@@ -265,29 +265,29 @@ function QuotePage({
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
 
-  if (req.method === "POST") {
-    console.log("login processes: ");
-    const { userId, password } = await parse(req);
-    const loginResult = await AuthService.login(session, userId, password);
+  // if (req.method === "POST") {
+  //   console.log("login processes: ");
+  //   const { userId, password } = await parse(req);
+  //   const loginResult = await AuthService.login(session, userId, password);
 
-    if (loginResult.success) {
-      session.loginError = null;
-      session.lastError = null;
-    } else {
-      session.loginError = loginResult.error;
-    }
-    session.fromLogoutMessage = null;
-  }
+  //   if (loginResult.success) {
+  //     session.loginError = null;
+  //     session.lastError = null;
+  //   } else {
+  //     session.loginError = loginResult.error;
+  //   }
+  //   session.fromLogoutMessage = null;
+  // }
 
   const { lastError, loginError, fromLogoutMessage } = session;
 
   console.log("session: ", session);
   return {
     props: {
-      user: session.user,
-      lastError: fromLogoutMessage ? null : lastError,
-      loginError,
-      fromLogoutMessage,
+      // user: session.user,
+      // lastError: fromLogoutMessage ? null : lastError,
+      // loginError,
+      // fromLogoutMessage,
     },
   };
 }
