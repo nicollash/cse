@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-
 import { useFormik, FormikProvider } from "formik";
+import parse from "urlencoded-body-parser";
 import * as Yup from "yup";
 
 import { useError, useLocale, useMountedRef } from "~/frontend/hooks";
@@ -20,6 +20,7 @@ import {
 import { styles } from "~/frontend/screens/pages/quote/styles";
 import { utils } from "~/frontend/styles";
 import { getSession } from "~/backend/lib";
+import { AuthService } from "~/backend/services";
 
 function QuotePage({
   user,
@@ -263,6 +264,20 @@ function QuotePage({
 
 export async function getServerSideProps({ req, res }) {
   const session = await getSession(req, res);
+
+  if (req.method === "POST") {
+    console.log("login processes: ");
+    const { userId, password } = await parse(req);
+    const loginResult = await AuthService.login(session, userId, password);
+
+    if (loginResult.success) {
+      session.loginError = null;
+      session.lastError = null;
+    } else {
+      session.loginError = loginResult.error;
+    }
+    session.fromLogoutMessage = null;
+  }
 
   const { lastError, loginError, fromLogoutMessage } = session;
 

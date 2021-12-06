@@ -87,7 +87,7 @@ export const LoginModal: FunctionComponent<LoginModalProps> = ({
     onSubmit: (value) => {
       setLoading(true);
       setLocalErrorMessage(null);
-      formRedirect("/action/auth/login", value);
+      formRedirect("", value);
     },
   });
 
