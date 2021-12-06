@@ -3,9 +3,9 @@ import parse from "urlencoded-body-parser";
 import { getSession } from "~/backend/lib";
 import { AuthService } from "~/backend/services";
 
-const Login: NextPage = (props) => {
+const Login = (props) => {
   console.log("props", props);
-  return <div></div>;
+  return <div>Login</div>;
 };
 
 export async function getServerSideProps({ req, res }) {
@@ -23,7 +23,7 @@ export async function getServerSideProps({ req, res }) {
   session.fromLogoutMessage = null;
 
   return {
-    redirect: {
+    props: {
       destination: "/quote",
     },
   };
