@@ -9,6 +9,4 @@ const redisClient = redis.createClient({ url: process.env.REDIS_SERVER });
 
 const redisStore = new RedisStore({ client: redisClient });
 
-export const getSession = nextSession({
-  store: promisifyStore(redisStore),
-});
+export const getSession = nextSession();
