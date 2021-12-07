@@ -11,4 +11,5 @@ const redisStore = new RedisStore({ client: redisClient });
 
 export const getSession = nextSession({
   store: promisifyStore(redisStore),
+  autoCommit: false,
 });
