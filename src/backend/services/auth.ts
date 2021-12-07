@@ -1,25 +1,25 @@
 import { config } from "~/config";
 import { HttpService } from "~/backend/lib";
 
-class AuthService {
-  static login(session: any, userId: string, password: string) {
-    // try {
-    //   const userInfo: any = await HttpService.request(
-    //     `${config.apiBaseURL}/ProviderLoginRq/json`,
-    //     "POST",
-    //     {
-    //       UserId: userId,
-    //       Password: password,
-    //     }
-    //   );
-    //   session.user = { ...userInfo, LoginId: userId };
-    //   return { success: true };
-    // } catch (error) {
-    return { success: false, error: null };
-    // }
-  }
+const AuthService = {
+  async login(session: any, userId: string, password: string) {
+    try {
+      const userInfo: any = await HttpService.request(
+        `${config.apiBaseURL}/ProviderLoginRq/json`,
+        "POST",
+        {
+          UserId: userId,
+          Password: password,
+        }
+      );
+      session.user = { ...userInfo, LoginId: userId };
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
+  },
 
-  static async logout(session: any) {
+  async logout(session: any) {
     try {
       if (session.user) {
         await HttpService.request(
@@ -34,9 +34,9 @@ class AuthService {
     } catch (error) {
       return { success: false, error };
     }
-  }
+  },
 
-  static async checkLoginStatus(session: any) {
+  async checkLoginStatus(session: any) {
     try {
       let isLoggedIn = false;
       if (session.user) {
@@ -58,7 +58,7 @@ class AuthService {
     } catch (error) {
       return { success: false, error };
     }
-  }
-}
+  },
+};
 
 export default AuthService;
