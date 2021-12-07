@@ -271,12 +271,12 @@ export async function getServerSideProps({ req, res }) {
     const loginResult = await AuthService.login(session, userId, password);
 
     if (loginResult.success) {
-      session.loginError = null;
-      session.lastError = null;
+      // session.loginError = null;
+      // session.lastError = null;
     } else {
-      session.loginError = loginResult.error;
+      // session.loginError = loginResult.error;
     }
-    session.fromLogoutMessage = null;
+    // session.fromLogoutMessage = null;
   }
 
   const { lastError, loginError, fromLogoutMessage } = session;

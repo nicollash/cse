@@ -12,7 +12,7 @@ const AuthService = {
           Password: password,
         }
       );
-      session.user = { ...userInfo, LoginId: userId };
+      // session.user = { ...userInfo, LoginId: userId };
       return { success: true };
     } catch (error) {
       return { success: false, error };
