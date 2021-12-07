@@ -277,6 +277,7 @@ export async function getServerSideProps({ req, res }) {
       session.loginError = loginResult.error;
     }
     session.fromLogoutMessage = null;
+    await session.commit();
   }
 
   const { lastError, loginError, fromLogoutMessage } = session;
