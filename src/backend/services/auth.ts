@@ -13,7 +13,6 @@ const AuthService = {
         }
       );
       session.user = { ...userInfo, LoginId: userId };
-      await session.commit();
       return { success: true };
     } catch (error) {
       return { success: false, error };
